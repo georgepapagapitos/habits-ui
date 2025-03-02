@@ -17,6 +17,10 @@ import { isCompletedOnDate, isHabitDueOnDate } from "../../utils";
 const CalendarContainer = styled.div`
   margin-top: 16px;
   overflow-x: auto;
+  background-color: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 `;
 
 const CalendarGrid = styled.div`
@@ -24,6 +28,7 @@ const CalendarGrid = styled.div`
   grid-template-columns: repeat(7, 1fr);
   gap: 4px;
   margin-top: 8px;
+  background-color: white;
 `;
 
 const DayHeader = styled.div`

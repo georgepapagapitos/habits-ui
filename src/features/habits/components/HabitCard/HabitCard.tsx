@@ -242,7 +242,9 @@ export const HabitCard = ({
         </CardFooter>
 
         {showCalendar && (
-          <HabitCalendar habit={habit} onToggleDate={handleToggleDate} />
+          <div style={{ marginTop: "8px", marginBottom: "8px" }}>
+            <HabitCalendar habit={habit} onToggleDate={handleToggleDate} />
+          </div>
         )}
       </StyledHabitCard>
 
