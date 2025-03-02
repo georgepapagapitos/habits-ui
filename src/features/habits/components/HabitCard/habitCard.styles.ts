@@ -114,3 +114,136 @@ export const FrequencyBadge = styled.span`
   font-size: ${({ theme }) => theme.typography.fontSizes.xs};
   margin-left: ${({ theme }) => theme.spacing.sm};
 `;
+
+// Menu button styles
+export const MenuButton = styled.button`
+  background: none;
+  border: none;
+  color: ${({ theme }) => theme.colors.textLight};
+  cursor: pointer;
+  margin-left: auto;
+  padding: 0;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: ${({ theme }) => theme.colors.text};
+  }
+
+  &:active {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+
+  &:focus {
+    outline: none;
+  }
+`;
+
+// Context menu styles
+export const ContextMenu = styled.div`
+  position: absolute;
+  top: 40px;
+  right: 10px;
+  background: ${({ theme }) => theme.colors.surface};
+  border-radius: ${({ theme }) => theme.borderRadius.small};
+  box-shadow: ${({ theme }) => theme.shadows.medium};
+  overflow: hidden;
+  z-index: 10;
+  min-width: 120px;
+`;
+
+export const MenuItem = styled.button`
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  padding: 10px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: ${({ theme }) => theme.colors.text};
+  font-size: ${({ theme }) => theme.typography.fontSizes.sm};
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.backgroundAlt};
+  }
+
+  &.delete {
+    color: ${({ theme }) => theme.colors.error};
+  }
+`;
+
+// Confirmation dialog styles
+export const ConfirmDialog = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+`;
+
+export const DialogContent = styled.div`
+  background: ${({ theme }) => theme.colors.surface};
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
+  padding: ${({ theme }) => theme.spacing.lg};
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+`;
+
+export const DialogTitle = styled.h3`
+  margin-top: 0;
+  font-size: ${({ theme }) => theme.typography.fontSizes.lg};
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+export const ButtonGroup = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: ${({ theme }) => theme.spacing.md};
+  margin-top: ${({ theme }) => theme.spacing.lg};
+`;
+
+export const CancelButton = styled.button`
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.borderRadius.small};
+  padding: 8px 16px;
+  color: ${({ theme }) => theme.colors.text};
+  cursor: pointer;
+  font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.background};
+  }
+`;
+
+export const DeleteConfirmButton = styled.button`
+  background: ${({ theme }) => theme.colors.error};
+  border: none;
+  border-radius: ${({ theme }) => theme.borderRadius.small};
+  padding: 8px 16px;
+  color: white;
+  cursor: pointer;
+  font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.errorDark || '#c0392b'};
+  }
+`;

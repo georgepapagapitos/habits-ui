@@ -18,16 +18,78 @@ interface HabitFormProps {
     timeOfDay?: string;
   }) => void;
   onClose: () => void;
+  initialData?: {
+    _id?: string;
+    name: string;
+    frequency: WeekDay[];
+    description?: string;
+    timeOfDay?: string;
+  };
+  isEditing?: boolean;
 }
 
-export const HabitForm = ({ onSubmit, onClose }: HabitFormProps) => {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [frequencyType, setFrequencyType] = useState("daiy");
-  const [timeOfDay, setTimeOfDay] = useState("anytime");
+export const HabitForm = ({
+  onSubmit,
+  onClose,
+  initialData,
+  isEditing = false,
+}: HabitFormProps) => {
+  const [name, setName] = useState(initialData?.name || "");
+  const [description, setDescription] = useState(
+    initialData?.description || ""
+  );
+  const [timeOfDay, setTimeOfDay] = useState(
+    initialData?.timeOfDay || "anytime"
+  );
 
-  // For weekly frequence selection
-  const [selectedDays, setSelectedDays] = useState<WeekDay[]>([]);
+  // Determine initial frequency type based on the provided frequency array
+  const determineFrequencyType = (frequency: WeekDay[] = []): string => {
+    if (!frequency || frequency.length === 0) {
+      return "daily";
+    }
+
+    const allDays = [
+      "sunday",
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+    ];
+    const weekdays = ["monday", "tuesday", "wednesday", "thursday", "friday"];
+    const weekends = ["saturday", "sunday"];
+
+    if (
+      frequency.length === 7 &&
+      allDays.every((day) => frequency.includes(day as WeekDay))
+    ) {
+      return "daily";
+    } else if (
+      frequency.length === 5 &&
+      weekdays.every((day) => frequency.includes(day as WeekDay))
+    ) {
+      return "weekdays";
+    } else if (
+      frequency.length === 2 &&
+      weekends.every((day) => frequency.includes(day as WeekDay))
+    ) {
+      return "weekends";
+    } else {
+      return "weekly";
+    }
+  };
+
+  const [frequencyType, setFrequencyType] = useState(
+    initialData ? determineFrequencyType(initialData.frequency) : "daily"
+  );
+
+  // For weekly frequency selection
+  const [selectedDays, setSelectedDays] = useState<WeekDay[]>(
+    initialData && determineFrequencyType(initialData.frequency) === "weekly"
+      ? initialData.frequency
+      : []
+  );
 
   // Handle day selection for weekly frequency
   const toggleDay = (day: WeekDay) => {
@@ -48,13 +110,13 @@ export const HabitForm = ({ onSubmit, onClose }: HabitFormProps) => {
       case "daily":
         // All 7 days of the week
         frequency = [
+          "sunday",
           "monday",
           "tuesday",
           "wednesday",
           "thursday",
           "friday",
           "saturday",
-          "sunday",
         ];
         break;
       case "weekdays":
@@ -72,13 +134,13 @@ export const HabitForm = ({ onSubmit, onClose }: HabitFormProps) => {
       default:
         // Default to daily if something unexpected happens
         frequency = [
+          "sunday",
           "monday",
           "tuesday",
           "wednesday",
           "thursday",
           "friday",
           "saturday",
-          "sunday",
         ];
     }
 
@@ -92,7 +154,9 @@ export const HabitForm = ({ onSubmit, onClose }: HabitFormProps) => {
 
   return (
     <Form onSubmit={handleSubmit}>
-      <h2 style={{ color: "#480733" }}>New Habit</h2>
+      <h2 style={{ color: "#480733" }}>
+        {isEditing ? "Edit Habit" : "New Habit"}
+      </h2>
 
       <FormGroup>
         <Label htmlFor="name">Habit Name</Label>
@@ -144,13 +208,13 @@ export const HabitForm = ({ onSubmit, onClose }: HabitFormProps) => {
           >
             {(
               [
+                "sunday",
                 "monday",
                 "tuesday",
                 "wednesday",
                 "thursday",
                 "friday",
                 "saturday",
-                "sunday",
               ] as WeekDay[]
             ).map((day) => (
               <button
@@ -196,7 +260,7 @@ export const HabitForm = ({ onSubmit, onClose }: HabitFormProps) => {
         type="submit"
         disabled={frequencyType === "weekly" && selectedDays.length === 0}
       >
-        Create Habit
+        {isEditing ? "Update Habit" : "Create Habit"}
       </Button>
       <SecondaryButton onClick={onClose}>Cancel</SecondaryButton>
     </Form>

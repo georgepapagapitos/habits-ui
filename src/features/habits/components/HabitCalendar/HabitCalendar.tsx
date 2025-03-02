@@ -48,31 +48,57 @@ const DateCell = styled.div<{
   border-radius: ${({ theme }) => theme.borderRadius.small};
   cursor: ${(props) =>
     props.$isDue && !props.$isFuture ? "pointer" : "default"};
-  opacity: ${(props) => (props.$isDue && !props.$isFuture ? 1 : 0.5)};
+  opacity: ${(props) => {
+    // Full opacity for dates that are due and not in the future
+    if (props.$isDue && !props.$isFuture) return 1;
+    // Medium opacity for completed dates (even if they weren't scheduled)
+    if (props.$isCompleted) return 0.8;
+    // Lower opacity for other dates
+    return 0.5;
+  }};
   background-color: ${(props) => {
-    if (props.$isToday)
-      return props.$isCompleted
-        ? props.theme.colors.successLight
-        : props.theme.colors.backgroundAlt;
+    // If completed, always show success color (regardless of if it was scheduled)
     if (props.$isCompleted) return props.theme.colors.successLight;
-    if (props.$isDue && props.$isPast) return props.theme.colors.errorLight;
+
+    // Today's date gets special background if not completed
+    if (props.$isToday && !props.$isCompleted)
+      return props.theme.colors.backgroundAlt;
+
+    // Past due dates that weren't completed get error color
+    if (props.$isDue && props.$isPast && !props.$isCompleted)
+      return props.theme.colors.errorLight;
+
+    // Days that are scheduled get purple background to make them stand out
+    if (props.$isDue) return "#E6D9FF";
+    
+    // Not scheduled days get default background
     return props.theme.colors.background;
   }};
-  border: ${(props) =>
-    props.$isToday ? `2px solid ${props.theme.colors.primary}` : "none"};
+  border: ${(props) => {
+    // Today gets primary border
+    if (props.$isToday) return `2px solid ${props.theme.colors.primary}`;
+    // Scheduled days get a subtle border to distinguish them
+    if (props.$isDue && !props.$isCompleted) return `1px solid #DDD`;
+    return "none";
+  }};
   color: ${(props) =>
     props.$isCompleted ? props.theme.colors.success : props.theme.colors.text};
   font-weight: ${(props) => (props.$isToday ? "bold" : "normal")};
 
   &:hover {
-    background-color: ${(props) =>
-      props.$isDue && !props.$isFuture
-        ? props.$isCompleted
-          ? props.theme.colors.success
-          : props.theme.colors.primaryLight
-        : props.$isCompleted
-        ? props.theme.colors.successLight
-        : props.theme.colors.background};
+    background-color: ${(props) => {
+      // Clickable dates (due and not in future) get hover effect
+      if (props.$isDue && !props.$isFuture) {
+        return props.$isCompleted
+          ? props.theme.colors.success // Completed - darker success color on hover
+          : props.theme.colors.primaryLight; // Not completed - primary light color on hover
+      }
+
+      // Non-clickable dates keep their normal color
+      if (props.$isCompleted) return props.theme.colors.successLight;
+      if (props.$isDue) return "#E6D9FF"; // Scheduled days - purple
+      return props.theme.colors.background; // Not scheduled days - default background
+    }};
   }
 `;
 
@@ -208,8 +234,8 @@ export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
           <span>Missed</span>
         </LegendItem>
         <LegendItem>
-          <LegendSwatch $color="#f2e6f5" />
-          <span>Not scheduled</span>
+          <LegendSwatch $color="#E6D9FF" />
+          <span>Scheduled</span>
         </LegendItem>
       </Legend>
     </CalendarContainer>

@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Habit } from "../../types";
 import {
   getFrequencyDisplayText,
@@ -18,12 +18,23 @@ import {
   ExpandButton,
   CardContent,
   CardFooter,
+  MenuButton,
+  ContextMenu,
+  MenuItem,
+  ConfirmDialog,
+  DialogContent,
+  DialogTitle,
+  ButtonGroup,
+  CancelButton,
+  DeleteConfirmButton,
 } from "./habitCard.styles";
 
 interface HabitCardProps {
   habit: Habit;
   onToggleHabit: (id: string) => void;
   onToggleDate?: (id: string, date: Date) => void;
+  onDelete?: (id: string) => void;
+  onEdit?: (id: string) => void;
 }
 
 const Celebration = () => {
@@ -47,9 +58,13 @@ export const HabitCard = ({
   habit,
   onToggleHabit,
   onToggleDate,
+  onDelete,
+  onEdit,
 }: HabitCardProps) => {
   const [isCompleting, setIsCompleting] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
   const isDue = isHabitDueToday(habit);
   const nextDue = getNextDueDate(habit);
@@ -101,6 +116,57 @@ export const HabitCard = ({
     }
   };
 
+  // Handle opening the menu
+  const handleMenuClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card toggle
+    setShowMenu(!showMenu);
+  };
+  
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // Cast event.target to Element to use the closest method
+      const target = event.target as Element;
+      
+      // If the click is outside the menu and the menu button
+      if (showMenu && !target.closest(".menu-button") && !target.closest(".context-menu")) {
+        setShowMenu(false);
+      }
+    };
+
+    // Add event listener when menu is open
+    if (showMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    
+    // Clean up
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showMenu]);
+
+  // Handle edit request
+  const handleEdit = () => {
+    setShowMenu(false);
+    if (onEdit) {
+      onEdit(habit._id);
+    }
+  };
+
+  // Handle delete request
+  const handleDelete = () => {
+    setShowMenu(false);
+    setShowConfirmDelete(true);
+  };
+
+  // Confirm and execute delete
+  const confirmDelete = () => {
+    if (onDelete) {
+      onDelete(habit._id);
+    }
+    setShowConfirmDelete(false);
+  };
+
   return (
     <div style={{ position: "relative", overflow: "visible" }}>
       <StyledHabitCard
@@ -109,6 +175,40 @@ export const HabitCard = ({
         $expanded={showCalendar}
       >
         {isCompleting && <Celebration />}
+
+        {/* Menu button */}
+        <MenuButton 
+          onClick={handleMenuClick}
+          aria-label="Options"
+          className="menu-button"
+        >
+          <span style={{ 
+            fontSize: "20px", 
+            fontWeight: "bold",
+            lineHeight: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            height: "100%"
+          }}>⋮</span>
+        </MenuButton>
+
+        {/* Context menu */}
+        {showMenu && (
+          <ContextMenu className="context-menu">
+            {onEdit && (
+              <MenuItem onClick={handleEdit}>
+                <span style={{ fontSize: "14px" }}>✏️</span> Edit
+              </MenuItem>
+            )}
+            {onDelete && (
+              <MenuItem className="delete" onClick={handleDelete}>
+                <span style={{ fontSize: "14px" }}>🗑️</span> Delete
+              </MenuItem>
+            )}
+          </ContextMenu>
+        )}
 
         <CardContent onClick={handleToggle}>
           <HabitName
@@ -145,6 +245,25 @@ export const HabitCard = ({
           <HabitCalendar habit={habit} onToggleDate={handleToggleDate} />
         )}
       </StyledHabitCard>
+
+      {/* Confirmation dialog */}
+      {showConfirmDelete && (
+        <ConfirmDialog>
+          <DialogContent>
+            <DialogTitle>Delete Habit</DialogTitle>
+            <p>Are you sure you want to delete "{habit.name}"?</p>
+            <p>This action cannot be undone.</p>
+            <ButtonGroup>
+              <CancelButton onClick={() => setShowConfirmDelete(false)}>
+                Cancel
+              </CancelButton>
+              <DeleteConfirmButton onClick={confirmDelete}>
+                Delete
+              </DeleteConfirmButton>
+            </ButtonGroup>
+          </DialogContent>
+        </ConfirmDialog>
+      )}
     </div>
   );
 };

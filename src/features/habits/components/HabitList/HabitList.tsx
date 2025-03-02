@@ -6,6 +6,8 @@ interface HabitListProps {
   habits: Habit[];
   onToggleHabit: (id: string) => void;
   onToggleDate?: (id: string, date: Date) => void;
+  onDeleteHabit?: (id: string) => void;
+  onEditHabit?: (id: string) => void;
   loading?: boolean;
   error?: string | null;
 }
@@ -14,6 +16,8 @@ export const HabitList = ({
   habits,
   onToggleHabit,
   onToggleDate,
+  onDeleteHabit,
+  onEditHabit,
   loading = false,
   error = null,
 }: HabitListProps) => {
@@ -51,6 +55,8 @@ export const HabitList = ({
           habit={habit}
           onToggleHabit={onToggleHabit}
           onToggleDate={onToggleDate}
+          onDelete={onDeleteHabit}
+          onEdit={onEditHabit}
         />
       ))}
     </List>

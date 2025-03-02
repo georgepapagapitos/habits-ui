@@ -1,7 +1,3 @@
-/**
- * Habit-specific color palettes and color utilities
- */
-
 import {
   getRandomColorFrom,
   getRandomGradientFrom,
@@ -28,16 +24,10 @@ export const habitGradientColors = [
   "#9370DB", // medium purple
 ];
 
-/**
- * Gets a random color from the habit gradient colors
- */
 export const getRandomColor = () => {
   return getRandomColorFrom(habitGradientColors);
 };
 
-/**
- * Creates a random gradient with 20% opacity from habit colors
- */
 export const getRandomGradient = () => {
   return getRandomGradientFrom(habitGradientColors, 20);
 };

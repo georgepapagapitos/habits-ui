@@ -14,6 +14,15 @@ type HabitFormData = {
 
 export const App = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [habitToEdit, setHabitToEdit] = useState<null | {
+    _id: string;
+    name: string;
+    frequency: WeekDay[];
+    description?: string;
+    timeOfDay?: string;
+  }>(null);
+  
   const {
     habits,
     loading,
@@ -21,6 +30,8 @@ export const App = () => {
     messages,
     handleAddHabit,
     toggleHabit,
+    deleteHabit,
+    updateHabit,
     refreshHabits,
   } = useHabitManager();
 
@@ -42,9 +53,22 @@ export const App = () => {
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
+  // Render the form modal for creating a new habit
   const renderHabitFormModal = () => (
     <Modal onClose={closeModal}>
       <HabitForm onSubmit={onSubmitHabit} onClose={closeModal} />
+    </Modal>
+  );
+
+  // Render the form modal for editing an existing habit
+  const renderEditHabitFormModal = () => (
+    <Modal onClose={closeEditModal}>
+      <HabitForm 
+        onSubmit={handleEditSubmit} 
+        onClose={closeEditModal} 
+        initialData={habitToEdit || undefined}
+        isEditing={true}
+      />
     </Modal>
   );
 
@@ -61,6 +85,61 @@ export const App = () => {
     }
   };
 
+  // Handle habit deletion
+  const handleDeleteHabit = async (habitId: string) => {
+    try {
+      await deleteHabit(habitId);
+      // No need to refresh, the habit state is updated in useHabitManager hook
+    } catch (error) {
+      console.error("Error deleting habit:", error);
+    }
+  };
+
+  // Handle habit editing - open the edit modal with the selected habit data
+  const handleEditHabit = (habitId: string) => {
+    const habit = habits.find(h => h._id === habitId);
+    if (habit) {
+      setHabitToEdit({
+        _id: habit._id,
+        name: habit.name,
+        frequency: habit.frequency,
+        description: habit.description,
+        timeOfDay: habit.timeOfDay
+      });
+      setIsEditModalOpen(true);
+    }
+  };
+
+  // Handle edit form submission
+  const handleEditSubmit = async ({
+    name,
+    frequency,
+    description,
+    timeOfDay
+  }: HabitFormData) => {
+    if (habitToEdit) {
+      try {
+        await updateHabit(habitToEdit._id, {
+          name,
+          frequency,
+          description,
+          timeOfDay: timeOfDay as any
+        });
+        
+        // Close the modal after successful update
+        setIsEditModalOpen(false);
+        setHabitToEdit(null);
+      } catch (error) {
+        console.error("Error updating habit:", error);
+      }
+    }
+  };
+
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
+    setHabitToEdit(null);
+  };
+
   return (
     <>
       <Header title="Hannah's Habits" />
@@ -70,6 +149,8 @@ export const App = () => {
             habits={habits}
             onToggleHabit={toggleHabit}
             onToggleDate={handleToggleDate}
+            onDeleteHabit={handleDeleteHabit}
+            onEditHabit={handleEditHabit}
             loading={loading}
             error={error}
           />
@@ -78,6 +159,7 @@ export const App = () => {
       <AddButton onClick={openModal}>+</AddButton>
       <BottomNav />
       {isModalOpen && renderHabitFormModal()}
+      {isEditModalOpen && renderEditHabitFormModal()}
       <Messages messages={messages} />
     </>
   );
