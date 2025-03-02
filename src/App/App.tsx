@@ -14,8 +14,15 @@ type HabitFormData = {
 
 export const App = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { habits, loading, error, messages, handleAddHabit, toggleHabit } =
-    useHabitManager();
+  const { 
+    habits, 
+    loading, 
+    error, 
+    messages, 
+    handleAddHabit, 
+    toggleHabit,
+    refreshHabits
+  } = useHabitManager();
 
   const onSubmitHabit = ({
     name,
@@ -41,6 +48,19 @@ export const App = () => {
     </Modal>
   );
 
+  // Handle toggling habit for specific date
+  const handleToggleDate = async (habitId: string, date: Date) => {
+    try {
+      // This will make an API call to toggle the completion for the specified date
+      await toggleHabit(habitId, date);
+      
+      // Refresh habits list to get updated data
+      await refreshHabits();
+    } catch (error) {
+      console.error("Error toggling habit for date:", error);
+    }
+  };
+
   return (
     <>
       <Header title="Hannah's Habits" />
@@ -49,6 +69,7 @@ export const App = () => {
           <HabitList
             habits={habits}
             onToggleHabit={toggleHabit}
+            onToggleDate={handleToggleDate}
             loading={loading}
             error={error}
           />

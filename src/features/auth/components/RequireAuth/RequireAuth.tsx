@@ -1,6 +1,6 @@
-import { ReactNode } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../hooks';
+import { ReactNode } from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../hooks";
 
 interface RequireAuthProps {
   children: ReactNode;
@@ -11,7 +11,6 @@ export const RequireAuth = ({ children }: RequireAuthProps) => {
   const location = useLocation();
 
   if (isLoading) {
-    // You could return a loading spinner here
     return <div>Loading...</div>;
   }
 

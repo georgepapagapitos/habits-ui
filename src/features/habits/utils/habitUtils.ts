@@ -1,14 +1,18 @@
 import { Habit } from "../types";
 
-// Function to check if a habit is due today based on frequency
-export const isHabitDueToday = (habit: Habit): boolean => {
-  const today = new Date();
-  const dayOfWeek = today
+// Function to check if a habit is due on a specific date based on frequency
+export const isHabitDueOnDate = (habit: Habit, date: Date = new Date()): boolean => {
+  const dayOfWeek = date
     .toLocaleDateString("en-US", { weekday: "long" })
     .toLowerCase();
 
-  // Check if today is in the habit's frequency array (case insensitive)
+  // Check if the day is in the habit's frequency array (case insensitive)
   return habit.frequency.some((day) => day.toLowerCase() === dayOfWeek);
+};
+
+// Function to check if a habit is due today based on frequency (alias for backward compatibility)
+export const isHabitDueToday = (habit: Habit): boolean => {
+  return isHabitDueOnDate(habit);
 };
 
 // Function to check if a habit was completed on a specific date

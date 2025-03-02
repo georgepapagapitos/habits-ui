@@ -1,7 +1,4 @@
-import { BottomNav } from "./BottomNav";
-import { Header } from "./Header";
-import { Messages } from "./Messages";
-import { Modal } from "./Modal";
-
-export { BottomNav, Header, Messages, Modal };
-
+export * from "./BottomNav";
+export * from "./Header";
+export * from "./Messages";
+export * from "./Modal";

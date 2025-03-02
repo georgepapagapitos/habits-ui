@@ -1,3 +1,1 @@
-import { BottomNav } from "./BottomNav";
-
-export { BottomNav };
+export * from "./BottomNav";

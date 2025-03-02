@@ -19,7 +19,7 @@ const Content = styled.div`
 export const LoginPage = () => {
   return (
     <PageContainer>
-      <Header />
+      <Header title="Login" />
       <Content>
         <LoginForm />
       </Content>

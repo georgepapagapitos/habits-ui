@@ -1,3 +1,1 @@
-import { Messages } from "./Messages";
-
-export { Messages };
+export * from "./Messages";

@@ -40,6 +40,7 @@ export const ConfettiPiece = styled.div`
 export const StyledHabitCard = styled.div<{
   $isCompleting: boolean;
   $isCompleted: boolean;
+  $expanded?: boolean;
 }>`
   background: ${(props) =>
     props.$isCompleted
@@ -49,7 +50,7 @@ export const StyledHabitCard = styled.div<{
   padding: ${({ theme }) => theme.spacing.md};
   box-shadow: ${({ theme }) => theme.shadows.small};
   position: relative;
-  overflow: hidden;
+  overflow: ${props => props.$expanded ? 'visible' : 'hidden'};
   width: 100%;
   transition: all ${({ theme }) => theme.animations.transitions.short};
   ${(props) =>
@@ -57,6 +58,37 @@ export const StyledHabitCard = styled.div<{
     css`
       animation: ${popAndSpin} 0.6s ease-in-out;
     `}
+`;
+
+export const CardContent = styled.div`
+  cursor: pointer;
+`;
+
+export const CardFooter = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: ${({ theme }) => theme.spacing.md};
+  padding-top: ${({ theme }) => theme.spacing.sm};
+  border-top: 1px solid ${({ theme }) => theme.colors.borderLight};
+  font-size: ${({ theme }) => theme.typography.fontSizes.sm};
+`;
+
+export const ExpandButton = styled.button`
+  background: none;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.borderRadius.small};
+  color: ${({ theme }) => theme.colors.text};
+  padding: 4px 8px;
+  font-size: ${({ theme }) => theme.typography.fontSizes.xs};
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.backgroundAlt};
+    border-color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.primary};
+  }
 `;
 
 export const HabitName = styled.h3`

@@ -5,6 +5,7 @@ import { List } from "./habitList.styles";
 interface HabitListProps {
   habits: Habit[];
   onToggleHabit: (id: string) => void;
+  onToggleDate?: (id: string, date: Date) => void;
   loading?: boolean;
   error?: string | null;
 }
@@ -12,6 +13,7 @@ interface HabitListProps {
 export const HabitList = ({
   habits,
   onToggleHabit,
+  onToggleDate,
   loading = false,
   error = null,
 }: HabitListProps) => {
@@ -48,6 +50,7 @@ export const HabitList = ({
           key={habit._id}
           habit={habit}
           onToggleHabit={onToggleHabit}
+          onToggleDate={onToggleDate}
         />
       ))}
     </List>
