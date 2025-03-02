@@ -14,14 +14,14 @@ type HabitFormData = {
 
 export const App = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { 
-    habits, 
-    loading, 
-    error, 
-    messages, 
-    handleAddHabit, 
+  const {
+    habits,
+    loading,
+    error,
+    messages,
+    handleAddHabit,
     toggleHabit,
-    refreshHabits
+    refreshHabits,
   } = useHabitManager();
 
   const onSubmitHabit = ({
@@ -53,7 +53,7 @@ export const App = () => {
     try {
       // This will make an API call to toggle the completion for the specified date
       await toggleHabit(habitId, date);
-      
+
       // Refresh habits list to get updated data
       await refreshHabits();
     } catch (error) {

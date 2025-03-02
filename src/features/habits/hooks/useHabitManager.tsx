@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { habitApi } from "../services/habitApi";
 import { encouragingMessages } from "../constants";
 import { Habit, WeekDay, HabitCreateDTO } from "../types";
-import { isHabitDueToday, isHabitDueOnDate, isCompletedOnDate } from "../utils";
+import { isHabitDueToday, isHabitDueOnDate, isCompletedOnDate, isCompletedToday } from "../utils";
 
 // Message type
 type Message = {
