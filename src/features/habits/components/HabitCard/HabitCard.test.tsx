@@ -417,4 +417,42 @@ describe("HabitCard", () => {
     ).not.toBeInTheDocument();
     expect(onDelete).not.toHaveBeenCalled();
   });
+
+  test("shows encouraging message for habits with streaks that are due today", () => {
+    // Create a habit with a streak that is due today but not completed
+    const streakHabit = createMockHabit({
+      frequency: [getTodayName()], // Due today
+      completedDates: [], // Not completed today
+      streak: 5, // Has a streak
+    });
+
+    renderWithProviders(
+      <HabitCard habit={streakHabit} onToggleHabit={onToggleHabit} />
+    );
+
+    // Should show encouraging message
+    expect(screen.getByText(/great streak/i)).toBeInTheDocument();
+  });
+
+  test("shows correct streak message for last completed habit", () => {
+    // Create a habit with yesterday's completion but no streak (backend resets it)
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const completedYesterdayHabit = createMockHabit({
+      frequency: [getTodayName()], // Due today
+      completedDates: [yesterday.toISOString()], // Completed yesterday
+      streak: 0, // Streak reset by backend
+    });
+
+    renderWithProviders(
+      <HabitCard
+        habit={completedYesterdayHabit}
+        onToggleHabit={onToggleHabit}
+      />
+    );
+
+    // Should still show the continue streak message
+    expect(screen.getByText(/continue your streak/i)).toBeInTheDocument();
+  });
 });

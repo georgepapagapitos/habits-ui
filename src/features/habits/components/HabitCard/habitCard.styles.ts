@@ -27,6 +27,24 @@ export const confetti = keyframes`
   }
 `;
 
+export const fadeInOut = keyframes`
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+`;
+
 // Component styles
 export const ConfettiPiece = styled.div`
   position: absolute;

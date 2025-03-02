@@ -11,6 +11,7 @@ import {
   isHabitDueToday,
 } from "../../utils";
 import { celebrationColors } from "../../utils/habitColors";
+import { encouragingMessages } from "../../constants/encouragingMessages";
 import { HabitCalendar } from "../HabitCalendar";
 import {
   CardContent,
@@ -24,6 +25,7 @@ import {
   MenuButton,
   MenuItem,
   StyledHabitCard,
+  fadeInOut,
 } from "./habitCard.styles";
 
 interface HabitCardProps {
@@ -61,6 +63,9 @@ export const HabitCard = ({
   const [isCompleting, setIsCompleting] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [completionMessage, setCompletionMessage] = useState<string | null>(
+    null
+  );
 
   // Use the menu manager hook
   const {
@@ -68,6 +73,26 @@ export const HabitCard = ({
     toggleMenu: handleMenuClick,
     closeMenu,
   } = useMenuManager();
+
+  // Function to get a streak message based on the streak length
+  const getStreakMessage = (streak: number): string => {
+    if (streak >= 10) {
+      return "Amazing streak! Keep it going! 🔥";
+    } else if (streak >= 7) {
+      return "Awesome streak! You're on fire! 🔥";
+    } else if (streak >= 3) {
+      return "Great streak! Keep up the momentum! 💪";
+    } else {
+      return "Continue your streak today! 💪";
+    }
+  };
+
+  // Function to get a random encouraging message
+  const getRandomEncouragingMessage = (): string => {
+    const messages = encouragingMessages();
+    const randomIndex = Math.floor(Math.random() * messages.length);
+    return messages[randomIndex];
+  };
 
   const isDue = isHabitDueToday(habit);
   const nextDue = getNextDueDate(habit);
@@ -90,6 +115,18 @@ export const HabitCard = ({
     // Haptic feedback for successful toggle
     if ("vibrate" in navigator) {
       navigator.vibrate(100);
+    }
+
+    // Show encouraging message when completing a habit (not when uncompleting)
+    if (!isCompleted) {
+      setCompletionMessage(getRandomEncouragingMessage());
+
+      // Hide the message after 5 seconds
+      setTimeout(() => {
+        setCompletionMessage(null);
+      }, 5000);
+    } else {
+      setCompletionMessage(null);
     }
 
     // Call the parent handler with the habit ID
@@ -159,6 +196,30 @@ export const HabitCard = ({
       >
         {isCompleting && <Celebration />}
 
+        {/* Completion message toast */}
+        {completionMessage && (
+          <div
+            style={{
+              position: "absolute",
+              top: "-70px",
+              left: "0",
+              right: "0",
+              backgroundColor: "#4ECB71",
+              color: "white",
+              padding: "12px 16px",
+              borderRadius: "8px",
+              boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+              zIndex: 10,
+              textAlign: "center",
+              maxWidth: "90%",
+              margin: "0 auto",
+              fontSize: "14px",
+            }}
+          >
+            {completionMessage}
+          </div>
+        )}
+
         <MenuButton
           onClick={handleMenuClick}
           aria-label="Options"
@@ -220,24 +281,48 @@ export const HabitCard = ({
             {showCalendar ? "Hide History" : "Show History"}
           </ExpandButton>
 
-          {/* Enhanced streak display */}
+          {/* Enhanced streak display with encouraging message */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
               gap: "4px",
-              color: habit.streak > 0 ? "#4ECB71" : "inherit",
+              color:
+                habit.streak > 0 || (lastCompleted && isDue && !isCompleted)
+                  ? "#4ECB71"
+                  : "inherit",
             }}
           >
-            {habit.streak > 0 && <span>🔥</span>}
+            {(habit.streak > 0 || (lastCompleted && isDue && !isCompleted)) && (
+              <span>🔥</span>
+            )}
             <span>
               {habit.streak > 0
-                ? `Streak: ${habit.streak} ${
-                    habit.streak === 1 ? "day" : "days"
-                  }`
-                : "Start a streak!"}
+                ? `Streak: ${habit.streak} ${habit.streak === 1 ? "day" : "days"}`
+                : lastCompleted && isDue && !isCompleted
+                  ? "Continue your streak today!"
+                  : "Start a streak!"}
             </span>
           </div>
+
+          {/* Encouraging streak message when on a streak */}
+          {(habit.streak > 0 || (lastCompleted && isDue && !isCompleted)) &&
+            isDue &&
+            !isCompleted && (
+              <div
+                style={{
+                  marginTop: "8px",
+                  fontSize: "14px",
+                  color: "#4ECB71",
+                  fontStyle: "italic",
+                  textAlign: "center",
+                }}
+              >
+                {habit.streak > 0
+                  ? getStreakMessage(habit.streak)
+                  : "Keep your momentum going!"}
+              </div>
+            )}
         </CardFooter>
 
         {showCalendar && (
