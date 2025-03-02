@@ -244,6 +244,6 @@ export const DeleteConfirmButton = styled.button`
   font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
 
   &:hover {
-    background: ${({ theme }) => theme.colors.errorDark || '#c0392b'};
+    background: #c0392b; /* Darker red for hover state */
   }
 `;
