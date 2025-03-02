@@ -36,7 +36,7 @@ export const LoginForm = () => {
       await login({ email, password });
       // If login is successful, navigate to home
       navigate("/");
-    } catch (err) {
+    } catch {
       // Error is handled in the auth context
     }
   };

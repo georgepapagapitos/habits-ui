@@ -123,7 +123,7 @@ export const App = () => {
           name,
           frequency,
           description,
-          timeOfDay: timeOfDay as any,
+          timeOfDay: timeOfDay,
         });
 
         // Close the modal after successful update

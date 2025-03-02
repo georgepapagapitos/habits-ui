@@ -48,7 +48,7 @@ export const RegisterForm = () => {
       await register({ username, email, password });
       // If registration is successful, navigate to home
       navigate("/");
-    } catch (err) {
+    } catch {
       // Error is handled in the auth context
     }
   };

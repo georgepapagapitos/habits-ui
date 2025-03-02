@@ -4,5 +4,5 @@ import theme from "./index";
 type ThemeType = typeof theme;
 
 declare module "styled-components" {
-  export interface DefaultTheme extends ThemeType {}
+  export interface DefaultTheme extends ThemeType { /* Theme properties added in ThemeType */ }
 }

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { encouragingMessages } from "../constants";
 import { habitApi } from "../services/habitApi";
-import { Habit, HabitCreateDTO, WeekDay } from "../types";
+import { Habit, HabitCreateDTO, TimeOfDay, WeekDay } from "../types";
 import {
   isCompletedOnDate,
   isCompletedToday,
@@ -77,7 +77,7 @@ export function useHabitManager() {
         description: habitData.description,
         color: habitData.color,
         icon: habitData.icon,
-        timeOfDay: habitData.timeOfDay as any,
+        timeOfDay: habitData.timeOfDay as TimeOfDay | undefined,
         startDate: new Date(),
       };
 

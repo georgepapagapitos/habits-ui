@@ -101,7 +101,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             type: "LOGIN_SUCCESS",
             payload: { user, token: state.token as string },
           });
-        } catch (error) {
+        } catch (_error) {
           localStorage.removeItem("token");
           dispatch({
             type: "LOGIN_FAILURE",
@@ -123,11 +123,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         type: "LOGIN_SUCCESS",
         payload: { user: data.user, token: data.token },
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
       dispatch({
         type: "LOGIN_FAILURE",
         payload:
-          error.response?.data?.message || "Login failed. Please try again.",
+          err.response?.data?.message || "Login failed. Please try again.",
       });
     }
   };
@@ -142,11 +143,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         type: "REGISTER_SUCCESS",
         payload: { user: data.user, token: data.token },
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
       dispatch({
         type: "REGISTER_FAILURE",
         payload:
-          error.response?.data?.message ||
+          err.response?.data?.message ||
           "Registration failed. Please try again.",
       });
     }
