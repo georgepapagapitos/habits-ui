@@ -1,7 +1,7 @@
-import React, { ReactElement } from "react";
 import { render, RenderOptions } from "@testing-library/react";
-import { ThemeProvider } from "styled-components";
+import React, { ReactElement } from "react";
 import { BrowserRouter } from "react-router-dom";
+import { ThemeProvider } from "styled-components";
 import theme from "../common/theme";
 
 interface CustomRenderOptions extends Omit<RenderOptions, "wrapper"> {

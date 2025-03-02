@@ -19,6 +19,12 @@ RUN npm run build
 # Production stage
 FROM nginx:alpine
 
+# Set timezone to CST (America/Chicago)
+ENV TZ=America/Chicago
+RUN apk add --no-cache tzdata && \
+    cp /usr/share/zoneinfo/$TZ /etc/localtime && \
+    echo $TZ > /etc/timezone
+
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # Copy nginx config

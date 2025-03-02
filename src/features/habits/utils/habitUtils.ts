@@ -5,9 +5,12 @@ export const isHabitDueOnDate = (
   habit: Habit,
   date: Date = new Date()
 ): boolean => {
-  const dayOfWeek = date
-    .toLocaleDateString("en-US", { weekday: "long" })
-    .toLowerCase();
+  // Get the day of week based on user's local timezone
+  // This ensures correct day calculation regardless of where the user is located
+  const userLocalDate = new Date(date.toLocaleString('en-US', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }));
+  const dayIndex = userLocalDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+  const daysOfWeek = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+  const dayOfWeek = daysOfWeek[dayIndex];
 
   // Check if the day is in the habit's frequency array (case insensitive)
   return habit.frequency.some((day) => day.toLowerCase() === dayOfWeek);
@@ -20,13 +23,18 @@ export const isHabitDueToday = (habit: Habit): boolean => {
 
 // Function to check if a habit was completed on a specific date
 export const isCompletedOnDate = (habit: Habit, date: Date): boolean => {
-  const dateToCheck = new Date(date);
-  dateToCheck.setHours(0, 0, 0, 0);
+  // Get the user's timezone
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  
+  // Convert the input date to the user's local timezone
+  const userLocalDate = new Date(date.toLocaleString('en-US', { timeZone: userTimeZone }));
+  userLocalDate.setHours(0, 0, 0, 0);
 
   return habit.completedDates.some((completedDate) => {
-    const completedDateTime = new Date(completedDate);
+    // Convert each completed date to the user's local timezone for comparison
+    const completedDateTime = new Date(new Date(completedDate).toLocaleString('en-US', { timeZone: userTimeZone }));
     completedDateTime.setHours(0, 0, 0, 0);
-    return completedDateTime.getTime() === dateToCheck.getTime();
+    return completedDateTime.getTime() === userLocalDate.getTime();
   });
 };
 
@@ -83,7 +91,10 @@ export const getFrequencyDisplayText = (habit: Habit): string => {
 
 // Function to get the next due date for a habit
 export const getNextDueDate = (habit: Habit): Date => {
+  // Get today's date in user's local timezone
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const today = new Date();
+  
   const daysOfWeek = [
     "sunday",
     "monday",
@@ -93,7 +104,10 @@ export const getNextDueDate = (habit: Habit): Date => {
     "friday",
     "saturday",
   ];
-  const todayIndex = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+  
+  // Get day of week index in user's timezone
+  const userLocalDate = new Date(today.toLocaleString('en-US', { timeZone: userTimeZone }));
+  const todayIndex = userLocalDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
 
   // If habit is due today but not completed, return today
   if (isHabitDueToday(habit) && !isCompletedToday(habit)) {

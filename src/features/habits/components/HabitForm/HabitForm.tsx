@@ -1,14 +1,14 @@
 import { useState } from "react";
-import { TimeOfDay, WeekDay } from "../../types";
 import { Button } from "../../../../common/components/Button";
-import { Input } from "../../../../common/components/Input";
 import { Form, Group, Label, Title } from "../../../../common/components/Form";
+import { Input } from "../../../../common/components/Input";
+import { TimeOfDay, WeekDay } from "../../types";
 import {
-  StyledSelect,
   DayButton,
   // Legacy imports still used below
   FormGroup,
   Select,
+  StyledSelect,
 } from "./habitForm.styles";
 
 interface HabitFormProps {

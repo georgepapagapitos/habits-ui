@@ -32,7 +32,10 @@ interface HabitCalendarProps {
 export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  // Generate days for the current month
+  // Get user's timezone
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  
+  // Generate days for the current month in user's timezone
   const startDate = startOfMonth(currentMonth);
   const endDate = endOfMonth(currentMonth);
   const days = eachDayOfInterval({ start: startDate, end: endDate });
@@ -49,6 +52,7 @@ export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
     setCurrentMonth((prevMonth) => addDays(prevMonth, 30));
   };
 
+  // Get today's date in user's timezone
   const today = new Date();
 
   // Function to handle day click
@@ -82,11 +86,21 @@ export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
           const isDue = isHabitDueOnDate(habit, date);
           const isPast = !isAfter(date, today);
           const isFutureDate = isAfter(date, today);
+          
+          // Convert date to user's timezone for "isToday" check
+          const dateInUserTZ = new Date(date.toLocaleString('en-US', { timeZone: userTimeZone }));
+          const todayInUserTZ = new Date(today.toLocaleString('en-US', { timeZone: userTimeZone }));
+          
+          // Check if it's today by comparing year, month, and day
+          const isTodayInUserTZ = 
+            dateInUserTZ.getFullYear() === todayInUserTZ.getFullYear() &&
+            dateInUserTZ.getMonth() === todayInUserTZ.getMonth() &&
+            dateInUserTZ.getDate() === todayInUserTZ.getDate();
 
           return (
             <DateCell
               key={date.toString()}
-              $isToday={isToday(date)}
+              $isToday={isTodayInUserTZ}
               $isCompleted={isCompleted}
               $isDue={isDue}
               $isPast={isPast}
