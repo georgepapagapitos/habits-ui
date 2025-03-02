@@ -40,8 +40,9 @@ export function useHabitManager() {
   }, []);
 
   const getRandomMessage = () => {
-    const randIndex = Math.floor(Math.random() * encouragingMessages.length);
-    return encouragingMessages[randIndex];
+    const messages = encouragingMessages();
+    const randIndex = Math.floor(Math.random() * messages.length);
+    return messages[randIndex];
   };
 
   // Enhanced message display - adds to queue
