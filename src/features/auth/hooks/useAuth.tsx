@@ -101,6 +101,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             type: "LOGIN_SUCCESS",
             payload: { user, token: state.token as string },
           });
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (_error) {
           localStorage.removeItem("token");
           dispatch({
@@ -111,6 +112,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       };
       loadUser();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Login function
