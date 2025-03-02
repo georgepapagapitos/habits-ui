@@ -2,42 +2,35 @@ name: Frontend CI
 
 on:
   push:
-    branches: [main]
-    paths:
-      - "habits-ui/**"
+    branches: [ main ]
   pull_request:
-    branches: [main]
-    paths:
-      - "habits-ui/**"
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./habits-ui
 
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "18"
-          cache: "npm"
-          cache-dependency-path: habits-ui/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run linting
-        run: npm run lint
-
-      - name: Run type check
-        run: npm run typecheck
-
-      - name: Build
-        run: npm run build
-
-      - name: Run tests
-        run: npm test
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: package-lock.json
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run linting
+      run: npm run lint
+    
+    - name: Run type check
+      run: npm run typecheck
+    
+    - name: Build
+      run: npm run build
+    
+    - name: Run tests
+      run: npm test
