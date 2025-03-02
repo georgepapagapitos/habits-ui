@@ -50,7 +50,7 @@ export const StyledHabitCard = styled.div<{
   padding: ${({ theme }) => theme.spacing.md};
   box-shadow: ${({ theme }) => theme.shadows.small};
   position: relative;
-  overflow: ${props => props.$expanded ? 'visible' : 'hidden'};
+  overflow: ${(props) => (props.$expanded ? "visible" : "hidden")};
   width: 100%;
   transition: all ${({ theme }) => theme.animations.transitions.short};
   ${(props) =>
@@ -83,7 +83,7 @@ export const ExpandButton = styled.button`
   font-size: ${({ theme }) => theme.typography.fontSizes.xs};
   cursor: pointer;
   transition: all 0.2s;
-  
+
   &:hover {
     background-color: ${({ theme }) => theme.colors.backgroundAlt};
     border-color: ${({ theme }) => theme.colors.primary};

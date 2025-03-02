@@ -1,9 +1,12 @@
-// src/features/habits/hooks/useHabitManager.tsx
-import { useState, useEffect, useCallback } from "react";
-import { habitApi } from "../services/habitApi";
+import { useCallback, useEffect, useState } from "react";
 import { encouragingMessages } from "../constants";
-import { Habit, WeekDay, HabitCreateDTO } from "../types";
-import { isHabitDueToday, isHabitDueOnDate, isCompletedOnDate, isCompletedToday } from "../utils";
+import { habitApi } from "../services/habitApi";
+import { Habit, HabitCreateDTO, WeekDay } from "../types";
+import {
+  isCompletedOnDate,
+  isCompletedToday,
+  isHabitDueOnDate,
+} from "../utils";
 
 // Message type
 type Message = {
@@ -102,13 +105,13 @@ export function useHabitManager() {
 
       // For historical dates, we allow toggling regardless of whether it was due
       const isHistorical = date.getTime() < new Date().setHours(0, 0, 0, 0);
-      
+
       if (isDueOnDate || isHistorical) {
         const updatedHabit = await habitApi.toggleCompletion(id, date);
         setHabits((prevHabits) =>
           prevHabits.map((h) => (h._id === id ? updatedHabit : h))
         );
-        
+
         // Only show celebration message for today's completions
         if (isCompletedToday(updatedHabit)) {
           showTemporaryMessage(getRandomMessage());
@@ -161,25 +164,28 @@ export function useHabitManager() {
       const result = [];
       const currentDate = new Date(startDate);
       currentDate.setHours(0, 0, 0, 0);
-      
+
       const endDateTime = new Date(endDate);
       endDateTime.setHours(23, 59, 59, 999);
-      
+
       // List of all days in the range
       while (currentDate <= endDateTime) {
         const dueOnThisDay = isHabitDueOnDate(habit, new Date(currentDate));
-        const completedOnThisDay = isCompletedOnDate(habit, new Date(currentDate));
-        
+        const completedOnThisDay = isCompletedOnDate(
+          habit,
+          new Date(currentDate)
+        );
+
         result.push({
           date: new Date(currentDate),
           due: dueOnThisDay,
           completed: completedOnThisDay,
         });
-        
+
         // Move to next day
         currentDate.setDate(currentDate.getDate() + 1);
       }
-      
+
       return result;
     },
     [habits]
@@ -188,27 +194,31 @@ export function useHabitManager() {
   // Get weekly report with completion rates
   const getWeeklyReport = useCallback(() => {
     if (habits.length === 0) return null;
-    
+
     const today = new Date();
     const startOfWeek = new Date(today);
     // Set to previous Sunday (or adjust based on locale)
     startOfWeek.setDate(today.getDate() - today.getDay());
     startOfWeek.setHours(0, 0, 0, 0);
-    
-    const habitReports = habits.map(habit => {
+
+    const habitReports = habits.map((habit) => {
       const daysInWeek = 7;
       let dueCount = 0;
       let completedCount = 0;
-      
+
       // Check each day of the week
       for (let i = 0; i < daysInWeek; i++) {
         const checkDate = new Date(startOfWeek);
         checkDate.setDate(startOfWeek.getDate() + i);
-        
+
         // Check if habit was due on this day
-        const dayName = checkDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-        const isDue = habit.frequency.some(day => day.toLowerCase() === dayName);
-        
+        const dayName = checkDate
+          .toLocaleDateString("en-US", { weekday: "long" })
+          .toLowerCase();
+        const isDue = habit.frequency.some(
+          (day) => day.toLowerCase() === dayName
+        );
+
         if (isDue) {
           dueCount++;
           if (isCompletedOnDate(habit, checkDate)) {
@@ -216,7 +226,7 @@ export function useHabitManager() {
           }
         }
       }
-      
+
       return {
         habitId: habit._id,
         habitName: habit.name,
@@ -225,12 +235,14 @@ export function useHabitManager() {
         completionRate: dueCount > 0 ? (completedCount / dueCount) * 100 : 0,
       };
     });
-    
+
     return {
       startDate: startOfWeek,
       endDate: new Date(startOfWeek.getTime() + 6 * 24 * 60 * 60 * 1000),
       habitReports,
-      overallCompletionRate: habitReports.reduce((sum, report) => sum + report.completionRate, 0) / habitReports.length,
+      overallCompletionRate:
+        habitReports.reduce((sum, report) => sum + report.completionRate, 0) /
+        habitReports.length,
     };
   }, [habits]);
 

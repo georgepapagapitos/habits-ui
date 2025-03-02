@@ -17,7 +17,7 @@ import {
   StyledHabitCard,
   ExpandButton,
   CardContent,
-  CardFooter
+  CardFooter,
 } from "./habitCard.styles";
 
 interface HabitCardProps {
@@ -43,7 +43,11 @@ const Celebration = () => {
   );
 };
 
-export const HabitCard = ({ habit, onToggleHabit, onToggleDate }: HabitCardProps) => {
+export const HabitCard = ({
+  habit,
+  onToggleHabit,
+  onToggleDate,
+}: HabitCardProps) => {
   const [isCompleting, setIsCompleting] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
 
@@ -83,13 +87,13 @@ export const HabitCard = ({ habit, onToggleHabit, onToggleDate }: HabitCardProps
   };
 
   const lastCompleted = getLastCompletedDate();
-  
+
   // Handle calendar toggle
   const toggleCalendar = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click
     setShowCalendar(!showCalendar);
   };
-  
+
   // Handle date toggling in calendar
   const handleToggleDate = (habitId: string, date: Date) => {
     if (onToggleDate) {
@@ -105,7 +109,7 @@ export const HabitCard = ({ habit, onToggleHabit, onToggleDate }: HabitCardProps
         $expanded={showCalendar}
       >
         {isCompleting && <Celebration />}
-        
+
         <CardContent onClick={handleToggle}>
           <HabitName
             style={{ display: "flex", alignItems: "center", gap: "8px" }}
@@ -125,21 +129,20 @@ export const HabitCard = ({ habit, onToggleHabit, onToggleDate }: HabitCardProps
             )}
           </HabitMeta>
         </CardContent>
-        
+
         <CardFooter>
           <ExpandButton onClick={toggleCalendar}>
-            {showCalendar ? 'Hide History' : 'Show History'}
+            {showCalendar ? "Hide History" : "Show History"}
           </ExpandButton>
-          
+
           {/* Show current streak */}
-          <div>Streak: {habit.streak} {habit.streak === 1 ? 'day' : 'days'}</div>
+          <div>
+            Streak: {habit.streak} {habit.streak === 1 ? "day" : "days"}
+          </div>
         </CardFooter>
-        
+
         {showCalendar && (
-          <HabitCalendar 
-            habit={habit}
-            onToggleDate={handleToggleDate}
-          />
+          <HabitCalendar habit={habit} onToggleDate={handleToggleDate} />
         )}
       </StyledHabitCard>
     </div>
