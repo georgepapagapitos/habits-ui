@@ -8,7 +8,7 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       manifest: {
-        name: "Hannah's Habits",
+        name: "Habits",
         short_name: "",
         description: "",
         theme_color: "#ffffff",

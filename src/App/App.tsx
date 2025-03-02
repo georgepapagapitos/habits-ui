@@ -22,7 +22,7 @@ export const App = () => {
     description?: string;
     timeOfDay?: string;
   }>(null);
-  
+
   const {
     habits,
     loading,
@@ -63,9 +63,9 @@ export const App = () => {
   // Render the form modal for editing an existing habit
   const renderEditHabitFormModal = () => (
     <Modal onClose={closeEditModal}>
-      <HabitForm 
-        onSubmit={handleEditSubmit} 
-        onClose={closeEditModal} 
+      <HabitForm
+        onSubmit={handleEditSubmit}
+        onClose={closeEditModal}
         initialData={habitToEdit || undefined}
         isEditing={true}
       />
@@ -97,14 +97,14 @@ export const App = () => {
 
   // Handle habit editing - open the edit modal with the selected habit data
   const handleEditHabit = (habitId: string) => {
-    const habit = habits.find(h => h._id === habitId);
+    const habit = habits.find((h) => h._id === habitId);
     if (habit) {
       setHabitToEdit({
         _id: habit._id,
         name: habit.name,
         frequency: habit.frequency,
         description: habit.description,
-        timeOfDay: habit.timeOfDay
+        timeOfDay: habit.timeOfDay,
       });
       setIsEditModalOpen(true);
     }
@@ -115,7 +115,7 @@ export const App = () => {
     name,
     frequency,
     description,
-    timeOfDay
+    timeOfDay,
   }: HabitFormData) => {
     if (habitToEdit) {
       try {
@@ -123,9 +123,9 @@ export const App = () => {
           name,
           frequency,
           description,
-          timeOfDay: timeOfDay as any
+          timeOfDay: timeOfDay as any,
         });
-        
+
         // Close the modal after successful update
         setIsEditModalOpen(false);
         setHabitToEdit(null);
@@ -142,7 +142,7 @@ export const App = () => {
 
   return (
     <>
-      <Header title="Hannah's Habits" />
+      <Header title="Habits" />
       <Container>
         <Content>
           <HabitList
