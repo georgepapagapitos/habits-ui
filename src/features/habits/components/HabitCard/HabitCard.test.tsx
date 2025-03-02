@@ -6,6 +6,47 @@ import { renderWithProviders } from "../../../../tests/utils";
 import { Habit, WeekDay } from "../../types/habit.types";
 import { HabitCard } from "./HabitCard";
 
+// Mock the HabitCalendar component to avoid timezone issues
+vi.mock("../HabitCalendar", () => ({
+  HabitCalendar: vi.fn().mockImplementation(({ habit }) => (
+    <div data-testid="mock-calendar">
+      <div>January 2025</div>
+      <div>Calendar mock for {habit.name}</div>
+    </div>
+  )),
+}));
+
+// Mock the utils file to avoid timezone issues in tests
+vi.mock("../../utils", () => ({
+  isHabitDueToday: vi.fn().mockImplementation((habit) => {
+    // For test purposes, any habit with frequency containing today's day name is due
+    const todayName = getTodayName();
+    return habit.frequency.includes(todayName);
+  }),
+  isCompletedToday: vi.fn().mockImplementation((habit) => {
+    // A habit is completed if it has today's date in completedDates
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return habit.completedDates.some((dateStr) => {
+      const date = new Date(dateStr);
+      date.setHours(0, 0, 0, 0);
+      return date.getTime() === today.getTime();
+    });
+  }),
+  getNextDueDate: vi.fn().mockImplementation(() => {
+    // Return a fixed date for testing
+    return new Date("2025-01-15");
+  }),
+  getFrequencyDisplayText: vi.fn().mockImplementation((habit) => {
+    if (habit.frequency.length === 7) return "Every day";
+    if (habit.frequency.length === 1) return habit.frequency[0].slice(0, 3);
+    return "Multiple days";
+  }),
+  getUserTimezone: vi.fn().mockReturnValue("America/Chicago"),
+  normalizeDate: vi.fn().mockImplementation((date) => date),
+  dateInUserTimezone: vi.fn().mockImplementation((date) => date),
+}));
+
 // Mock habits for testing
 const createMockHabit = (overrides = {}): Habit => {
   const today = new Date();
@@ -88,14 +129,28 @@ describe("HabitCard", () => {
     expect(screen.getByText("Test Habit")).toBeInTheDocument();
   });
 
-  test("shows status text for habits", () => {
+  test("shows correct status text for habits due today", () => {
     renderWithProviders(
       <HabitCard habit={mockDueHabit} onToggleHabit={onToggleHabit} />
     );
 
-    // Instead of specifically looking for "Due today", look for either possible status text
-    const statusElement = screen.getByText(/due today|next due/i);
-    expect(statusElement).toBeInTheDocument();
+    // For habits due today but not completed, should show "Due today"
+    expect(screen.getByText("Due today")).toBeInTheDocument();
+  });
+
+  test("shows completed status for completed habits", () => {
+    // Create a habit that is due today and completed
+    const completedHabit = createMockHabit({
+      frequency: [getTodayName()], // Due today
+      completedDates: [new Date().toISOString()], // Completed today
+    });
+
+    renderWithProviders(
+      <HabitCard habit={completedHabit} onToggleHabit={onToggleHabit} />
+    );
+
+    // Should show "Completed today"
+    expect(screen.getByText("Completed today")).toBeInTheDocument();
   });
 
   test("shows next due date for future habits", () => {
@@ -128,12 +183,18 @@ describe("HabitCard", () => {
     ).toBeInTheDocument();
   });
 
-  test("shows streak count correctly", () => {
+  test("shows streak count correctly with fire emoji for positive streaks", () => {
     renderWithProviders(
       <HabitCard habit={mockDueHabit} onToggleHabit={onToggleHabit} />
     );
 
-    expect(screen.getByText("Streak: 2 days")).toBeInTheDocument();
+    // Look for the combined text within the streak display element
+    const streakElement = screen.getByText(/streak: 2 days/i);
+    expect(streakElement).toBeInTheDocument();
+
+    // Check that the container includes the fire emoji
+    const streakContainer = streakElement.parentElement;
+    expect(streakContainer?.textContent).toContain("🔥");
   });
 
   test("shows singular day text for streak of 1", () => {
@@ -143,7 +204,17 @@ describe("HabitCard", () => {
       <HabitCard habit={singleStreakHabit} onToggleHabit={onToggleHabit} />
     );
 
-    expect(screen.getByText("Streak: 1 day")).toBeInTheDocument();
+    expect(screen.getByText(/streak: 1 day/i)).toBeInTheDocument();
+  });
+
+  test("shows motivational message for zero streak", () => {
+    const zeroStreakHabit = createMockHabit({ streak: 0 });
+
+    renderWithProviders(
+      <HabitCard habit={zeroStreakHabit} onToggleHabit={onToggleHabit} />
+    );
+
+    expect(screen.getByText("Start a streak!")).toBeInTheDocument();
   });
 
   test("calls onToggleHabit when clicking on a due habit", async () => {
@@ -151,8 +222,8 @@ describe("HabitCard", () => {
       <HabitCard habit={mockDueHabit} onToggleHabit={onToggleHabit} />
     );
 
-    // Find the card content by its class (more reliable than closest)
-    const cardContent = screen.getByText("Test Habit").closest(".sc-fAomSb");
+    // Find the card content that contains the habit name
+    const cardContent = screen.getByText("Test Habit").closest("div[class]");
 
     expect(cardContent).not.toBeNull();
     if (cardContent) {
@@ -166,10 +237,32 @@ describe("HabitCard", () => {
       <HabitCard habit={mockFutureHabit} onToggleHabit={onToggleHabit} />
     );
 
-    const cardContent = screen.getByText("Test Habit").closest("div");
+    const cardContent = screen.getByText("Test Habit").closest("div[class]");
+
+    expect(cardContent).not.toBeNull();
     if (cardContent) {
       await userEvent.click(cardContent);
       expect(onToggleHabit).not.toHaveBeenCalled();
+    }
+  });
+
+  test("allows toggling completed habits", async () => {
+    // Create a habit that is due today and completed
+    const completedHabit = createMockHabit({
+      frequency: [getTodayName()], // Due today
+      completedDates: [new Date().toISOString()], // Completed today
+    });
+
+    renderWithProviders(
+      <HabitCard habit={completedHabit} onToggleHabit={onToggleHabit} />
+    );
+
+    const cardContent = screen.getByText("Test Habit").closest("div[class]");
+
+    expect(cardContent).not.toBeNull();
+    if (cardContent) {
+      await userEvent.click(cardContent);
+      expect(onToggleHabit).toHaveBeenCalledWith("habit-1");
     }
   });
 

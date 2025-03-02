@@ -1,5 +1,8 @@
 import { format } from "date-fns";
 import { useState } from "react";
+import { Button } from "../../../../common/components/Button";
+import { Dialog } from "../../../../common/components/Dialog";
+import { useMenuManager } from "../../../../common/hooks";
 import { Habit } from "../../types";
 import {
   getFrequencyDisplayText,
@@ -9,21 +12,18 @@ import {
 } from "../../utils";
 import { celebrationColors } from "../../utils/habitColors";
 import { HabitCalendar } from "../HabitCalendar";
-import { Button } from "../../../../common/components/Button";
-import { Dialog } from "../../../../common/components/Dialog";
-import { useMenuManager } from "../../../../common/hooks";
 import {
+  CardContent,
+  CardFooter,
   ConfettiPiece,
+  ContextMenu,
+  ExpandButton,
   FrequencyBadge,
   HabitMeta,
   HabitName,
-  StyledHabitCard,
-  ExpandButton,
-  CardContent,
-  CardFooter,
   MenuButton,
-  ContextMenu,
   MenuItem,
+  StyledHabitCard,
 } from "./habitCard.styles";
 
 interface HabitCardProps {
@@ -75,10 +75,19 @@ export const HabitCard = ({
 
   // Handle toggle with animation internally
   const handleToggle = () => {
-    if (!isDue) return;
+    // Only allow toggling if it's due today (or toggling off if already completed)
+    if (!isDue && !isCompleted) {
+      // Provide subtle feedback that the habit isn't due today
+      if ("vibrate" in navigator) {
+        navigator.vibrate([20, 30, 20]); // Different vibration pattern for "not due"
+      }
+      return;
+    }
 
+    // Set animation state
     setIsCompleting(true);
 
+    // Haptic feedback for successful toggle
     if ("vibrate" in navigator) {
       navigator.vibrate(100);
     }
@@ -86,7 +95,7 @@ export const HabitCard = ({
     // Call the parent handler with the habit ID
     onToggleHabit(habit._id);
 
-    // Reset the animation state after a delay
+    // Reset the animation state after the animation completes
     setTimeout(() => {
       setIsCompleting(false);
     }, 600);
@@ -178,17 +187,29 @@ export const HabitCard = ({
           <HabitName
             style={{ display: "flex", alignItems: "center", gap: "8px" }}
           >
-            <div>{isDue ? `🌱` : `🌻`}</div>
+            <div>
+              {
+                isDue
+                  ? isCompleted
+                    ? `🌻` // Completed today
+                    : `🌱` // Due but not completed
+                  : `🌈` // Not due today
+              }
+            </div>
             {habit.name}
             <FrequencyBadge>{getFrequencyDisplayText(habit)}</FrequencyBadge>
           </HabitName>
           <HabitMeta>
             {isDue ? (
-              <span>Due today</span>
+              isCompleted ? (
+                <span>Completed today</span>
+              ) : (
+                <span>Due today</span>
+              )
             ) : (
               <span>Next due {format(nextDue, "MMM d")}</span>
             )}
-            {lastCompleted && (
+            {lastCompleted && (!isDue || !isCompleted) && (
               <> • Last completed {format(new Date(lastCompleted), "MMM d")}</>
             )}
           </HabitMeta>
@@ -199,9 +220,23 @@ export const HabitCard = ({
             {showCalendar ? "Hide History" : "Show History"}
           </ExpandButton>
 
-          {/* Show current streak */}
-          <div>
-            Streak: {habit.streak} {habit.streak === 1 ? "day" : "days"}
+          {/* Enhanced streak display */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              color: habit.streak > 0 ? "#4ECB71" : "inherit",
+            }}
+          >
+            {habit.streak > 0 && <span>🔥</span>}
+            <span>
+              {habit.streak > 0
+                ? `Streak: ${habit.streak} ${
+                    habit.streak === 1 ? "day" : "days"
+                  }`
+                : "Start a streak!"}
+            </span>
           </div>
         </CardFooter>
 

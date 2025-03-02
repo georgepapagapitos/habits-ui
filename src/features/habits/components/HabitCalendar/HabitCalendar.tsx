@@ -4,13 +4,19 @@ import {
   endOfMonth,
   format,
   isAfter,
-  isToday,
+  isSameDay,
   startOfMonth,
   subDays,
 } from "date-fns";
 import { useState } from "react";
 import { Habit } from "../../types";
-import { isCompletedOnDate, isHabitDueOnDate } from "../../utils";
+import {
+  dateInUserTimezone,
+  getUserTimezone,
+  isCompletedOnDate,
+  isHabitDueOnDate,
+  normalizeDate,
+} from "../../utils";
 import {
   CalendarContainer,
   CalendarGrid,
@@ -30,40 +36,172 @@ interface HabitCalendarProps {
 }
 
 export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  // For debugging
+  console.log("Calendar render - current date:", new Date().toISOString());
+  console.log("User timezone:", getUserTimezone());
 
-  // Get user's timezone
-  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  
+  // Print today's date in user timezone for debugging
+  const nowInUserTz = dateInUserTimezone(new Date());
+  try {
+    console.log(
+      "Today in user timezone:",
+      nowInUserTz.toISOString(),
+      `Day of month: ${nowInUserTz.getDate()}`,
+      `Day of week: ${nowInUserTz.getDay()} (${
+        ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][nowInUserTz.getDay()]
+      })`
+    );
+  } catch (error) {
+    console.error("Error logging date information:", error);
+  }
+  // Get a date object for the current month in user's timezone
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    const now = new Date();
+    return dateInUserTimezone(now);
+  });
+
+  // Get user's timezone using our utility function
+  const userTimeZone = getUserTimezone();
+
   // Generate days for the current month in user's timezone
+  // Make sure to use the user's timezone for month boundaries
   const startDate = startOfMonth(currentMonth);
   const endDate = endOfMonth(currentMonth);
-  const days = eachDayOfInterval({ start: startDate, end: endDate });
+
+  // Debug the month bounds
+  console.log(
+    "Month start:",
+    startDate.toISOString(),
+    `(${startDate.getDate()}, ${startDate.getDay()})`
+  );
+  console.log(
+    "Month end:",
+    endDate.toISOString(),
+    `(${endDate.getDate()}, ${endDate.getDay()})`
+  );
+
+  // Get all days in the month
+  const daysInMonth = eachDayOfInterval({ start: startDate, end: endDate });
+
+  // Create a debug log of all days in the month for inspection
+  console.log(
+    "Calendar days:",
+    daysInMonth
+      .map((d) => `${format(d, "EEE")} ${format(d, "d")} (${d.getDay()})`)
+      .join(", ")
+  );
+
+  // Calculate days for a proper calendar grid (including days from prev/next month)
+  const startDayOfWeek = startDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+  const endDayOfWeek = endDate.getDay();
+
+  // Add days from previous month to fill the first row
+  const daysFromPrevMonth = startDayOfWeek > 0 ? startDayOfWeek : 0;
+  const prevMonthDays =
+    daysFromPrevMonth > 0
+      ? Array.from({ length: daysFromPrevMonth }, (_, i) =>
+          subDays(startDate, daysFromPrevMonth - i)
+        )
+      : [];
+
+  // Add days from next month to fill the last row
+  const daysFromNextMonth = 6 - endDayOfWeek;
+  const nextMonthDays =
+    daysFromNextMonth > 0
+      ? Array.from({ length: daysFromNextMonth }, (_, i) =>
+          addDays(endDate, i + 1)
+        )
+      : [];
+
+  // Combine all days to create a complete calendar grid
+  const days = [...prevMonthDays, ...daysInMonth, ...nextMonthDays];
+
+  // Debug the complete grid
+  console.log(
+    "Complete calendar grid:",
+    days
+      .map(
+        (d) =>
+          `${format(d, "EEE")} ${format(d, "MMM")} ${format(
+            d,
+            "d"
+          )} (${d.getDay()})`
+      )
+      .join(", ")
+  );
 
   // Calculate day headers
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  // Functions to navigate months
+  // Functions to navigate months - use proper month navigation
   const previousMonth = () => {
-    setCurrentMonth((prevMonth) => subDays(prevMonth, 30));
+    setCurrentMonth((prevMonth) => {
+      console.log("Navigating to previous month from:", prevMonth);
+
+      // Create a new date for the previous month
+      const newDate = new Date(prevMonth);
+      // Subtract 1 from the month (months are 0-indexed)
+      newDate.setMonth(prevMonth.getMonth() - 1);
+
+      // Ensure we're staying at the same day of month when possible
+      // (to avoid skipping to the end of the previous month for days like 31st)
+      const day = Math.min(
+        prevMonth.getDate(),
+        new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0).getDate()
+      );
+      newDate.setDate(day);
+
+      const result = dateInUserTimezone(newDate);
+      console.log("New month will be:", format(result, "MMMM yyyy"));
+      return result;
+    });
   };
 
   const nextMonth = () => {
-    setCurrentMonth((prevMonth) => addDays(prevMonth, 30));
+    setCurrentMonth((prevMonth) => {
+      console.log("Navigating to next month from:", prevMonth);
+
+      // Create a new date for the next month
+      const newDate = new Date(prevMonth);
+      // Add 1 to the month (months are 0-indexed)
+      newDate.setMonth(prevMonth.getMonth() + 1);
+
+      // Ensure we're staying at the same day of month when possible
+      // (to avoid skipping to the end of the next month for days like 31st)
+      const day = Math.min(
+        prevMonth.getDate(),
+        new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0).getDate()
+      );
+      newDate.setDate(day);
+
+      const result = dateInUserTimezone(newDate);
+      console.log("New month will be:", format(result, "MMMM yyyy"));
+      return result;
+    });
   };
 
-  // Get today's date in user's timezone
-  const today = new Date();
+  // Get today's date normalized to user's timezone
+  const today = normalizeDate(new Date());
 
   // Function to handle day click
   const handleDayClick = (date: Date) => {
+    // Normalize the date to user timezone start of day
+    const normalizedDate = normalizeDate(date);
+
     // Only allow toggling past or current dates
-    if (isAfter(date, today)) return;
+    if (isAfter(normalizedDate, today)) {
+      console.log("Can't toggle future date:", normalizedDate, "today:", today);
+      return;
+    }
 
     // Only allow toggling if the habit was scheduled for this day
-    if (!isHabitDueOnDate(habit, date)) return;
+    if (!isHabitDueOnDate(habit, normalizedDate)) {
+      console.log("Date not scheduled for this habit:", normalizedDate);
+      return;
+    }
 
-    onToggleDate(habit._id, date);
+    console.log("Toggling date:", normalizedDate.toISOString());
+    onToggleDate(habit._id, normalizedDate);
   };
 
   return (
@@ -81,31 +219,37 @@ export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
         ))}
 
         {/* Calendar days */}
-        {days.map((date) => {
-          const isCompleted = isCompletedOnDate(habit, date);
-          const isDue = isHabitDueOnDate(habit, date);
-          const isPast = !isAfter(date, today);
-          const isFutureDate = isAfter(date, today);
-          
-          // Convert date to user's timezone for "isToday" check
-          const dateInUserTZ = new Date(date.toLocaleString('en-US', { timeZone: userTimeZone }));
-          const todayInUserTZ = new Date(today.toLocaleString('en-US', { timeZone: userTimeZone }));
-          
-          // Check if it's today by comparing year, month, and day
-          const isTodayInUserTZ = 
-            dateInUserTZ.getFullYear() === todayInUserTZ.getFullYear() &&
-            dateInUserTZ.getMonth() === todayInUserTZ.getMonth() &&
-            dateInUserTZ.getDate() === todayInUserTZ.getDate();
+        {days.map((date, index) => {
+          // Normalize the date to the user's timezone start of day
+          const normalizedDate = normalizeDate(date);
+
+          // Check if this date is in the current month
+          const isCurrentMonth = date.getMonth() === currentMonth.getMonth();
+
+          // Only calculate other properties for current month dates
+          const isCompleted =
+            isCurrentMonth && isCompletedOnDate(habit, normalizedDate);
+          const isDue =
+            isCurrentMonth && isHabitDueOnDate(habit, normalizedDate);
+          const isPast = !isAfter(normalizedDate, today);
+          const isFutureDate = isAfter(normalizedDate, today);
+
+          // Use date-fns isSameDay for simple comparison
+          const isTodayInUserTZ = isSameDay(normalizedDate, today);
 
           return (
             <DateCell
-              key={date.toString()}
+              key={`${date.toISOString()}-${index}`}
               $isToday={isTodayInUserTZ}
               $isCompleted={isCompleted}
               $isDue={isDue}
               $isPast={isPast}
               $isFuture={isFutureDate}
-              onClick={() => handleDayClick(date)}
+              $isCurrentMonth={isCurrentMonth}
+              onClick={() => (isCurrentMonth ? handleDayClick(date) : null)}
+              style={{
+                opacity: isCurrentMonth ? 1 : 0.3,
+              }}
             >
               {format(date, "d")}
             </DateCell>

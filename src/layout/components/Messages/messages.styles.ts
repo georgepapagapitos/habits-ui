@@ -28,7 +28,7 @@ export const MessagesWrapper = styled.div`
   z-index: 1500;
 `;
 
-// Individual message - using your existing styles as a base
+// Individual message - enhanced styling
 export const MessageContainer = styled.div`
   background: ${({ theme }) => theme.colors.primary};
   color: ${({ theme }) => theme.colors.surface};
@@ -37,7 +37,25 @@ export const MessageContainer = styled.div`
   max-width: 80%;
   text-align: center;
   box-shadow: ${({ theme }) => theme.shadows.medium};
-  animation: ${fadeInUp} 0.3s ease forwards;
+  animation:
+    ${fadeInUp} 0.3s ease forwards,
+    fadeOut 0.3s ease 3.7s forwards;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
+  letter-spacing: 0.2px;
+
+  /* Add subtle fade-out animation */
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+  }
 
   /* Prevent overlap of messages */
   &:not(:last-child) {

@@ -39,10 +39,24 @@ export function useHabitManager() {
     fetchHabits();
   }, []);
 
-  const getRandomMessage = () => {
-    const messages = encouragingMessages();
+  // Get a personalized random message
+  const getRandomMessage = (habitName?: string) => {
+    // Get user's name from localStorage or default to "you"
+    const userName = localStorage.getItem("userName") || "you";
+
+    // Get messages with personalized name
+    const messages = encouragingMessages(userName);
     const randIndex = Math.floor(Math.random() * messages.length);
-    return messages[randIndex];
+
+    // Choose base message
+    let message = messages[randIndex];
+
+    // Append habit-specific messaging 20% of the time if habit name is provided
+    if (habitName && Math.random() < 0.2) {
+      message += ` Your progress with "${habitName}" is inspiring!`;
+    }
+
+    return message;
   };
 
   // Enhanced message display - adds to queue
@@ -126,9 +140,17 @@ export function useHabitManager() {
           prevHabits.map((h) => (h._id === id ? updatedHabit : h))
         );
 
-        // Only show celebration message for today's completions
-        if (isCompletedToday(updatedHabit)) {
-          showTemporaryMessage(getRandomMessage());
+        // Get completion status before and after
+        const wasCompletedBefore = isCompletedToday(habit);
+        const isCompletedNow = isCompletedToday(updatedHabit);
+
+        // Show appropriate message based on action
+        if (!wasCompletedBefore && isCompletedNow) {
+          // Habit was marked as completed
+          showTemporaryMessage(getRandomMessage(habit.name));
+        } else if (wasCompletedBefore && !isCompletedNow) {
+          // Habit was unmarked
+          showTemporaryMessage(`Unmarked "${habit.name}" for today`);
         }
       }
     } catch (err) {

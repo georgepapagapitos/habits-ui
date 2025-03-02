@@ -31,6 +31,7 @@ export const DateCell = styled.div<{
   $isDue: boolean;
   $isPast: boolean;
   $isFuture: boolean;
+  $isCurrentMonth?: boolean;
 }>`
   display: flex;
   align-items: center;
