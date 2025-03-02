@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { WeekDay } from "../../types";
+import { TimeOfDay, WeekDay } from "../../types";
 import {
   Button,
   Form,
@@ -15,7 +15,7 @@ interface HabitFormProps {
     name: string;
     frequency: WeekDay[];
     description?: string;
-    timeOfDay?: string;
+    timeOfDay?: TimeOfDay;
   }) => void;
   onClose: () => void;
   initialData?: {
@@ -23,7 +23,7 @@ interface HabitFormProps {
     name: string;
     frequency: WeekDay[];
     description?: string;
-    timeOfDay?: string;
+    timeOfDay?: TimeOfDay;
   };
   isEditing?: boolean;
 }
@@ -38,7 +38,7 @@ export const HabitForm = ({
   const [description, setDescription] = useState(
     initialData?.description || ""
   );
-  const [timeOfDay, setTimeOfDay] = useState(
+  const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>(
     initialData?.timeOfDay || "anytime"
   );
 
@@ -247,7 +247,7 @@ export const HabitForm = ({
         <Select
           id="timeOfDay"
           value={timeOfDay}
-          onChange={(e) => setTimeOfDay(e.target.value)}
+          onChange={(e) => setTimeOfDay(e.target.value as TimeOfDay)}
         >
           <option value="anytime">Anytime</option>
           <option value="morning">Morning</option>

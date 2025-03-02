@@ -35,6 +35,6 @@ jobs:
     - name: Build
       run: npm run build
     
-    # Skip tests since there's no test script defined yet
+    # Skip tests since there's no test script defined yet 
     # - name: Run tests
     #   run: npm test
