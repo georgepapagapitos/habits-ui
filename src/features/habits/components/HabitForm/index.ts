@@ -1,3 +1,1 @@
-import { HabitForm } from "./HabitForm";
-
-export { HabitForm };
+export * from "./HabitForm";

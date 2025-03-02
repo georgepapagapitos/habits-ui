@@ -2,39 +2,38 @@ name: Frontend CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: package-lock.json
-    
-    - name: Install dependencies
-      run: npm ci --legacy-peer-deps
-    
-    - name: Install ESLint
-      run: npm install eslint --no-save
-    
-    - name: Run linting with auto-fix
-      run: npm run lint:fix || npm run lint -- --fix || npm run lint || true
-    
-    - name: Run type check
-      run: npm run typecheck
-    
-    - name: Build
-      run: npm run build
-    
-    # Skip tests since there's no test script defined yet 
-    # - name: Run tests
-    #   run: npm test
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Install ESLint
+        run: npm install eslint --no-save
+
+      - name: Run linting with auto-fix
+        run: npm run lint:fix || npm run lint -- --fix || npm run lint || true
+
+      - name: Run type check
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+      - name: Run tests
+        run: npm test

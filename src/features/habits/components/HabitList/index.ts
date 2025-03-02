@@ -1,3 +1,1 @@
-import { HabitList } from "./HabitList";
-
-export { HabitList };
+export * from "./HabitList";

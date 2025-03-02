@@ -34,7 +34,7 @@ export const Title = ({ children, ...props }: TitleProps) => {
 export interface LabelProps extends HTMLAttributes<HTMLLabelElement> {
   children: ReactNode;
   required?: boolean;
-  htmlFor: string;
+  htmlFor?: string;
 }
 
 export const Label = ({ children, required, ...props }: LabelProps) => {

@@ -16,4 +16,5 @@ const theme = {
   borderRadius,
 };
 
+export { theme };
 export default theme;

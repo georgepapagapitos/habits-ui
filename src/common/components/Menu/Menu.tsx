@@ -96,7 +96,11 @@ export const Menu = ({
 
   return (
     <MenuContainer>
-      <div ref={triggerRef} onClick={handleOpen} style={{ cursor: "pointer", position: "relative" }}>
+      <div
+        ref={triggerRef}
+        onClick={handleOpen}
+        style={{ cursor: "pointer", position: "relative" }}
+      >
         {trigger}
       </div>
       {(isOpen || controlledIsOpen) && (

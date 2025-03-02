@@ -158,7 +158,9 @@ export const HabitForm = ({
       <Title>{isEditing ? "Edit Habit" : "New Habit"}</Title>
 
       <Group>
-        <Label htmlFor="name" required>Habit Name</Label>
+        <Label htmlFor="name" required>
+          Habit Name
+        </Label>
         <Input
           id="name"
           type="text"
@@ -181,7 +183,9 @@ export const HabitForm = ({
       </Group>
 
       <Group>
-        <Label htmlFor="frequency" required>Frequency</Label>
+        <Label htmlFor="frequency" required>
+          Frequency
+        </Label>
         <StyledSelect
           id="frequency"
           value={frequencyType}
@@ -196,7 +200,7 @@ export const HabitForm = ({
 
       {frequencyType === "weekly" && (
         <Group>
-          <Label>Select Days</Label>
+          <Label htmlFor="days-selection">Select Days</Label>
           <div
             style={{
               display: "flex",
