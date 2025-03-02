@@ -44,7 +44,7 @@ export const StyledHabitCard = styled.div<{
 }>`
   background: ${(props) =>
     props.$isCompleted
-      ? props.theme.colors.primaryLight + "20" // Using theme color with opacity
+      ? props.theme.colors.transparent.primary20 // Using 20% transparent primary color
       : props.theme.colors.surface};
   border-radius: ${({ theme }) => theme.borderRadius.medium};
   padding: ${({ theme }) => theme.spacing.md};
