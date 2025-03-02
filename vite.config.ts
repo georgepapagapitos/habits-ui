@@ -43,7 +43,8 @@ export default defineConfig({
       },
     },
     hmr: {
-      host: "localhost",
+      clientPort: 3000,
+      host: "192.168.0.20", // Your actual IP address
     },
   },
 });
