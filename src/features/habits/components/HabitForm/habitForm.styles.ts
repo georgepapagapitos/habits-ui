@@ -1,5 +1,51 @@
 import styled from "styled-components";
 
+// Re-export this component with enhancements
+export const StyledSelect = styled.select`
+  padding: ${({ theme }) => theme.spacing.md};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.borderRadius.small};
+  font-size: ${({ theme }) => theme.typography.fontSizes.md};
+  background-color: ${({ theme }) => theme.colors.surface};
+  width: 100%;
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.primary};
+    box-shadow: 0 0 0 1px ${({ theme }) => theme.colors.primary + "40"};
+  }
+  
+  &:disabled {
+    background-color: ${({ theme }) => theme.colors.backgroundAlt};
+    cursor: not-allowed;
+  }
+`;
+
+export const DayButton = styled.button<{ $selected: boolean }>`
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  border: 1px solid ${({ theme, $selected }) => $selected ? theme.colors.primary : theme.colors.border};
+  border-radius: ${({ theme }) => theme.borderRadius.small};
+  background: ${({ theme, $selected }) => $selected ? theme.colors.primary : theme.colors.surface};
+  color: ${({ theme, $selected }) => $selected ? 'white' : theme.colors.text};
+  cursor: pointer;
+  font-size: ${({ theme }) => theme.typography.fontSizes.sm};
+  transition: all ${({ theme }) => theme.animations.transitions.short};
+  
+  &:hover:not(:disabled) {
+    background: ${({ theme, $selected }) => $selected ? theme.colors.primaryDark : theme.colors.backgroundAlt};
+  }
+  
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.primaryLight};
+  }
+`;
+
+// Legacy exports to avoid breaking code until all components are migrated
 export const Form = styled.form`
   display: flex;
   flex-direction: column;

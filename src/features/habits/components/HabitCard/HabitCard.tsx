@@ -9,6 +9,9 @@ import {
 } from "../../utils";
 import { celebrationColors } from "../../utils/habitColors";
 import { HabitCalendar } from "../HabitCalendar";
+import { Button } from "../../../../common/components/Button";
+import { Dialog } from "../../../../common/components/Dialog";
+import { useMenuManager } from "../../../../common/hooks";
 import {
   ConfettiPiece,
   FrequencyBadge,
@@ -63,8 +66,14 @@ export const HabitCard = ({
 }: HabitCardProps) => {
   const [isCompleting, setIsCompleting] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+
+  // Use the menu manager hook
+  const {
+    isOpen: showMenu,
+    toggleMenu: handleMenuClick,
+    closeMenu,
+  } = useMenuManager();
 
   const isDue = isHabitDueToday(habit);
   const nextDue = getNextDueDate(habit);
@@ -116,38 +125,9 @@ export const HabitCard = ({
     }
   };
 
-  // Handle opening the menu
-  const handleMenuClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card toggle
-    setShowMenu(!showMenu);
-  };
-  
-  // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      // Cast event.target to Element to use the closest method
-      const target = event.target as Element;
-      
-      // If the click is outside the menu and the menu button
-      if (showMenu && !target.closest(".menu-button") && !target.closest(".context-menu")) {
-        setShowMenu(false);
-      }
-    };
-
-    // Add event listener when menu is open
-    if (showMenu) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    
-    // Clean up
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showMenu]);
-
   // Handle edit request
   const handleEdit = () => {
-    setShowMenu(false);
+    closeMenu();
     if (onEdit) {
       onEdit(habit._id);
     }
@@ -155,7 +135,7 @@ export const HabitCard = ({
 
   // Handle delete request
   const handleDelete = () => {
-    setShowMenu(false);
+    closeMenu();
     setShowConfirmDelete(true);
   };
 
@@ -176,22 +156,12 @@ export const HabitCard = ({
       >
         {isCompleting && <Celebration />}
 
-        {/* Menu button */}
-        <MenuButton 
+        <MenuButton
           onClick={handleMenuClick}
           aria-label="Options"
           className="menu-button"
         >
-          <span style={{ 
-            fontSize: "20px", 
-            fontWeight: "bold",
-            lineHeight: 1,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "100%",
-            height: "100%"
-          }}>⋮</span>
+          ⋮
         </MenuButton>
 
         {/* Context menu */}
@@ -248,24 +218,30 @@ export const HabitCard = ({
         )}
       </StyledHabitCard>
 
-      {/* Confirmation dialog */}
-      {showConfirmDelete && (
-        <ConfirmDialog>
-          <DialogContent>
-            <DialogTitle>Delete Habit</DialogTitle>
-            <p>Are you sure you want to delete "{habit.name}"?</p>
-            <p>This action cannot be undone.</p>
-            <ButtonGroup>
-              <CancelButton onClick={() => setShowConfirmDelete(false)}>
-                Cancel
-              </CancelButton>
-              <DeleteConfirmButton onClick={confirmDelete}>
-                Delete
-              </DeleteConfirmButton>
-            </ButtonGroup>
-          </DialogContent>
-        </ConfirmDialog>
-      )}
+      {/* New Dialog component */}
+      <Dialog
+        isOpen={showConfirmDelete}
+        onClose={() => setShowConfirmDelete(false)}
+        title="Delete Habit"
+        footer={
+          <div
+            style={{ display: "flex", gap: "16px", justifyContent: "flex-end" }}
+          >
+            <Button
+              variant="secondary"
+              onClick={() => setShowConfirmDelete(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={confirmDelete}>
+              Delete
+            </Button>
+          </div>
+        }
+      >
+        <p>Are you sure you want to delete "{habit.name}"?</p>
+        <p>This action cannot be undone.</p>
+      </Dialog>
     </div>
   );
 };

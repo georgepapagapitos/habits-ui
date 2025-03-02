@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { TimeOfDay, WeekDay } from "../../types";
+import { Button } from "../../../../common/components/Button";
+import { Input } from "../../../../common/components/Input";
+import { Form, Group, Label, Title } from "../../../../common/components/Form";
 import {
-  Button,
-  Form,
+  StyledSelect,
+  DayButton,
+  // Legacy imports still used below
   FormGroup,
-  Input,
-  Label,
-  SecondaryButton,
   Select,
 } from "./habitForm.styles";
 
@@ -154,12 +155,10 @@ export const HabitForm = ({
 
   return (
     <Form onSubmit={handleSubmit}>
-      <h2 style={{ color: "#480733" }}>
-        {isEditing ? "Edit Habit" : "New Habit"}
-      </h2>
+      <Title>{isEditing ? "Edit Habit" : "New Habit"}</Title>
 
-      <FormGroup>
-        <Label htmlFor="name">Habit Name</Label>
+      <Group>
+        <Label htmlFor="name" required>Habit Name</Label>
         <Input
           id="name"
           type="text"
@@ -168,9 +167,9 @@ export const HabitForm = ({
           placeholder="Enter habit name"
           required
         />
-      </FormGroup>
+      </Group>
 
-      <FormGroup>
+      <Group>
         <Label htmlFor="description">Description (Optional)</Label>
         <Input
           id="description"
@@ -179,11 +178,11 @@ export const HabitForm = ({
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Enter a description"
         />
-      </FormGroup>
+      </Group>
 
-      <FormGroup>
-        <Label htmlFor="frequency">Frequency</Label>
-        <Select
+      <Group>
+        <Label htmlFor="frequency" required>Frequency</Label>
+        <StyledSelect
           id="frequency"
           value={frequencyType}
           onChange={(e) => setFrequencyType(e.target.value)}
@@ -192,11 +191,11 @@ export const HabitForm = ({
           <option value="weekdays">Weekdays (Mon-Fri)</option>
           <option value="weekends">Weekends (Sat-Sun)</option>
           <option value="weekly">Custom Days</option>
-        </Select>
-      </FormGroup>
+        </StyledSelect>
+      </Group>
 
       {frequencyType === "weekly" && (
-        <FormGroup>
+        <Group>
           <Label>Select Days</Label>
           <div
             style={{
@@ -217,21 +216,14 @@ export const HabitForm = ({
                 "saturday",
               ] as WeekDay[]
             ).map((day) => (
-              <button
+              <DayButton
                 key={day}
                 type="button"
                 onClick={() => toggleDay(day)}
-                style={{
-                  padding: "8px 12px",
-                  border: "1px solid #ccc",
-                  borderRadius: "4px",
-                  background: selectedDays.includes(day) ? "#480733" : "white",
-                  color: selectedDays.includes(day) ? "white" : "#333",
-                  cursor: "pointer",
-                }}
+                $selected={selectedDays.includes(day)}
               >
                 {day.charAt(0).toUpperCase() + day.slice(1, 3)}
-              </button>
+              </DayButton>
             ))}
           </div>
           {selectedDays.length === 0 && (
@@ -239,7 +231,7 @@ export const HabitForm = ({
               Please select at least one day
             </div>
           )}
-        </FormGroup>
+        </Group>
       )}
 
       <FormGroup>
@@ -256,13 +248,17 @@ export const HabitForm = ({
         </Select>
       </FormGroup>
 
-      <Button
-        type="submit"
-        disabled={frequencyType === "weekly" && selectedDays.length === 0}
-      >
-        {isEditing ? "Update Habit" : "Create Habit"}
-      </Button>
-      <SecondaryButton onClick={onClose}>Cancel</SecondaryButton>
+      <div style={{ display: "flex", gap: "16px", marginTop: "16px" }}>
+        <Button
+          type="submit"
+          disabled={frequencyType === "weekly" && selectedDays.length === 0}
+        >
+          {isEditing ? "Update Habit" : "Create Habit"}
+        </Button>
+        <Button variant="secondary" type="button" onClick={onClose}>
+          Cancel
+        </Button>
+      </div>
     </Form>
   );
 };

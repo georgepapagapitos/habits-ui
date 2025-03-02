@@ -1,17 +1,16 @@
 import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../hooks";
+import { Button } from "../../../../common/components/Button";
 import {
+  Error,
   Form,
-  Title,
-  FormGroup,
+  Group,
   Label,
-  Input,
-  Button,
-  ErrorMessage,
-  LinkText,
-  StyledLink,
-} from "./loginForm.styles";
+  Title,
+} from "../../../../common/components/Form";
+import { Input } from "../../../../common/components/Input";
+import { useAuth } from "../../hooks";
+import { LinkText, StyledLink } from "./loginForm.styles";
 
 export const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -49,8 +48,10 @@ export const LoginForm = () => {
     <Form onSubmit={handleSubmit}>
       <Title>Login</Title>
 
-      <FormGroup>
-        <Label htmlFor="email">Email</Label>
+      <Group>
+        <Label htmlFor="email" required>
+          Email
+        </Label>
         <Input
           id="email"
           type="email"
@@ -59,10 +60,12 @@ export const LoginForm = () => {
           placeholder="Enter your email"
           required
         />
-      </FormGroup>
+      </Group>
 
-      <FormGroup>
-        <Label htmlFor="password">Password</Label>
+      <Group>
+        <Label htmlFor="password" required>
+          Password
+        </Label>
         <Input
           id="password"
           type="password"
@@ -71,11 +74,9 @@ export const LoginForm = () => {
           placeholder="Enter your password"
           required
         />
-      </FormGroup>
+      </Group>
 
-      {(formError || error) && (
-        <ErrorMessage>{formError || error}</ErrorMessage>
-      )}
+      {(formError || error) && <Error>{formError || error}</Error>}
 
       <Button type="submit" disabled={isLoading}>
         {isLoading ? "Logging in..." : "Login"}

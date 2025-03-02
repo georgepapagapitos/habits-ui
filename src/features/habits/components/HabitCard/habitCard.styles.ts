@@ -50,7 +50,7 @@ export const StyledHabitCard = styled.div<{
   padding: ${({ theme }) => theme.spacing.md};
   box-shadow: ${({ theme }) => theme.shadows.small};
   position: relative;
-  overflow: ${(props) => (props.$expanded ? "visible" : "hidden")};
+  overflow: visible; /* Always make card overflow visible to show the menu button */
   width: 100%;
   transition: all ${({ theme }) => theme.animations.transitions.short};
   ${(props) =>
@@ -121,14 +121,15 @@ export const MenuButton = styled.button`
   border: none;
   color: ${({ theme }) => theme.colors.textLight};
   cursor: pointer;
-  margin-left: auto;
+  font-size: 20px;
+  font-weight: bold;
   padding: 0;
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: ${({ theme }) => theme.spacing.sm};
+  right: ${({ theme }) => theme.spacing.sm};
   z-index: 5;
-  width: 28px;
-  height: 28px;
+  width: ${({ theme }) => theme.spacing.xl}; // 32px
+  height: ${({ theme }) => theme.spacing.xl}; // 32px
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -136,12 +137,12 @@ export const MenuButton = styled.button`
   overflow: hidden;
 
   &:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: ${({ theme }) => theme.colors.hover};
     color: ${({ theme }) => theme.colors.text};
   }
 
   &:active {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: ${({ theme }) => theme.colors.pressed};
   }
 
   &:focus {
@@ -191,7 +192,7 @@ export const ConfirmDialog = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: ${({ theme }) => theme.colors.overlay};
   display: flex;
   align-items: center;
   justify-content: center;
