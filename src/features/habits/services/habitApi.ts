@@ -155,7 +155,11 @@ export const habitApi = {
     } catch (error: unknown) {
       const err = error as {
         response?: {
-          data?: any;
+          data?: {
+            error?: string;
+            message?: string;
+            [key: string]: unknown;
+          };
           status?: number;
           statusText?: string;
         };

@@ -1,6 +1,6 @@
-import { expect, vi, afterEach, beforeAll, afterAll } from "vitest";
 import * as matchers from "@testing-library/jest-dom/matchers";
 import { cleanup } from "@testing-library/react";
+import { afterAll, afterEach, beforeAll, expect, vi } from "vitest";
 
 // Suppress React act() warnings
 beforeAll(() => {
@@ -8,7 +8,7 @@ beforeAll(() => {
   const originalConsoleWarn = console.warn;
 
   // Filter out act() warnings
-  console.error = (...args: any[]) => {
+  console.error = (...args: unknown[]) => {
     if (
       (typeof args[0] === "string" &&
         args[0].includes("was not wrapped in act")) ||
@@ -19,7 +19,7 @@ beforeAll(() => {
     originalConsoleError(...args);
   };
 
-  console.warn = (...args: any[]) => {
+  console.warn = (...args: unknown[]) => {
     if (
       (typeof args[0] === "string" &&
         args[0].includes("was not wrapped in act")) ||
@@ -31,14 +31,22 @@ beforeAll(() => {
   };
 
   // Store original console functions for cleanup
-  (global as any).__originalConsoleError = originalConsoleError;
-  (global as any).__originalConsoleWarn = originalConsoleWarn;
+  interface ExtendedGlobal extends NodeJS.Global {
+    __originalConsoleError: typeof console.error;
+    __originalConsoleWarn: typeof console.warn;
+  }
+  (global as ExtendedGlobal).__originalConsoleError = originalConsoleError;
+  (global as ExtendedGlobal).__originalConsoleWarn = originalConsoleWarn;
 });
 
 // Restore console functions after tests
 afterAll(() => {
-  const originalError = (global as any).__originalConsoleError;
-  const originalWarn = (global as any).__originalConsoleWarn;
+  interface ExtendedGlobal extends NodeJS.Global {
+    __originalConsoleError: typeof console.error;
+    __originalConsoleWarn: typeof console.warn;
+  }
+  const originalError = (global as ExtendedGlobal).__originalConsoleError;
+  const originalWarn = (global as ExtendedGlobal).__originalConsoleWarn;
 
   if (originalError) console.error = originalError;
   if (originalWarn) console.warn = originalWarn;
@@ -56,7 +64,7 @@ afterEach(() => {
 vi.mock("date-fns-tz", () => ({
   __esModule: true,
   toZonedTime: vi.fn().mockImplementation((date) => date),
-  formatInTimeZone: vi.fn().mockImplementation((date, timezone, formatStr) => {
+  formatInTimeZone: vi.fn().mockImplementation((date) => {
     return new Date(date).toLocaleDateString("en-US");
   }),
 }));

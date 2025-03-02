@@ -1,12 +1,5 @@
 import { Habit } from "../types";
-import {
-  format,
-  getDay,
-  addDays,
-  startOfDay,
-  isSameDay,
-  parseISO,
-} from "date-fns";
+import { getDay, addDays, startOfDay, isSameDay, parseISO } from "date-fns";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 
 // Get current user timezone (safely for tests)
@@ -15,7 +8,7 @@ export const getUserTimezone = (): string => {
     return typeof Intl !== "undefined" && Intl.DateTimeFormat
       ? Intl.DateTimeFormat().resolvedOptions().timeZone
       : "America/Chicago";
-  } catch (error) {
+  } catch {
     // Fallback for testing environments
     return "America/Chicago";
   }

@@ -79,20 +79,20 @@ describe("useHabitManager", () => {
 
     // Set up success responses for all API calls
     const mockHabit = createMockHabit();
-    (habitApi.getAllHabits as any).mockResolvedValue([mockHabit]);
-    (habitApi.toggleCompletion as any).mockResolvedValue(
+    (habitApi.getAllHabits as jest.Mock).mockResolvedValue([mockHabit]);
+    (habitApi.toggleCompletion as jest.Mock).mockResolvedValue(
       createMockHabit({ completedDates: [new Date().toISOString()] })
     );
-    (habitApi.deleteHabit as any).mockResolvedValue(undefined);
+    (habitApi.deleteHabit as jest.Mock).mockResolvedValue(undefined);
   });
 
   it("adds a new habit", async () => {
     // Setup
     const newHabit = createMockHabit({ _id: "new-habit" });
-    (habitApi.createHabit as any).mockResolvedValue(newHabit);
+    (habitApi.createHabit as jest.Mock).mockResolvedValue(newHabit);
 
     // Execute hook in an async act block
-    let addedHabit: any = null;
+    let addedHabit: Habit | null = null;
     const { result } = renderHook(() => useHabitManager());
 
     // Wait for initial load to settle
@@ -160,7 +160,7 @@ describe("useHabitManager", () => {
 
   it("handles API errors gracefully", async () => {
     // Setup - mock API failure
-    (habitApi.toggleCompletion as any).mockRejectedValue(
+    (habitApi.toggleCompletion as jest.Mock).mockRejectedValue(
       new Error("API error")
     );
 

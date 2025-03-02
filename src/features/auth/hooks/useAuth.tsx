@@ -1,17 +1,6 @@
-import {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useReducer,
-} from "react";
+import { ReactNode, useEffect, useReducer } from "react";
 import { authApi } from "../services/authApi";
-import {
-  AuthContextType,
-  AuthState,
-  LoginRequest,
-  RegisterRequest,
-} from "../types";
+import { AuthState, LoginRequest, RegisterRequest } from "../types";
 
 // Initial state
 const initialState: AuthState = {
@@ -84,8 +73,8 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   }
 };
 
-// Create context
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Import context from separate file
+import { AuthContext } from "./authContext";
 
 // Provider component
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -178,11 +167,4 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// Custom hook to use auth context
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-};
+// Hook implementation is moved to authHook.ts

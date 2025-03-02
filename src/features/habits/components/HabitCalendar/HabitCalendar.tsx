@@ -60,9 +60,6 @@ export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
     return dateInUserTimezone(now);
   });
 
-  // Get user's timezone using our utility function
-  const userTimeZone = getUserTimezone();
-
   // Generate days for the current month in user's timezone
   // Make sure to use the user's timezone for month boundaries
   const startDate = startOfMonth(currentMonth);

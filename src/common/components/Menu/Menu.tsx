@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useRef, useState, useCallback } from "react";
 import {
   MenuContainer,
   MenuDivider,
@@ -57,13 +57,13 @@ export const Menu = ({
     }
   };
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     if (controlledIsOpen === undefined) {
       setIsOpen(false);
     } else if (onClose) {
       onClose();
     }
-  };
+  }, [controlledIsOpen, onClose]);
 
   // Handle outside clicks
   useEffect(() => {
@@ -85,7 +85,7 @@ export const Menu = ({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isOpen, controlledIsOpen, onClose, handleClose]);
+  }, [isOpen, controlledIsOpen, handleClose]);
 
   // Update local state when controlled state changes
   useEffect(() => {
