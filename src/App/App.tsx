@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { HabitForm, HabitList } from "../features/habits/components";
 import { useHabitManager } from "../features/habits/hooks/useHabitManager";
-import { WeekDay } from "../features/habits/types";
+import { TimeOfDay, WeekDay } from "../features/habits/types";
 import { BottomNav, Header, Messages, Modal } from "../layout/components";
 import { AddButton, Container, Content } from "./app.styles";
 
@@ -9,7 +9,7 @@ type HabitFormData = {
   name: string;
   frequency: WeekDay[];
   description?: string;
-  timeOfDay?: string;
+  timeOfDay?: TimeOfDay;
 };
 
 export const App = () => {
@@ -20,7 +20,7 @@ export const App = () => {
     name: string;
     frequency: WeekDay[];
     description?: string;
-    timeOfDay?: string;
+    timeOfDay?: TimeOfDay;
   }>(null);
 
   const {
