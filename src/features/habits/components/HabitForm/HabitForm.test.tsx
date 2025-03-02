@@ -1,8 +1,9 @@
-import { describe, test, expect, vi } from 'vitest';
+import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HabitForm } from './HabitForm';
 import { renderWithProviders } from '../../../../tests/utils';
+import { WeekDay, TimeOfDay } from '../../types/habit.types';
 
 describe('HabitForm', () => {
   const mockOnSubmit = vi.fn();
@@ -29,9 +30,9 @@ describe('HabitForm', () => {
   test('renders edit form with initial data', () => {
     const initialData = {
       name: 'Test Habit',
-      frequency: ['monday', 'wednesday', 'friday'],
+      frequency: ['monday', 'wednesday', 'friday'] as WeekDay[],
       description: 'Test description',
-      timeOfDay: 'morning',
+      timeOfDay: 'morning' as TimeOfDay,
     };
     
     renderWithProviders(

@@ -6,7 +6,12 @@ import { Habit } from '../../types';
 
 // Mock the HabitCard component to simplify testing
 vi.mock('../HabitCard', () => ({
-  HabitCard: ({ habit, onToggleHabit, onToggleDate, onDelete, onEdit }) => (
+  HabitCard: ({ habit, onToggleHabit, onDelete, onEdit }: { 
+    habit: Habit;
+    onToggleHabit: (id: string) => void;
+    onDelete?: (id: string) => void;
+    onEdit?: (id: string) => void;
+  }) => (
     <div data-testid={`habit-card-${habit._id}`}>
       <h3>{habit.name}</h3>
       <button onClick={() => onToggleHabit(habit._id)}>Toggle</button>

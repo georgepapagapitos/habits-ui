@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Habit } from "../../types";
 import {
   getFrequencyDisplayText,
@@ -24,12 +24,6 @@ import {
   MenuButton,
   ContextMenu,
   MenuItem,
-  ConfirmDialog,
-  DialogContent,
-  DialogTitle,
-  ButtonGroup,
-  CancelButton,
-  DeleteConfirmButton,
 } from "./habitCard.styles";
 
 interface HabitCardProps {

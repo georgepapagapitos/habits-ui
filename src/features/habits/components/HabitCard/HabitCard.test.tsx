@@ -31,13 +31,14 @@ const createMockHabit = (overrides = {}): Habit => {
   };
 };
 
-const mockCompletedHabit = createMockHabit({
-  completedDates: [
-    subDays(new Date(), 2).toISOString(),
-    subDays(new Date(), 1).toISOString(),
-    new Date().toISOString(),
-  ],
-});
+// Create completed habit for potential future tests
+// const mockCompletedHabit = createMockHabit({
+//   completedDates: [
+//     subDays(new Date(), 2).toISOString(),
+//     subDays(new Date(), 1).toISOString(),
+//     new Date().toISOString(),
+//   ],
+// });
 // Convert day number to weekday string
 const getDayName = (dayNum: number): WeekDay => {
   const days: WeekDay[] = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
@@ -63,7 +64,7 @@ const mockFutureHabit = createMockHabit({
 describe("HabitCard", () => {
   // Mock handlers
   const onToggleHabit = vi.fn();
-  const onToggleDate = vi.fn();
+  // const onToggleDate = vi.fn(); // Not used in current tests
   const onDelete = vi.fn();
   const onEdit = vi.fn();
 

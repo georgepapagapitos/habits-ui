@@ -85,7 +85,7 @@ export const Menu = ({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isOpen, controlledIsOpen, onClose]);
+  }, [isOpen, controlledIsOpen, onClose, handleClose]);
 
   // Update local state when controlled state changes
   useEffect(() => {

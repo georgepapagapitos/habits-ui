@@ -121,7 +121,7 @@ export const DangerButton = styled.button<ButtonStyleProps>`
 `;
 
 export const IconButton = styled.button<ButtonStyleProps>`
-  ${({ $size, theme }) => {
+  ${({ $size }) => {
     const sizes = {
       small: "32px",
       medium: "40px",

@@ -1,4 +1,4 @@
-# Hannah's Habits - UI
+# Habits - UI
 
 A modern habit tracking application built with React, TypeScript, and Vite.
 
@@ -34,12 +34,14 @@ A modern habit tracking application built with React, TypeScript, and Vite.
 ### Installation
 
 1. Clone the repository
+
    ```bash
    git clone https://github.com/your-username/hannahs-habits.git
    cd hannahs-habits/habits-ui
    ```
 
 2. Install dependencies
+
    ```bash
    npm install
    # or
@@ -47,6 +49,7 @@ A modern habit tracking application built with React, TypeScript, and Vite.
    ```
 
 3. Start the development server
+
    ```bash
    npm run dev
    # or
@@ -102,6 +105,7 @@ habits-ui/
 ### Component Structure
 
 Components are organized into two main categories:
+
 - **Common Components**: Reusable UI elements like buttons, inputs, and forms
 - **Feature Components**: Feature-specific components organized by domain
 

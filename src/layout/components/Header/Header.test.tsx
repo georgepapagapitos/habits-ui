@@ -1,6 +1,5 @@
 import { describe, test, expect, vi } from 'vitest';
 import { screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { Header } from './Header';
 import { renderWithProviders } from '../../../tests/utils';
 
@@ -10,7 +9,7 @@ vi.mock('react-router-dom', async () => {
   return {
     ...actual,
     useLocation: () => ({ pathname: '/' }),
-    BrowserRouter: ({ children }) => <div>{children}</div>
+    BrowserRouter: ({ children }: { children: React.ReactNode }) => <div>{children}</div>
   };
 });
 
