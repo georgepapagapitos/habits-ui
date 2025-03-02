@@ -135,6 +135,89 @@ Run tests with:
 npm run test
 ```
 
+## Docker Deployment
+
+This project includes a Dockerfile for containerized deployment.
+
+### Building the Docker Image
+
+```bash
+docker build -t habits-ui .
+```
+
+### Running the Container
+
+```bash
+docker run -p 80:80 -e BACKEND_URL=http://your-backend-url:5050 habits-ui
+```
+
+### Docker Compose Example
+
+```yaml
+version: '3'
+
+services:
+  backend:
+    image: habits-api:latest
+    ports:
+      - "5050:5050"
+    environment:
+      - MONGODB_URI=mongodb://db:27017/habits
+    depends_on:
+      - db
+
+  frontend:
+    image: habits-ui:latest
+    ports:
+      - "80:80"
+    environment:
+      - BACKEND_URL=http://backend:5050
+    depends_on:
+      - backend
+
+  db:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:
+```
+
+## Troubleshooting Docker Deployment
+
+If you're experiencing issues with the Docker deployment:
+
+1. **API Connection Issues**:
+   - Make sure your `BACKEND_URL` environment variable is correctly set to the backend service
+   - Check that the backend container is running and accessible from the frontend container
+   - Verify the network configuration between containers
+
+2. **Messages Not Showing**:
+   - Check the browser console for any JavaScript errors
+   - Ensure that the habits API is correctly responding with data
+   - Check if timeouts are triggering correctly by adding console logs
+
+3. **CORS Issues**:
+   - The nginx configuration already includes CORS headers
+   - If you're still experiencing CORS issues, ensure the backend also has proper CORS setup
+
+4. **Debugging Inside Container**:
+   - You can shell into the running container to inspect files:
+     ```bash
+     docker exec -it <container_id> /bin/sh
+     ```
+   - Check if the nginx configuration was correctly updated:
+     ```bash
+     cat /etc/nginx/conf.d/default.conf
+     ```
+   - Verify environment variables:
+     ```bash
+     env
+     ```
+
 ## Contributing
 
 1. Fork the repository

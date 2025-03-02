@@ -1,7 +1,7 @@
 import axios from "axios";
 import { AuthResponse, LoginRequest, RegisterRequest, User } from "../types";
 
-const API_URL = "/api/auth";
+const API_URL = `${import.meta.env.VITE_API_URL || '/api'}/auth`;
 
 export const authApi = {
   async login(credentials: LoginRequest): Promise<AuthResponse> {

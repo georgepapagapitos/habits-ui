@@ -24,6 +24,9 @@ export default function useMessageManager(options: MessageManagerOptions = {}) {
     setMessages((current) => current.filter((message) => message.id !== id));
   }, []);
 
+  // Keep track of active timeouts so we can clean them up
+  const timeoutRefs = React.useRef<{[key: string]: number}>({});
+
   // Add a new message
   const addMessage = useCallback(
     (text: string, duration?: number) => {
@@ -40,15 +43,33 @@ export default function useMessageManager(options: MessageManagerOptions = {}) {
         return updatedMessages.slice(-maxMessages); // Keep only the last 'maxMessages'
       });
 
+      // Clear any existing timeout for this ID (shouldn't happen, but just in case)
+      if (timeoutRefs.current[id]) {
+        clearTimeout(timeoutRefs.current[id]);
+      }
+
       // Set up automatic removal after duration
-      setTimeout(() => {
+      const timeoutId = window.setTimeout(() => {
         removeMessage(id);
+        delete timeoutRefs.current[id]; // Clean up reference
       }, newMessage.duration);
+      
+      // Store the timeout ID
+      timeoutRefs.current[id] = timeoutId;
 
       return id;
     },
     [defaultDuration, maxMessages, removeMessage]
   );
+  
+  // Clean up all timeouts when component unmounts
+  useEffect(() => {
+    return () => {
+      // Clear all timeouts when component unmounts
+      Object.values(timeoutRefs.current).forEach(id => clearTimeout(id));
+      timeoutRefs.current = {};
+    };
+  }, []);
 
   // Clear all messages
   const clearAllMessages = useCallback(() => {

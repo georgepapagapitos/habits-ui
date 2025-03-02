@@ -2,7 +2,7 @@ import React from "react";
 import { MessageContainer, MessagesWrapper } from "./messages.styles";
 
 type Message = {
-  id: number;
+  id: string | number; // Accept both string and number IDs
   text: string;
 };
 
@@ -18,7 +18,7 @@ export const Messages: React.FC<MessagesProps> = ({
   return (
     <MessagesWrapper>
       {messages.map((message) => (
-        <MessageContainer key={message.id}>{message.text}</MessageContainer>
+        <MessageContainer key={message.id.toString()}>{message.text}</MessageContainer>
       ))}
     </MessagesWrapper>
   );

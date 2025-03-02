@@ -1,8 +1,8 @@
 import axios from "axios";
 import { Habit, HabitCreateDTO, HabitUpdateDTO } from "../types";
 
-// Base URL for the API - using the proxy setup in vite.config.ts
-const API_URL = "/api/habits";
+// Base URL for the API - using environment variables
+const API_URL = `${import.meta.env.VITE_API_URL || '/api'}/habits`;
 
 // Helper function to get auth token
 const getAuthToken = (): string | null => {

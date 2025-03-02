@@ -54,12 +54,25 @@ export function useHabitManager() {
     // Add to existing messages
     setMessages((current) => [...current, newMessage]);
     // Set timeout to remove this specific message
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       setMessages((current) =>
         current.filter((msg) => msg.id !== newMessage.id)
       );
     }, 4000); // 4 seconds
+    
+    // Store the timeout id for cleanup (prevents memory leaks)
+    return timeoutId;
   };
+  
+  // Clean up all timeouts when component unmounts
+  useEffect(() => {
+    const timeoutIds: number[] = [];
+    
+    return () => {
+      // Clear all timeouts when component unmounts
+      timeoutIds.forEach(id => clearTimeout(id));
+    };
+  }, []);
 
   // Add a new habit
   const handleAddHabit = async (habitData: {
