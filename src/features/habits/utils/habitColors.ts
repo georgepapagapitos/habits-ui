@@ -2,7 +2,10 @@
  * Habit-specific color palettes and color utilities
  */
 
-import { getRandomColorFrom, getRandomGradientFrom } from "../../../common/utils";
+import {
+  getRandomColorFrom,
+  getRandomGradientFrom,
+} from "../../../common/utils";
 
 export const celebrationColors = [
   "#FFD700", // gold

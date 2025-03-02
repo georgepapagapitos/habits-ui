@@ -1,68 +1,72 @@
+import axios from "axios";
 import { Habit, HabitCreateDTO, HabitUpdateDTO } from "../types";
 
-// Base URL for the API - you might want to use an environment variable in production
-const API_BASE_URL = "http://localhost:5050/api";
+// Base URL for the API - using the proxy setup in vite.config.ts
+const API_URL = "/api/habits";
+
+// Helper function to get auth token
+const getAuthToken = (): string | null => {
+  return localStorage.getItem("token");
+};
+
+// Setup request headers with auth token
+const getAuthHeaders = () => {
+  const token = getAuthToken();
+  return {
+    "Content-Type": "application/json",
+    Authorization: token ? `Bearer ${token}` : "",
+  };
+};
 
 export const habitApi = {
   // Get all habits
   getAllHabits: async (): Promise<Habit[]> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/habits`);
-      const result = await response.json();
+      const response = await axios.get(API_URL, {
+        headers: getAuthHeaders(),
+      });
 
-      if (!result.success) {
-        throw new Error(result.error || "Failed to fetch habits");
-      }
-
-      return result.data;
-    } catch (error) {
-      console.error("Error fetching habits:", error);
-      throw error;
+      return response.data.data;
+    } catch (error: any) {
+      console.error("Error fetching habits:", error.response?.data || error);
+      throw (
+        error.response?.data?.error || error.message || "Failed to fetch habits"
+      );
     }
   },
 
   // Get a single habit by ID
   getHabitById: async (id: string): Promise<Habit> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/habits/${id}`);
-      const result = await response.json();
+      const response = await axios.get(`${API_URL}/${id}`, {
+        headers: getAuthHeaders(),
+      });
 
-      if (!result.success) {
-        throw new Error(result.error || "Failed to fetch habit");
-      }
-
-      return result.data;
-    } catch (error) {
-      console.error(`Error fetching habit ${id}:`, error);
-      throw error;
+      return response.data.data;
+    } catch (error: any) {
+      console.error(
+        `Error fetching habit ${id}:`,
+        error.response?.data || error
+      );
+      throw (
+        error.response?.data?.error || error.message || "Failed to fetch habit"
+      );
     }
   },
 
   // Create a new habit
   createHabit: async (habitData: HabitCreateDTO): Promise<Habit> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/habits`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(habitData),
+      const response = await axios.post(API_URL, habitData, {
+        headers: getAuthHeaders(),
       });
 
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(
-          Array.isArray(result.error)
-            ? result.error.join(", ")
-            : result.error || "Failed to create habit"
-        );
-      }
-
-      return result.data;
-    } catch (error) {
-      console.error("Error creating habit:", error);
-      throw error;
+      return response.data.data;
+    } catch (error: any) {
+      console.error("Error creating habit:", error.response?.data || error);
+      throw (
+        error.response?.data?.error || error.message || "Failed to create habit"
+      );
     }
   },
 
@@ -72,46 +76,36 @@ export const habitApi = {
     habitData: HabitUpdateDTO
   ): Promise<Habit> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/habits/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(habitData),
+      const response = await axios.put(`${API_URL}/${id}`, habitData, {
+        headers: getAuthHeaders(),
       });
 
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(
-          Array.isArray(result.error)
-            ? result.error.join(", ")
-            : result.error || "Failed to update habit"
-        );
-      }
-
-      return result.data;
-    } catch (error) {
-      console.error(`Error updating habit ${id}:`, error);
-      throw error;
+      return response.data.data;
+    } catch (error: any) {
+      console.error(
+        `Error updating habit ${id}:`,
+        error.response?.data || error
+      );
+      throw (
+        error.response?.data?.error || error.message || "Failed to update habit"
+      );
     }
   },
 
   // Delete a habit (soft delete)
   deleteHabit: async (id: string): Promise<void> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/habits/${id}`, {
-        method: "DELETE",
+      await axios.delete(`${API_URL}/${id}`, {
+        headers: getAuthHeaders(),
       });
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || "Failed to delete habit");
-      }
-    } catch (error) {
-      console.error(`Error deleting habit ${id}:`, error);
-      throw error;
+    } catch (error: any) {
+      console.error(
+        `Error deleting habit ${id}:`,
+        error.response?.data || error
+      );
+      throw (
+        error.response?.data?.error || error.message || "Failed to delete habit"
+      );
     }
   },
 
@@ -121,27 +115,23 @@ export const habitApi = {
     date: Date = new Date()
   ): Promise<Habit> => {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/habits/${id}/toggle-completion`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ date: date.toISOString() }),
-        }
+      const response = await axios.patch(
+        `${API_URL}/${id}/toggle-completion`,
+        { date: date.toISOString() },
+        { headers: getAuthHeaders() }
       );
 
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || "Failed to toggle habit completion");
-      }
-
-      return result.data;
-    } catch (error) {
-      console.error(`Error toggling completion for habit ${id}:`, error);
-      throw error;
+      return response.data.data;
+    } catch (error: any) {
+      console.error(
+        `Error toggling completion for habit ${id}:`,
+        error.response?.data || error
+      );
+      throw (
+        error.response?.data?.error ||
+        error.message ||
+        "Failed to toggle habit completion"
+      );
     }
   },
 };

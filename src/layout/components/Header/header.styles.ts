@@ -43,6 +43,12 @@ export const Title = styled.h1`
   margin: 0;
 `;
 
+export const HeaderActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
 export const RefreshButton = styled.button`
   background: none;
   border: none;
@@ -72,4 +78,42 @@ export const RefreshButton = styled.button`
     outline: none;
     box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.primaryLight};
   }
+`;
+
+export const LogoutButton = styled.button`
+  background: none;
+  border: none;
+  color: ${({ theme }) => theme.colors.primaryText};
+  height: 36px;
+  border-radius: ${({ theme }) => theme.borderRadius.small};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  padding: 0 ${({ theme }) => theme.spacing.sm};
+  font-size: ${({ theme }) => theme.typography.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  &:active {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.primaryLight};
+  }
+`;
+
+export const UserInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+  font-size: ${({ theme }) => theme.typography.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.primaryText};
+  margin-right: ${({ theme }) => theme.spacing.xs};
 `;
