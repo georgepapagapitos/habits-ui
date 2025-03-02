@@ -8,9 +8,9 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       manifest: {
-        name: "Habit Tracker",
-        short_name: "Habits",
-        description: "Track your daily habits",
+        name: "Hannah's Habits",
+        short_name: "",
+        description: "",
         theme_color: "#ffffff",
         icons: [
           {
@@ -44,7 +44,7 @@ export default defineConfig({
     },
     hmr: {
       clientPort: 3000,
-      host: "192.168.0.20", // Your actual IP address
+      host: "192.168.0.20",
     },
   },
 });
