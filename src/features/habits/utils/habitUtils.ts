@@ -1,7 +1,10 @@
 import { Habit } from "../types";
 
 // Function to check if a habit is due on a specific date based on frequency
-export const isHabitDueOnDate = (habit: Habit, date: Date = new Date()): boolean => {
+export const isHabitDueOnDate = (
+  habit: Habit,
+  date: Date = new Date()
+): boolean => {
   const dayOfWeek = date
     .toLocaleDateString("en-US", { weekday: "long" })
     .toLowerCase();

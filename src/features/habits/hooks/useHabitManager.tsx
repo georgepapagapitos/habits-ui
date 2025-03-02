@@ -59,18 +59,18 @@ export function useHabitManager() {
         current.filter((msg) => msg.id !== newMessage.id)
       );
     }, 4000); // 4 seconds
-    
+
     // Store the timeout id for cleanup (prevents memory leaks)
     return timeoutId;
   };
-  
+
   // Clean up all timeouts when component unmounts
   useEffect(() => {
     const timeoutIds: number[] = [];
-    
+
     return () => {
       // Clear all timeouts when component unmounts
-      timeoutIds.forEach(id => clearTimeout(id));
+      timeoutIds.forEach((id) => clearTimeout(id));
     };
   }, []);
 

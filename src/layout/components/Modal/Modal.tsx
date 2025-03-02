@@ -7,7 +7,10 @@ interface ModalProps {
   onClose: () => void;
 }
 
-export const Modal: React.FC<ModalProps> = ({ children, onClose }: ModalProps) => {
+export const Modal: React.FC<ModalProps> = ({
+  children,
+  onClose,
+}: ModalProps) => {
   // Lock scroll when modal opens, unlock when it closes
   useEffect(() => {
     // Lock scroll when the component mounts

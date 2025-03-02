@@ -23,7 +23,7 @@ export const colors = {
   // Background colors
   background: "#f2e6f5", // Main background
   backgroundAlt: "#e8dceb", // Alternative background
-  backgroundHover: "#eadced", // Hover background 
+  backgroundHover: "#eadced", // Hover background
   backgroundActive: "#e2d4e5", // Active state background
   surface: "#ffffff", // Card/component backgrounds
   surfaceHover: "#f9f5fa", // Hover state for cards
@@ -35,7 +35,7 @@ export const colors = {
   textMuted: "#999999", // Muted text
   textOnPrimary: "#ffffff",
   textOnDark: "#ffffff",
-  
+
   // UI colors
   success: "#4caf50", // Success states
   successLight: "#a5d6a7", // Light success background
@@ -70,15 +70,15 @@ export const colors = {
   overlayLight: "rgba(0, 0, 0, 0.3)",
   overlayDark: "rgba(0, 0, 0, 0.7)",
   divider: "#e5e5e5",
-  
+
   // Functional transparent colors (for consistent opacity handling)
   transparent: {
-    light: "rgba(0, 0, 0, 0.05)",   // 5% opacity black 
-    medium: "rgba(0, 0, 0, 0.1)",   // 10% opacity black
-    heavy: "rgba(0, 0, 0, 0.2)",    // 20% opacity black
+    light: "rgba(0, 0, 0, 0.05)", // 5% opacity black
+    medium: "rgba(0, 0, 0, 0.1)", // 10% opacity black
+    heavy: "rgba(0, 0, 0, 0.2)", // 20% opacity black
     primary10: "rgba(161, 95, 205, 0.1)", // Primary with 10% opacity
     primary20: "rgba(161, 95, 205, 0.2)", // Primary with 20% opacity
-    white10: "rgba(255, 255, 255, 0.1)",  // White with 10% opacity
-    white20: "rgba(255, 255, 255, 0.2)",  // White with 20% opacity
-  }
+    white10: "rgba(255, 255, 255, 0.1)", // White with 10% opacity
+    white20: "rgba(255, 255, 255, 0.2)", // White with 20% opacity
+  },
 };

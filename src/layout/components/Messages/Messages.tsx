@@ -18,7 +18,9 @@ export const Messages: React.FC<MessagesProps> = ({
   return (
     <MessagesWrapper>
       {messages.map((message) => (
-        <MessageContainer key={message.id.toString()}>{message.text}</MessageContainer>
+        <MessageContainer key={message.id.toString()}>
+          {message.text}
+        </MessageContainer>
       ))}
     </MessagesWrapper>
   );

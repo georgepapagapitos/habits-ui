@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 export interface Message {
   id: string;
@@ -25,7 +25,7 @@ export default function useMessageManager(options: MessageManagerOptions = {}) {
   }, []);
 
   // Keep track of active timeouts so we can clean them up
-  const timeoutRefs = React.useRef<{[key: string]: number}>({});
+  const timeoutRefs = React.useRef<{ [key: string]: number }>({});
 
   // Add a new message
   const addMessage = useCallback(
@@ -53,7 +53,7 @@ export default function useMessageManager(options: MessageManagerOptions = {}) {
         removeMessage(id);
         delete timeoutRefs.current[id]; // Clean up reference
       }, newMessage.duration);
-      
+
       // Store the timeout ID
       timeoutRefs.current[id] = timeoutId;
 
@@ -61,12 +61,12 @@ export default function useMessageManager(options: MessageManagerOptions = {}) {
     },
     [defaultDuration, maxMessages, removeMessage]
   );
-  
+
   // Clean up all timeouts when component unmounts
   useEffect(() => {
     return () => {
       // Clear all timeouts when component unmounts
-      Object.values(timeoutRefs.current).forEach(id => clearTimeout(id));
+      Object.values(timeoutRefs.current).forEach((id) => clearTimeout(id));
       timeoutRefs.current = {};
     };
   }, []);

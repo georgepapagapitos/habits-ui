@@ -2,7 +2,7 @@ import axios from "axios";
 import { Habit, HabitCreateDTO, HabitUpdateDTO } from "../types";
 
 // Base URL for the API - using environment variables
-const API_URL = `${import.meta.env.VITE_API_URL || '/api'}/habits`;
+const API_URL = `${import.meta.env.VITE_API_URL || "/api"}/habits`;
 
 // Helper function to get auth token
 const getAuthToken = (): string | null => {
@@ -28,9 +28,9 @@ export const habitApi = {
 
       return response.data.data;
     } catch (error: unknown) {
-      const err = error as { 
-        response?: { data?: { error?: string } },
-        message?: string
+      const err = error as {
+        response?: { data?: { error?: string } };
+        message?: string;
       };
       console.error("Error fetching habits:", err.response?.data || err);
       throw (
@@ -48,17 +48,12 @@ export const habitApi = {
 
       return response.data.data;
     } catch (error: unknown) {
-      const err = error as { 
-        response?: { data?: { error?: string } },
-        message?: string
+      const err = error as {
+        response?: { data?: { error?: string } };
+        message?: string;
       };
-      console.error(
-        `Error fetching habit ${id}:`,
-        err.response?.data || err
-      );
-      throw (
-        err.response?.data?.error || err.message || "Failed to fetch habit"
-      );
+      console.error(`Error fetching habit ${id}:`, err.response?.data || err);
+      throw err.response?.data?.error || err.message || "Failed to fetch habit";
     }
   },
 
@@ -71,9 +66,9 @@ export const habitApi = {
 
       return response.data.data;
     } catch (error: unknown) {
-      const err = error as { 
-        response?: { data?: { error?: string } },
-        message?: string
+      const err = error as {
+        response?: { data?: { error?: string } };
+        message?: string;
       };
       console.error("Error creating habit:", err.response?.data || err);
       throw (
@@ -94,14 +89,11 @@ export const habitApi = {
 
       return response.data.data;
     } catch (error: unknown) {
-      const err = error as { 
-        response?: { data?: { error?: string } },
-        message?: string
+      const err = error as {
+        response?: { data?: { error?: string } };
+        message?: string;
       };
-      console.error(
-        `Error updating habit ${id}:`,
-        err.response?.data || err
-      );
+      console.error(`Error updating habit ${id}:`, err.response?.data || err);
       throw (
         err.response?.data?.error || err.message || "Failed to update habit"
       );
@@ -115,14 +107,11 @@ export const habitApi = {
         headers: getAuthHeaders(),
       });
     } catch (error: unknown) {
-      const err = error as { 
-        response?: { data?: { error?: string } },
-        message?: string
+      const err = error as {
+        response?: { data?: { error?: string } };
+        message?: string;
       };
-      console.error(
-        `Error deleting habit ${id}:`,
-        err.response?.data || err
-      );
+      console.error(`Error deleting habit ${id}:`, err.response?.data || err);
       throw (
         err.response?.data?.error || err.message || "Failed to delete habit"
       );
@@ -143,9 +132,9 @@ export const habitApi = {
 
       return response.data.data;
     } catch (error: unknown) {
-      const err = error as { 
-        response?: { data?: { error?: string } },
-        message?: string
+      const err = error as {
+        response?: { data?: { error?: string } };
+        message?: string;
       };
       console.error(
         `Error toggling completion for habit ${id}:`,

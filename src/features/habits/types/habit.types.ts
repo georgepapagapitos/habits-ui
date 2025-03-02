@@ -3,13 +3,13 @@ export type TimeOfDay = "morning" | "afternoon" | "evening" | "anytime";
 
 // Days of the week for frequency
 export type WeekDay =
+  | "sunday"
   | "monday"
   | "tuesday"
   | "wednesday"
   | "thursday"
   | "friday"
-  | "saturday"
-  | "sunday";
+  | "saturday";
 
 // Habit interface matching the backend schema
 export interface Habit {

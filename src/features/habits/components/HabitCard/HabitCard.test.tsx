@@ -1,10 +1,10 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { vi, describe, beforeEach, test, expect } from "vitest";
+import { addDays, format, subDays } from "date-fns";
+import { beforeEach, describe, expect, test, vi } from "vitest";
+import { renderWithProviders } from "../../../../tests/utils";
 import { Habit, WeekDay } from "../../types/habit.types";
 import { HabitCard } from "./HabitCard";
-import { renderWithProviders } from "../../../../tests/utils";
-import { addDays, format, subDays } from "date-fns";
 
 // Mock habits for testing
 const createMockHabit = (overrides = {}): Habit => {
@@ -41,7 +41,15 @@ const createMockHabit = (overrides = {}): Habit => {
 // });
 // Convert day number to weekday string
 const getDayName = (dayNum: number): WeekDay => {
-  const days: WeekDay[] = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+  const days: WeekDay[] = [
+    "sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+  ];
   return days[dayNum];
 };
 
@@ -53,7 +61,7 @@ const getTodayName = (): WeekDay => {
 // Create a habit that is due today
 const mockDueHabit = createMockHabit({
   frequency: [getTodayName()], // Set frequency to include today
-  completedDates: [] // Make sure it's not completed today
+  completedDates: [], // Make sure it's not completed today
 });
 
 // Create a habit that is due in the future
@@ -98,7 +106,15 @@ describe("HabitCard", () => {
     // Get the next due date
     const today = new Date();
     const dayNameToDayNum = (dayName: WeekDay): number => {
-      const days: WeekDay[] = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+      const days: WeekDay[] = [
+        "sunday",
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+      ];
       return days.indexOf(dayName);
     };
     const dueDay = dayNameToDayNum(mockFutureHabit.frequency[0]);
@@ -137,7 +153,7 @@ describe("HabitCard", () => {
 
     // Find the card content by its class (more reliable than closest)
     const cardContent = screen.getByText("Test Habit").closest(".sc-fAomSb");
-    
+
     expect(cardContent).not.toBeNull();
     if (cardContent) {
       await userEvent.click(cardContent);
@@ -163,23 +179,41 @@ describe("HabitCard", () => {
     );
 
     // Calendar should not be visible initially
-    expect(screen.queryByText(/January|February|March|April|May|June|July|August|September|October|November|December/)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(
+        /January|February|March|April|May|June|July|August|September|October|November|December/
+      )
+    ).not.toBeInTheDocument();
 
     // Click the show history button
-    await userEvent.click(screen.getByRole('button', { name: /Show History/i }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /Show History/i })
+    );
 
     // Calendar should now be visible
     // Check for month heading which indicates calendar is visible
-    expect(screen.getByText(/January|February|March|April|May|June|July|August|September|October|November|December/)).toBeInTheDocument();
-    
+    expect(
+      screen.getByText(
+        /January|February|March|April|May|June|July|August|September|October|November|December/
+      )
+    ).toBeInTheDocument();
+
     // The button text should have changed
-    expect(screen.getByRole('button', { name: /Hide History/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Hide History/i })
+    ).toBeInTheDocument();
 
     // Click the hide history button
-    await userEvent.click(screen.getByRole('button', { name: /Hide History/i }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /Hide History/i })
+    );
 
     // Calendar should be hidden again
-    expect(screen.queryByText(/January|February|March|April|May|June|July|August|September|October|November|December/)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(
+        /January|February|March|April|May|June|July|August|September|October|November|December/
+      )
+    ).not.toBeInTheDocument();
   });
 
   test("opens menu when menu button is clicked", async () => {

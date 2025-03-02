@@ -1,12 +1,17 @@
-import { describe, test, expect, vi } from 'vitest';
-import { screen } from '@testing-library/react';
-import { HabitList } from './HabitList';
-import { renderWithProviders } from '../../../../tests/utils';
-import { Habit } from '../../types';
+import { screen } from "@testing-library/react";
+import { describe, expect, test, vi } from "vitest";
+import { renderWithProviders } from "../../../../tests/utils";
+import { Habit } from "../../types";
+import { HabitList } from "./HabitList";
 
 // Mock the HabitCard component to simplify testing
-vi.mock('../HabitCard', () => ({
-  HabitCard: ({ habit, onToggleHabit, onDelete, onEdit }: { 
+vi.mock("../HabitCard", () => ({
+  HabitCard: ({
+    habit,
+    onToggleHabit,
+    onDelete,
+    onEdit,
+  }: {
     habit: Habit;
     onToggleHabit: (id: string) => void;
     onDelete?: (id: string) => void;
@@ -21,35 +26,35 @@ vi.mock('../HabitCard', () => ({
   ),
 }));
 
-describe('HabitList', () => {
+describe("HabitList", () => {
   const mockHabits: Habit[] = [
     {
-      _id: '1',
-      name: 'Read',
-      color: 'blue',
-      icon: 'book',
-      frequency: ['monday', 'wednesday', 'friday'],
-      timeOfDay: 'evening',
+      _id: "1",
+      name: "Read",
+      color: "blue",
+      icon: "book",
+      frequency: ["monday", "wednesday", "friday"],
+      timeOfDay: "evening",
       streak: 3,
-      startDate: '2023-01-01',
-      completedDates: ['2023-01-01'],
+      startDate: "2023-01-01",
+      completedDates: ["2023-01-01"],
       active: true,
-      createdAt: '2023-01-01',
-      updatedAt: '2023-01-01',
+      createdAt: "2023-01-01",
+      updatedAt: "2023-01-01",
     },
     {
-      _id: '2',
-      name: 'Exercise',
-      color: 'green',
-      icon: 'run',
-      frequency: ['tuesday', 'thursday', 'saturday'],
-      timeOfDay: 'morning',
+      _id: "2",
+      name: "Exercise",
+      color: "green",
+      icon: "run",
+      frequency: ["tuesday", "thursday", "saturday"],
+      timeOfDay: "morning",
       streak: 5,
-      startDate: '2023-01-01',
-      completedDates: ['2023-01-02'],
+      startDate: "2023-01-01",
+      completedDates: ["2023-01-02"],
       active: true,
-      createdAt: '2023-01-01',
-      updatedAt: '2023-01-02',
+      createdAt: "2023-01-01",
+      updatedAt: "2023-01-02",
     },
   ];
 
@@ -58,60 +63,59 @@ describe('HabitList', () => {
   const mockDeleteHabit = vi.fn();
   const mockEditHabit = vi.fn();
 
-  test('renders loading state', () => {
+  test("renders loading state", () => {
     renderWithProviders(
-      <HabitList 
-        habits={[]} 
-        onToggleHabit={mockToggleHabit}
-        loading={true}
-      />
+      <HabitList habits={[]} onToggleHabit={mockToggleHabit} loading={true} />
     );
-    
-    expect(screen.getByText('Loading habits...')).toBeInTheDocument();
+
+    expect(screen.getByText("Loading habits...")).toBeInTheDocument();
   });
 
-  test('renders error state', () => {
+  test("renders error state", () => {
     renderWithProviders(
-      <HabitList 
-        habits={[]} 
+      <HabitList
+        habits={[]}
         onToggleHabit={mockToggleHabit}
         error="Failed to load habits"
       />
     );
-    
-    expect(screen.getByText('Error: Failed to load habits')).toBeInTheDocument();
-    expect(screen.getByText('Please try again later.')).toBeInTheDocument();
+
+    expect(
+      screen.getByText("Error: Failed to load habits")
+    ).toBeInTheDocument();
+    expect(screen.getByText("Please try again later.")).toBeInTheDocument();
   });
 
-  test('renders empty state', () => {
+  test("renders empty state", () => {
     renderWithProviders(
-      <HabitList 
-        habits={[]} 
-        onToggleHabit={mockToggleHabit}
-      />
+      <HabitList habits={[]} onToggleHabit={mockToggleHabit} />
     );
-    
-    expect(screen.getByText("You don't have any habits yet!")).toBeInTheDocument();
-    expect(screen.getByText('Add your first habit using the button below.')).toBeInTheDocument();
+
+    expect(
+      screen.getByText("You don't have any habits yet!")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Add your first habit using the button below.")
+    ).toBeInTheDocument();
   });
 
-  test('renders list of habits', () => {
+  test("renders list of habits", () => {
     renderWithProviders(
-      <HabitList 
-        habits={mockHabits} 
+      <HabitList
+        habits={mockHabits}
         onToggleHabit={mockToggleHabit}
         onToggleDate={mockToggleDate}
         onDeleteHabit={mockDeleteHabit}
         onEditHabit={mockEditHabit}
       />
     );
-    
+
     // Check that both habits are rendered
-    expect(screen.getByText('Read')).toBeInTheDocument();
-    expect(screen.getByText('Exercise')).toBeInTheDocument();
-    
+    expect(screen.getByText("Read")).toBeInTheDocument();
+    expect(screen.getByText("Exercise")).toBeInTheDocument();
+
     // Check that all habit cards are rendered
-    expect(screen.getByTestId('habit-card-1')).toBeInTheDocument();
-    expect(screen.getByTestId('habit-card-2')).toBeInTheDocument();
+    expect(screen.getByTestId("habit-card-1")).toBeInTheDocument();
+    expect(screen.getByTestId("habit-card-2")).toBeInTheDocument();
   });
 });
