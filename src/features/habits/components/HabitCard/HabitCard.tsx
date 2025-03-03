@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Button } from "../../../../common/components/Button";
 import { Dialog } from "../../../../common/components/Dialog";
 import { useMenuManager } from "../../../../common/hooks";
+import { encouragingMessages } from "../../constants/encouragingMessages";
 import { Habit } from "../../types";
 import {
   getFrequencyDisplayText,
@@ -11,7 +12,6 @@ import {
   isHabitDueToday,
 } from "../../utils";
 import { celebrationColors } from "../../utils/habitColors";
-import { encouragingMessages } from "../../constants/encouragingMessages";
 import { HabitCalendar } from "../HabitCalendar";
 import {
   CardContent,
@@ -25,7 +25,6 @@ import {
   MenuButton,
   MenuItem,
   StyledHabitCard,
-  fadeInOut,
 } from "./habitCard.styles";
 
 interface HabitCardProps {
