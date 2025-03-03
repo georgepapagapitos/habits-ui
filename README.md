@@ -1,8 +1,5 @@
 # Habits - UI
 
-[![Test Suite](https://github.com/georgepapagapitos/hannahs-habits/actions/workflows/test.yml/badge.svg)](https://github.com/georgepapagapitos/hannahs-habits/actions/workflows/test.yml)
-[![Build and Deploy](https://github.com/georgepapagapitos/hannahs-habits/actions/workflows/build.yml/badge.svg)](https://github.com/georgepapagapitos/hannahs-habits/actions/workflows/build.yml)
-
 A modern habit tracking application built with React, TypeScript, and Vite.
 
 ## Features
@@ -39,8 +36,8 @@ A modern habit tracking application built with React, TypeScript, and Vite.
 1. Clone the repository
 
    ```bash
-   git clone https://github.com/your-username/hannahs-habits.git
-   cd hannahs-habits/habits-ui
+   git clone https://github.com/georgepapagapitos/habits-ui.git
+   cd habits-ui
    ```
 
 2. Install dependencies
