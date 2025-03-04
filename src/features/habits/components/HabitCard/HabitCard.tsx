@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Button } from "../../../../common/components/Button";
 import { Dialog } from "../../../../common/components/Dialog";
 import { useMenuManager } from "../../../../common/hooks";
-import { encouragingMessages } from "../../constants/encouragingMessages";
 import { Habit } from "../../types";
 import {
   getFrequencyDisplayText,
@@ -72,13 +71,6 @@ export const HabitCard = ({
     toggleMenu: handleMenuClick,
     closeMenu,
   } = useMenuManager();
-
-  // Function to get a random encouraging message
-  const getRandomEncouragingMessage = (): string => {
-    const messages = encouragingMessages();
-    const randomIndex = Math.floor(Math.random() * messages.length);
-    return messages[randomIndex];
-  };
 
   const isDue = isHabitDueToday(habit);
   const nextDue = getNextDueDate(habit);
