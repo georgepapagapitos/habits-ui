@@ -73,19 +73,6 @@ export const HabitCard = ({
     closeMenu,
   } = useMenuManager();
 
-  // Function to get a streak message based on the streak length
-  const getStreakMessage = (streak: number): string => {
-    if (streak >= 10) {
-      return "Amazing streak! Keep it going! 🔥";
-    } else if (streak >= 7) {
-      return "Awesome streak! You're on fire! 🔥";
-    } else if (streak >= 3) {
-      return "Great streak! Keep up the momentum! 💪";
-    } else {
-      return "Continue your streak today! 💪";
-    }
-  };
-
   // Function to get a random encouraging message
   const getRandomEncouragingMessage = (): string => {
     const messages = encouragingMessages();
@@ -149,7 +136,13 @@ export const HabitCard = ({
     return sortedDates[0];
   };
 
+  // Get total number of completions
+  const getTotalCompletions = () => {
+    return habit.completedDates.length;
+  };
+
   const lastCompleted = getLastCompletedDate();
+  const totalCompletions = getTotalCompletions();
 
   // Handle calendar toggle
   const toggleCalendar = (e: React.MouseEvent) => {
@@ -253,7 +246,7 @@ export const HabitCard = ({
                   ? isCompleted
                     ? `🌻` // Completed today
                     : `🌱` // Due but not completed
-                  : `🌈` // Not due today
+                  : `💤` // Not due today
               }
             </div>
             {habit.name}
@@ -272,6 +265,7 @@ export const HabitCard = ({
             {lastCompleted && (!isDue || !isCompleted) && (
               <> • Last completed {format(new Date(lastCompleted), "MMM d")}</>
             )}
+            <> • Total completions: {totalCompletions}</>
           </HabitMeta>
         </CardContent>
 
@@ -280,7 +274,6 @@ export const HabitCard = ({
             {showCalendar ? "Hide History" : "Show History"}
           </ExpandButton>
 
-          {/* Enhanced streak display with encouraging message */}
           <div
             style={{
               display: "flex",
@@ -303,25 +296,6 @@ export const HabitCard = ({
                   : "Start a streak!"}
             </span>
           </div>
-
-          {/* Encouraging streak message when on a streak */}
-          {(habit.streak > 0 || (lastCompleted && isDue && !isCompleted)) &&
-            isDue &&
-            !isCompleted && (
-              <div
-                style={{
-                  marginTop: "8px",
-                  fontSize: "14px",
-                  color: "#4ECB71",
-                  fontStyle: "italic",
-                  textAlign: "center",
-                }}
-              >
-                {habit.streak > 0
-                  ? getStreakMessage(habit.streak)
-                  : "Keep your momentum going!"}
-              </div>
-            )}
         </CardFooter>
 
         {showCalendar && (
@@ -331,7 +305,6 @@ export const HabitCard = ({
         )}
       </StyledHabitCard>
 
-      {/* New Dialog component */}
       <Dialog
         isOpen={showConfirmDelete}
         onClose={() => setShowConfirmDelete(false)}
