@@ -21,6 +21,45 @@ const getAuthHeaders = () => {
 };
 
 export const habitApi = {
+  // Reset a habit (clear all completions and streak)
+  resetHabit: async (id: string): Promise<Habit> => {
+    try {
+      const response = await axios.patch(
+        `${API_URL}/${id}/reset`,
+        {},
+        { headers: getAuthHeaders() }
+      );
+
+      return response.data.data;
+    } catch (error: unknown) {
+      const err = error as {
+        response?: {
+          data?: {
+            error?: string;
+            message?: string;
+            [key: string]: unknown;
+          };
+          status?: number;
+          statusText?: string;
+        };
+        message?: string;
+      };
+      console.error(
+        `Error resetting habit ${id} [Status: ${err.response?.status} ${err.response?.statusText}]:`,
+        err.response?.data || err
+      );
+
+      if (err.response?.data) {
+        console.error(
+          `Server response details:`,
+          JSON.stringify(err.response.data, null, 2)
+        );
+      }
+
+      throw err.response?.data?.error || err.message || "Failed to reset habit";
+    }
+  },
+
   // Get all habits
   getAllHabits: async (): Promise<Habit[]> => {
     try {

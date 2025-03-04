@@ -33,6 +33,7 @@ interface HabitCardProps {
   onToggleDate?: (id: string, date: Date) => void;
   onDelete?: (id: string) => void;
   onEdit?: (id: string) => void;
+  onReset?: (id: string) => void;
 }
 
 const Celebration = () => {
@@ -58,13 +59,12 @@ export const HabitCard = ({
   onToggleDate,
   onDelete,
   onEdit,
+  onReset,
 }: HabitCardProps) => {
   const [isCompleting, setIsCompleting] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
-  const [completionMessage, setCompletionMessage] = useState<string | null>(
-    null
-  );
+  const [showConfirmReset, setShowConfirmReset] = useState(false);
 
   // Use the menu manager hook
   const {
@@ -101,18 +101,6 @@ export const HabitCard = ({
     // Haptic feedback for successful toggle
     if ("vibrate" in navigator) {
       navigator.vibrate(100);
-    }
-
-    // Show encouraging message when completing a habit (not when uncompleting)
-    if (!isCompleted) {
-      setCompletionMessage(getRandomEncouragingMessage());
-
-      // Hide the message after 5 seconds
-      setTimeout(() => {
-        setCompletionMessage(null);
-      }, 5000);
-    } else {
-      setCompletionMessage(null);
     }
 
     // Call the parent handler with the habit ID
@@ -179,6 +167,20 @@ export const HabitCard = ({
     setShowConfirmDelete(false);
   };
 
+  // Handle reset request
+  const handleReset = () => {
+    closeMenu();
+    setShowConfirmReset(true);
+  };
+
+  // Confirm and execute reset
+  const confirmReset = () => {
+    if (onReset) {
+      onReset(habit._id);
+    }
+    setShowConfirmReset(false);
+  };
+
   return (
     <div style={{ position: "relative", overflow: "visible" }}>
       <StyledHabitCard
@@ -187,30 +189,6 @@ export const HabitCard = ({
         $expanded={showCalendar}
       >
         {isCompleting && <Celebration />}
-
-        {/* Completion message toast */}
-        {completionMessage && (
-          <div
-            style={{
-              position: "absolute",
-              top: "-70px",
-              left: "0",
-              right: "0",
-              backgroundColor: "#4ECB71",
-              color: "white",
-              padding: "12px 16px",
-              borderRadius: "8px",
-              boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-              zIndex: 10,
-              textAlign: "center",
-              maxWidth: "90%",
-              margin: "0 auto",
-              fontSize: "14px",
-            }}
-          >
-            {completionMessage}
-          </div>
-        )}
 
         <MenuButton
           onClick={handleMenuClick}
@@ -226,6 +204,11 @@ export const HabitCard = ({
             {onEdit && (
               <MenuItem onClick={handleEdit}>
                 <span style={{ fontSize: "14px" }}>✏️</span> Edit
+              </MenuItem>
+            )}
+            {onReset && (
+              <MenuItem onClick={handleReset}>
+                <span style={{ fontSize: "14px" }}>🔄</span> Reset Progress
               </MenuItem>
             )}
             {onDelete && (
@@ -327,6 +310,33 @@ export const HabitCard = ({
       >
         <p>Are you sure you want to delete "{habit.name}"?</p>
         <p>This action cannot be undone.</p>
+      </Dialog>
+
+      <Dialog
+        isOpen={showConfirmReset}
+        onClose={() => setShowConfirmReset(false)}
+        title="Reset Habit Progress"
+        footer={
+          <div
+            style={{ display: "flex", gap: "16px", justifyContent: "flex-end" }}
+          >
+            <Button
+              variant="secondary"
+              onClick={() => setShowConfirmReset(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={confirmReset}>
+              Reset
+            </Button>
+          </div>
+        }
+      >
+        <p>Are you sure you want to reset progress for "{habit.name}"?</p>
+        <p>
+          This will clear all completions and your streak. This action cannot be
+          undone.
+        </p>
       </Dialog>
     </div>
   );

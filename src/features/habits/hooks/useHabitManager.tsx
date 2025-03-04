@@ -187,6 +187,27 @@ export function useHabitManager() {
     }
   };
 
+  // Reset a habit (clear all completions and streak)
+  const resetHabit = async (id: string) => {
+    try {
+      const habit = habits.find((h) => h._id === id);
+      if (!habit) {
+        throw new Error("Habit not found");
+      }
+
+      const resetHabit = await habitApi.resetHabit(id);
+      setHabits((prevHabits) =>
+        prevHabits.map((h) => (h._id === id ? resetHabit : h))
+      );
+      showTemporaryMessage(`Reset habit: ${resetHabit.name}`);
+      return resetHabit;
+    } catch (err) {
+      showTemporaryMessage("Failed to reset habit. Please try again.");
+      console.error("Error resetting habit:", err);
+      throw err;
+    }
+  };
+
   // For backward compatibility with your current App component
   const showMessage = messages.length > 0;
   const currentMessage = messages[0]?.text || "";
@@ -293,6 +314,7 @@ export function useHabitManager() {
     toggleHabit,
     deleteHabit,
     updateHabit,
+    resetHabit,
     getHabitHistoryForDateRange,
     getWeeklyReport,
     refreshHabits: useCallback(async () => {

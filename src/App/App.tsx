@@ -32,6 +32,7 @@ export const App = () => {
     toggleHabit,
     deleteHabit,
     updateHabit,
+    resetHabit,
     refreshHabits,
   } = useHabitManager();
 
@@ -95,6 +96,16 @@ export const App = () => {
     }
   };
 
+  // Handle habit reset
+  const handleResetHabit = async (habitId: string) => {
+    try {
+      await resetHabit(habitId);
+      // No need to refresh, the habit state is updated in useHabitManager hook
+    } catch (error) {
+      console.error("Error resetting habit:", error);
+    }
+  };
+
   // Handle habit editing - open the edit modal with the selected habit data
   const handleEditHabit = (habitId: string) => {
     const habit = habits.find((h) => h._id === habitId);
@@ -151,6 +162,7 @@ export const App = () => {
             onToggleDate={handleToggleDate}
             onDeleteHabit={handleDeleteHabit}
             onEditHabit={handleEditHabit}
+            onResetHabit={handleResetHabit}
             loading={loading}
             error={error}
           />
