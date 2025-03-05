@@ -280,6 +280,7 @@ export const HabitCard = ({
         )}
       </StyledHabitCard>
 
+      {/* Confirm delete dialog */}
       <Dialog
         isOpen={showConfirmDelete}
         onClose={() => setShowConfirmDelete(false)}
@@ -304,6 +305,7 @@ export const HabitCard = ({
         <p>This action cannot be undone.</p>
       </Dialog>
 
+      {/* Confirm reset dialog */}
       <Dialog
         isOpen={showConfirmReset}
         onClose={() => setShowConfirmReset(false)}

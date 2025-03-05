@@ -42,7 +42,7 @@ export function useHabitManager() {
   // Get a personalized random message
   const getRandomMessage = (habitName?: string) => {
     // Get user's name from localStorage or default to "you"
-    const userName = localStorage.getItem("userName") || "you";
+    const userName = localStorage.getItem("userName") || "Hannah";
 
     // Get messages with personalized name
     const messages = encouragingMessages(userName);
@@ -51,8 +51,8 @@ export function useHabitManager() {
     // Choose base message
     let message = messages[randIndex];
 
-    // Append habit-specific messaging 20% of the time if habit name is provided
-    if (habitName && Math.random() < 0.2) {
+    // Append habit-specific messaging 10% of the time if habit name is provided
+    if (habitName && Math.random() < 0.1) {
       message += ` Your progress with "${habitName}" is inspiring!`;
     }
 
