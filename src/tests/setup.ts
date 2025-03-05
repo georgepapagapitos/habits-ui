@@ -12,7 +12,8 @@ beforeAll(() => {
     if (
       (typeof args[0] === "string" &&
         args[0].includes("was not wrapped in act")) ||
-      args[0].includes("inside a test was not wrapped in act")
+      (typeof args[0] === "string" &&
+        args[0].includes("inside a test was not wrapped in act"))
     ) {
       return;
     }
@@ -23,30 +24,34 @@ beforeAll(() => {
     if (
       (typeof args[0] === "string" &&
         args[0].includes("was not wrapped in act")) ||
-      args[0].includes("inside a test was not wrapped in act")
+      (typeof args[0] === "string" &&
+        args[0].includes("inside a test was not wrapped in act"))
     ) {
       return;
     }
     originalConsoleWarn(...args);
   };
-
   // Store original console functions for cleanup
-  interface ExtendedGlobal extends NodeJS.Global {
+  interface ExtendedGlobal {
     __originalConsoleError: typeof console.error;
     __originalConsoleWarn: typeof console.warn;
   }
-  (global as ExtendedGlobal).__originalConsoleError = originalConsoleError;
-  (global as ExtendedGlobal).__originalConsoleWarn = originalConsoleWarn;
+  (global as unknown as ExtendedGlobal).__originalConsoleError =
+    originalConsoleError;
+  (global as unknown as ExtendedGlobal).__originalConsoleWarn =
+    originalConsoleWarn;
 });
 
 // Restore console functions after tests
 afterAll(() => {
-  interface ExtendedGlobal extends NodeJS.Global {
+  interface ExtendedGlobal {
     __originalConsoleError: typeof console.error;
     __originalConsoleWarn: typeof console.warn;
   }
-  const originalError = (global as ExtendedGlobal).__originalConsoleError;
-  const originalWarn = (global as ExtendedGlobal).__originalConsoleWarn;
+  const originalError = (global as unknown as ExtendedGlobal)
+    .__originalConsoleError;
+  const originalWarn = (global as unknown as ExtendedGlobal)
+    .__originalConsoleWarn;
 
   if (originalError) console.error = originalError;
   if (originalWarn) console.warn = originalWarn;
@@ -71,7 +76,7 @@ vi.mock("date-fns-tz", () => ({
 
 // Mock timezone resolution
 vi.mock("date-fns", async (importOriginal) => {
-  const actual = await importOriginal();
+  const actual = (await importOriginal()) as Record<string, unknown>;
   return {
     ...actual,
     format: vi.fn().mockImplementation((date, formatStr) => {
