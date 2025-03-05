@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import "@testing-library/jest-dom";
 import { Button } from "./Button";
 import { ThemeProvider } from "styled-components";
 import { theme } from "../../theme";
@@ -15,9 +16,7 @@ describe("Button", () => {
 
   test("renders button with text", () => {
     renderButton();
-    expect(
-      screen.getByRole("button", { name: /click me/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /click me/i })).toBeDefined();
   });
 
   test("calls onClick handler when clicked", async () => {
