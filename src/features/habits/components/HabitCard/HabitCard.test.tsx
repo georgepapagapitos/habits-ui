@@ -1,53 +1,78 @@
+import { HabitCard } from "@habits/components";
+import { Habit, WeekDay } from "@habits/types";
+import { isCompletedToday, isHabitDueToday } from "@habits/utils";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { renderWithProviders } from "@tests/utils";
 import { addDays, format, subDays } from "date-fns";
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { renderWithProviders } from "../../../../tests/utils";
-import { Habit, WeekDay } from "../../types/habit.types";
-import { HabitCard } from "./HabitCard";
-import * as utils from "../../utils"; // Import all utils to access all mocks
-import { isHabitDueToday } from "../../utils"; // Import directly to access the mock
 
-// Mock the HabitCalendar component to avoid timezone issues
-vi.mock("../HabitCalendar", () => ({
-  HabitCalendar: vi.fn().mockImplementation(({ habit }) => (
-    <div data-testid="mock-calendar">
-      <div>January 2025</div>
-      <div>Calendar mock for {habit.name}</div>
-    </div>
-  )),
-}));
+vi.mock("@habits/components", async (importOriginal) => {
+  const originalModule =
+    await importOriginal<typeof import("@habits/components")>();
 
-// Mock the utils file to avoid timezone issues in tests
-vi.mock("../../utils", () => ({
-  isHabitDueToday: vi.fn().mockImplementation((habit) => {
-    // For test purposes, any habit with frequency containing today's day name is due
-    const todayName = getTodayName();
-    return habit.frequency.includes(todayName);
-  }),
-  isCompletedToday: vi.fn().mockImplementation((habit) => {
-    // A habit is completed if it has today's date in completedDates
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return habit.completedDates.some((dateStr) => {
-      const date = new Date(dateStr);
-      date.setHours(0, 0, 0, 0);
-      return date.getTime() === today.getTime();
-    });
-  }),
-  getNextDueDate: vi.fn().mockImplementation(() => {
-    // Return a fixed date for testing
-    return new Date("2025-01-15");
-  }),
-  getFrequencyDisplayText: vi.fn().mockImplementation((habit) => {
-    if (habit.frequency.length === 7) return "Every day";
-    if (habit.frequency.length === 1) return habit.frequency[0].slice(0, 3);
-    return "Multiple days";
-  }),
-  getUserTimezone: vi.fn().mockReturnValue("America/Chicago"),
-  normalizeDate: vi.fn().mockImplementation((date) => date),
-  dateInUserTimezone: vi.fn().mockImplementation((date) => date),
-}));
+  return {
+    ...originalModule,
+    HabitCalendar: vi.fn().mockImplementation(({ habit }) => (
+      <div data-testid="mock-calendar">
+        <div>January 2025</div>
+        <div>Calendar mock for {habit.name}</div>
+      </div>
+    )),
+  };
+});
+
+vi.mock("@habits/utils", async (importOriginal) => {
+  const originalModule = await importOriginal<typeof import("@habits/utils")>();
+
+  return {
+    ...originalModule,
+    isHabitDueToday: vi.fn().mockImplementation((habit) => {
+      const todayName = getTodayName();
+      return habit.frequency.includes(todayName);
+    }),
+    isCompletedToday: vi.fn().mockImplementation((habit) => {
+      // A habit is completed if it has today's date in completedDates
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return habit.completedDates.some((dateStr: string) => {
+        const date = new Date(dateStr);
+        date.setHours(0, 0, 0, 0);
+        return date.getTime() === today.getTime();
+      });
+    }),
+    // Add the missing functions that were in the wrong mock
+    isCompletedOnDate: vi.fn().mockImplementation((habit, date) => {
+      // Check if the date exists in completedDates
+      return habit.completedDates.some((dateStr: string) => {
+        const completedDate = new Date(dateStr);
+        completedDate.setHours(0, 0, 0, 0);
+        const compareDate = new Date(date);
+        compareDate.setHours(0, 0, 0, 0);
+        return completedDate.getTime() === compareDate.getTime();
+      });
+    }),
+    isHabitDueOnDate: vi.fn().mockImplementation((habit, date) => {
+      // Check if the habit is due on the given date based on frequency
+      const dayOfWeek = new Date(date).getDay();
+      const dayName = getDayName(dayOfWeek);
+      return habit.frequency.includes(dayName);
+    }),
+    getNextDueDate: vi.fn().mockImplementation(() => {
+      // Return a fixed date for testing
+      return new Date("2025-01-15");
+    }),
+    getFrequencyDisplayText: vi.fn().mockImplementation((habit) => {
+      if (habit.frequency.length === 7) return "Every day";
+      if (habit.frequency.length === 1) return habit.frequency[0].slice(0, 3);
+      return "Multiple days";
+    }),
+    getUserTimezone: vi.fn().mockReturnValue("America/Chicago"),
+    normalizeDate: vi.fn().mockImplementation((date) => date),
+    dateInUserTimezone: vi.fn().mockImplementation((date) => date),
+    celebrationColors: ["#FF5722", "#FFC107", "#4CAF50", "#2196F3", "#9C27B0"],
+  };
+});
 
 // Mock habits for testing
 const createMockHabit = (overrides = {}): Habit => {
@@ -74,14 +99,6 @@ const createMockHabit = (overrides = {}): Habit => {
   };
 };
 
-// Create completed habit for potential future tests
-// const mockCompletedHabit = createMockHabit({
-//   completedDates: [
-//     subDays(new Date(), 2).toISOString(),
-//     subDays(new Date(), 1).toISOString(),
-//     new Date().toISOString(),
-//   ],
-// });
 // Convert day number to weekday string
 const getDayName = (dayNum: number): WeekDay => {
   const days: WeekDay[] = [
@@ -115,7 +132,6 @@ const mockFutureHabit = createMockHabit({
 describe("HabitCard", () => {
   // Mock handlers
   const onToggleHabit = vi.fn();
-  // const onToggleDate = vi.fn(); // Not used in current tests
   const onDelete = vi.fn();
   const onEdit = vi.fn();
 
@@ -225,7 +241,7 @@ describe("HabitCard", () => {
 
   test("shows continue streak message for habit completed yesterday", () => {
     // Mock isHabitDueToday to return true
-    (isHabitDueToday as jest.Mock).mockReturnValue(true);
+    vi.mocked(isHabitDueToday).mockReturnValue(true);
 
     // Create today and yesterday dates
     const today = new Date();
@@ -267,11 +283,11 @@ describe("HabitCard", () => {
   test("does not call onToggleHabit when clicking on a future habit", async () => {
     // Reset mock and ensure isHabitDueToday returns false for future habits
     vi.clearAllMocks();
-    (isHabitDueToday as jest.Mock).mockImplementation(() => false);
+    vi.mocked(isHabitDueToday).mockReturnValue(false);
 
     // Create a habit that's definitely not due today
     const notDueHabit = createMockHabit({
-      frequency: ["not-a-real-day"], // Not due on any day
+      frequency: ["not-a-real-day" as WeekDay], // Not due on any day
       completedDates: [], // No completed dates
       streak: 0,
     });
@@ -482,8 +498,8 @@ describe("HabitCard", () => {
 
   test("shows correct streak message for last completed habit", () => {
     // Set up mocks
-    (isHabitDueToday as jest.Mock).mockReturnValue(true);
-    (utils.isCompletedToday as jest.Mock).mockReturnValue(false);
+    vi.mocked(isHabitDueToday).mockReturnValue(true);
+    vi.mocked(isCompletedToday).mockReturnValue(false);
 
     // Create a habit with yesterday's completion but no streak (backend resets it)
     const yesterday = new Date();
@@ -502,10 +518,8 @@ describe("HabitCard", () => {
       />
     );
 
-    // Use more flexible approach to find the element
     const streakElements = screen.getAllByText(/streak|continue/i);
     expect(streakElements.length).toBeGreaterThan(0);
-    // At least one of the elements should contain "continue"
     expect(
       streakElements.some((el) =>
         el.textContent?.toLowerCase().includes("continue")

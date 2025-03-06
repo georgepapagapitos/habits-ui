@@ -16,5 +16,15 @@ const theme = {
   borderRadius,
 };
 
+export {
+  animations,
+  borderRadius,
+  breakpoints,
+  colors,
+  shadows,
+  spacing,
+  typography,
+};
+
 export { theme };
 export default theme;

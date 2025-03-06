@@ -1,4 +1,4 @@
-import { HabitCreateDTO } from "../types";
+import { HabitCreateDTO } from "@habits/types";
 
 // These are used for initial seeding when no habits exist
 export const defaultHabitsDTO: HabitCreateDTO[] = [

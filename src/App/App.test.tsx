@@ -1,9 +1,9 @@
-import { describe, test, expect, vi } from "vitest";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { App } from "./App";
-import { renderWithProviders } from "../tests/utils";
+import { renderWithProviders } from "@tests/utils";
 import React from "react";
+import { describe, expect, test, vi } from "vitest";
+import { App } from "./App";
 
 // Create a mock AuthProvider
 const mockAuthContext = {

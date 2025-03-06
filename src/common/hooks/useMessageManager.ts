@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface Message {
   id: string;
@@ -25,7 +25,7 @@ export default function useMessageManager(options: MessageManagerOptions = {}) {
   }, []);
 
   // Keep track of active timeouts so we can clean them up
-  const timeoutRefs = React.useRef<{ [key: string]: number }>({});
+  const timeoutRefs = useRef<{ [key: string]: number }>({});
 
   // Add a new message
   const addMessage = useCallback(

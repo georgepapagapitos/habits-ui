@@ -1,8 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Input } from "./Input";
+import { theme } from "@theme";
 import { ThemeProvider } from "styled-components";
-import { theme } from "../../theme";
+import { Input } from "./Input";
 
 describe("Input", () => {
   const renderInput = (props = {}) => {

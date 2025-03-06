@@ -1,9 +1,9 @@
+import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import "@testing-library/jest-dom";
-import { Button } from "./Button";
+import { theme } from "@theme";
 import { ThemeProvider } from "styled-components";
-import { theme } from "../../theme";
+import { Button } from "./Button";
 
 describe("Button", () => {
   const renderButton = (props = {}) => {

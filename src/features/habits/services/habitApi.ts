@@ -1,7 +1,7 @@
+import { Habit, HabitCreateDTO, HabitUpdateDTO } from "@habits/types";
+import { getUserTimezone } from "@habits/utils";
 import axios from "axios";
 import { format } from "date-fns";
-import { Habit, HabitCreateDTO, HabitUpdateDTO } from "../types";
-import { getUserTimezone } from "../utils/habitUtils";
 
 // Base URL for the API - using environment variables
 const API_URL = `${import.meta.env.VITE_API_URL || "/api"}/habits`;

@@ -1,15 +1,7 @@
+import { useAuth } from "@auth/hooks";
+import { Button, Error, Form, Group, Input, Label, Title } from "@components";
 import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "../../../../common/components/Button";
-import {
-  Error,
-  Form,
-  Group,
-  Label,
-  Title,
-} from "../../../../common/components/Form";
-import { Input } from "../../../../common/components/Input";
-import { useAuth } from "../../hooks";
 import { LinkText, StyledLink } from "./loginForm.styles";
 
 export const LoginForm = () => {

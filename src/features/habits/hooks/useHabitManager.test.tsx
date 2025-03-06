@@ -1,8 +1,8 @@
 import { renderHook, act } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
-import { useHabitManager } from "./useHabitManager";
-import { habitApi } from "../services/habitApi";
-import { Habit, WeekDay } from "../types";
+import { useHabitManager } from "@habits/hooks";
+import { habitApi } from "@habits/services";
+import { Habit, WeekDay } from "@habits/types";
 
 // Mock the habitApi
 vi.mock("../services/habitApi", () => ({

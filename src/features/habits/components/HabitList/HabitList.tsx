@@ -1,5 +1,5 @@
-import { Habit } from "../../types";
-import { HabitCard } from "../HabitCard";
+import { HabitCard } from "@habits/components";
+import { Habit } from "@habits/types";
 import { List } from "./habitList.styles";
 
 interface HabitListProps {

@@ -1,8 +1,8 @@
+import { HabitList } from "@habits/components";
+import { Habit } from "@habits/types";
 import { screen } from "@testing-library/react";
+import { renderWithProviders } from "@tests/utils";
 import { describe, expect, test, vi } from "vitest";
-import { renderWithProviders } from "../../../../tests/utils";
-import { Habit } from "../../types";
-import { HabitList } from "./HabitList";
 
 // Mock the HabitCard component to simplify testing
 vi.mock("../HabitCard", () => ({

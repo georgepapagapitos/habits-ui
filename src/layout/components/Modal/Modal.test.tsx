@@ -1,6 +1,6 @@
 import { fireEvent, screen } from "@testing-library/react";
+import { renderWithProviders } from "@tests/utils";
 import { describe, expect, test, vi } from "vitest";
-import { renderWithProviders } from "../../../tests/utils";
 import { Modal } from "./Modal";
 
 // Mock the scroll lock functions

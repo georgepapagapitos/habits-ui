@@ -1,6 +1,6 @@
+import { RegisterForm } from "@auth/components";
+import { Header } from "@layout/components";
 import styled from "styled-components";
-import { RegisterForm } from "../features/auth";
-import { Header } from "../layout/components";
 
 const PageContainer = styled.div`
   display: flex;
