@@ -1,4 +1,4 @@
-import { Habit } from "../types";
+import { Habit } from "@habits/types";
 import { getDay, addDays, startOfDay, isSameDay, parseISO } from "date-fns";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 

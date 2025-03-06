@@ -1,7 +1,7 @@
-import { describe, test, expect } from "vitest";
 import { screen } from "@testing-library/react";
+import { renderWithProviders } from "@tests/utils";
+import { describe, expect, test } from "vitest";
 import { BottomNav } from "./BottomNav";
-import { renderWithProviders } from "../../../tests/utils";
 
 describe("BottomNav", () => {
   test("renders navigation items", () => {

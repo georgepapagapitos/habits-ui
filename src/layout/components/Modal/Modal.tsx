@@ -1,5 +1,5 @@
+import { lockScroll, unlockScroll } from "@utils/scrollLock";
 import { ReactNode, useEffect } from "react";
-import { lockScroll, unlockScroll } from "../../../common/utils/scrollLock";
 import { ModalContent, Overlay } from "./modal.styles";
 
 interface ModalProps {

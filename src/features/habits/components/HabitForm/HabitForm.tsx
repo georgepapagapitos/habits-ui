@@ -1,15 +1,7 @@
+import { Button, Form, Group, Input, Label, Title } from "@components";
+import { TimeOfDay, WeekDay } from "@habits/types";
 import { useState } from "react";
-import { Button } from "../../../../common/components/Button";
-import { Form, Group, Label, Title } from "../../../../common/components/Form";
-import { Input } from "../../../../common/components/Input";
-import { TimeOfDay, WeekDay } from "../../types";
-import {
-  DayButton,
-  // Legacy imports still used below
-  FormGroup,
-  Select,
-  StyledSelect,
-} from "./habitForm.styles";
+import { DayButton, FormGroup, Select, StyledSelect } from "./habitForm.styles";
 
 interface HabitFormProps {
   onSubmit: (habit: {

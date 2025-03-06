@@ -1,13 +1,13 @@
 import { ReactNode, useEffect, useRef } from "react";
 import {
-  DialogOverlay,
+  CloseButton,
+  DialogBody,
   DialogContainer,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogBody,
   DialogFooter,
-  CloseButton,
+  DialogHeader,
+  DialogOverlay,
+  DialogTitle,
 } from "./dialog.styles";
 
 export interface DialogProps {

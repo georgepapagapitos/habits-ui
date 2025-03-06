@@ -1,11 +1,11 @@
+import { useAuth } from "@auth/hooks";
 import { useLocation } from "react-router-dom";
-import { useAuth } from "../../../features/auth";
 import {
+  HeaderActions,
   HeaderContainer,
+  LogoutButton,
   RefreshButton,
   Title,
-  HeaderActions,
-  LogoutButton,
   UserInfo,
 } from "./header.styles";
 

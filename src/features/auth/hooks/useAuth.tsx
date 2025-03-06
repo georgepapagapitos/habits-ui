@@ -1,6 +1,6 @@
+import { authApi } from "@auth/services";
+import { AuthState, LoginRequest, RegisterRequest } from "@auth/types";
 import { ReactNode, useEffect, useReducer } from "react";
-import { authApi } from "../services/authApi";
-import { AuthState, LoginRequest, RegisterRequest } from "../types";
 
 // Initial state
 const initialState: AuthState = {

@@ -1,11 +1,11 @@
+import { AuthContext } from "@auth/hooks";
+import { AuthContextType } from "@auth/types";
 import { render, RenderOptions } from "@testing-library/react";
-import React, { ReactElement } from "react";
+import theme from "@theme";
+import { ReactElement } from "react";
 import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
 import { vi } from "vitest";
-import theme from "../common/theme";
-import { AuthContext } from "../features/auth/hooks/authContext";
-import { AuthContextType } from "../features/auth/types";
 
 interface CustomRenderOptions extends Omit<RenderOptions, "wrapper"> {
   route?: string;
@@ -15,7 +15,7 @@ interface CustomRenderOptions extends Omit<RenderOptions, "wrapper"> {
 // Default auth context for tests
 const defaultAuthContext: AuthContextType = {
   isAuthenticated: true,
-  user: { name: "Test User", email: "test@example.com" },
+  user: { id: "123", username: "Test User", email: "test@example.com" },
   token: "test-token",
   isLoading: false,
   error: null,

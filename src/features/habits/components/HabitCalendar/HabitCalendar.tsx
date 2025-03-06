@@ -1,3 +1,11 @@
+import { Habit } from "@habits/types";
+import {
+  dateInUserTimezone,
+  getUserTimezone,
+  isCompletedOnDate,
+  isHabitDueOnDate,
+  normalizeDate,
+} from "@habits/utils";
 import {
   addDays,
   eachDayOfInterval,
@@ -9,14 +17,6 @@ import {
   subDays,
 } from "date-fns";
 import { useState } from "react";
-import { Habit } from "../../types";
-import {
-  dateInUserTimezone,
-  getUserTimezone,
-  isCompletedOnDate,
-  isHabitDueOnDate,
-  normalizeDate,
-} from "../../utils";
 import {
   CalendarContainer,
   CalendarGrid,

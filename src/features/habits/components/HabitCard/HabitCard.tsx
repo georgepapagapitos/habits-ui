@@ -1,17 +1,16 @@
-import { format } from "date-fns";
-import { useState } from "react";
-import { Button } from "../../../../common/components/Button";
-import { Dialog } from "../../../../common/components/Dialog";
-import { useMenuManager } from "../../../../common/hooks";
-import { Habit } from "../../types";
+import { Button, Dialog } from "@components";
+import { HabitCalendar } from "@habits/components";
+import { Habit } from "@habits/types";
 import {
+  celebrationColors,
   getFrequencyDisplayText,
   getNextDueDate,
   isCompletedToday,
   isHabitDueToday,
-} from "../../utils";
-import { celebrationColors } from "../../utils/habitColors";
-import { HabitCalendar } from "../HabitCalendar";
+} from "@habits/utils";
+import { useMenuManager } from "@hooks/useMenuManager";
+import { format } from "date-fns";
+import { useState } from "react";
 import {
   CardContent,
   CardFooter,

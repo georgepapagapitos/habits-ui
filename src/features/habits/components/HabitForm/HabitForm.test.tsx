@@ -1,9 +1,9 @@
 import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { renderWithProviders } from "../../../../tests/utils";
-import { TimeOfDay, WeekDay } from "../../types/habit.types";
-import { HabitForm } from "./HabitForm";
+import { renderWithProviders } from "@tests/utils";
+import { TimeOfDay, WeekDay } from "@habits/types";
+import { HabitForm } from "@habits/components";
 
 describe("HabitForm", () => {
   const mockOnSubmit = vi.fn();

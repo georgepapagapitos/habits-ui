@@ -1,6 +1,6 @@
+import { RequireAuth } from "@auth/components";
+import { LoginPage, RegisterPage } from "@pages";
 import { Navigate, Route, Routes } from "react-router-dom";
-import { RequireAuth } from "../features/auth";
-import { LoginPage, RegisterPage } from "../pages";
 import { App } from "./App";
 
 export const AppRoutes = () => {

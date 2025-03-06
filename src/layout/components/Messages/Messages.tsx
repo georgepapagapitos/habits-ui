@@ -1,4 +1,3 @@
-import React from "react";
 import { MessageContainer, MessagesWrapper } from "./messages.styles";
 
 type Message = {

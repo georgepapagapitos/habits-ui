@@ -1,7 +1,4 @@
-import {
-  getRandomColorFrom,
-  getRandomGradientFrom,
-} from "../../../common/utils";
+import { getRandomColorFrom, getRandomGradientFrom } from "@common/utils";
 
 export const celebrationColors = [
   "#FFD700", // gold
