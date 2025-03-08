@@ -131,26 +131,49 @@ export function useHabitManager() {
       // Check if the habit is due on the specified date
       const isDueOnDate = isHabitDueOnDate(habit, date);
 
-      // For historical dates, we allow toggling regardless of whether it was due
-      const isHistorical = date.getTime() < new Date().setHours(0, 0, 0, 0);
+      // Check if this is a future date
+      const isFutureDate =
+        date.getTime() > new Date().setHours(23, 59, 59, 999);
 
-      if (isDueOnDate || isHistorical) {
-        const updatedHabit = await habitApi.toggleCompletion(id, date);
-        setHabits((prevHabits) =>
-          prevHabits.map((h) => (h._id === id ? updatedHabit : h))
-        );
+      // Don't allow toggling future dates
+      if (isFutureDate) {
+        showTemporaryMessage("Cannot mark habits complete for future dates");
+        return;
+      }
 
-        // Get completion status before and after
-        const wasCompletedBefore = isCompletedToday(habit);
-        const isCompletedNow = isCompletedToday(updatedHabit);
+      // Make API call to toggle completion
+      const updatedHabit = await habitApi.toggleCompletion(id, date);
+      setHabits((prevHabits) =>
+        prevHabits.map((h) => (h._id === id ? updatedHabit : h))
+      );
 
-        // Show appropriate message based on action
-        if (!wasCompletedBefore && isCompletedNow) {
-          // Habit was marked as completed
-          showTemporaryMessage(getRandomMessage(habit.name));
-        } else if (wasCompletedBefore && !isCompletedNow) {
-          // Habit was unmarked
+      // Get completion status before and after
+      const wasCompletedBefore = isCompletedOnDate(habit, date);
+      const isCompletedNow = isCompletedOnDate(updatedHabit, date);
+      const isToday =
+        new Date(date).setHours(0, 0, 0, 0) === new Date().setHours(0, 0, 0, 0);
+
+      // Show appropriate message based on action
+      if (!wasCompletedBefore && isCompletedNow) {
+        // Habit was marked as completed
+        if (isToday) {
+          const message = isDueOnDate
+            ? getRandomMessage(habit.name)
+            : `Bonus completion for "${habit.name}"! 🎉`;
+          showTemporaryMessage(message);
+        } else {
+          showTemporaryMessage(
+            `Marked "${habit.name}" as complete for ${date.toLocaleDateString()}`
+          );
+        }
+      } else if (wasCompletedBefore && !isCompletedNow) {
+        // Habit was unmarked
+        if (isToday) {
           showTemporaryMessage(`Unmarked "${habit.name}" for today`);
+        } else {
+          showTemporaryMessage(
+            `Unmarked "${habit.name}" for ${date.toLocaleDateString()}`
+          );
         }
       }
     } catch (err) {

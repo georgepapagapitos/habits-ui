@@ -526,4 +526,51 @@ describe("HabitCard", () => {
       )
     ).toBe(true);
   });
+
+  test("future habits display correct visual indicator", () => {
+    // Create a habit that is not due today
+    vi.mocked(isHabitDueToday).mockReturnValue(false);
+    vi.mocked(isCompletedToday).mockReturnValue(false);
+
+    renderWithProviders(
+      <HabitCard habit={mockFutureHabit} onToggleHabit={onToggleHabit} />
+    );
+
+    // Check if the component renders the sleeping (💤) emoji for future habits
+    const cardContent = screen.getByText("Test Habit").closest("div[class]");
+    expect(cardContent?.textContent).toContain("💤");
+  });
+
+  test("completed habits display correct visual indicator", () => {
+    // Create a habit that is completed today
+    vi.mocked(isHabitDueToday).mockReturnValue(true);
+    vi.mocked(isCompletedToday).mockReturnValue(true);
+
+    const completedHabit = createMockHabit({
+      frequency: [getTodayName()],
+      completedDates: [new Date().toISOString()],
+    });
+
+    renderWithProviders(
+      <HabitCard habit={completedHabit} onToggleHabit={onToggleHabit} />
+    );
+
+    // Check if the component renders the completed (🌻) emoji
+    const cardContent = screen.getByText("Test Habit").closest("div[class]");
+    expect(cardContent?.textContent).toContain("🌻");
+  });
+
+  test("due but not completed habits display correct visual indicator", () => {
+    // Create a habit that is due today but not completed
+    vi.mocked(isHabitDueToday).mockReturnValue(true);
+    vi.mocked(isCompletedToday).mockReturnValue(false);
+
+    renderWithProviders(
+      <HabitCard habit={mockDueHabit} onToggleHabit={onToggleHabit} />
+    );
+
+    // Check if the component renders the due (🌱) emoji
+    const cardContent = screen.getByText("Test Habit").closest("div[class]");
+    expect(cardContent?.textContent).toContain("🌱");
+  });
 });

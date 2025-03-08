@@ -39,18 +39,20 @@ export const DateCell = styled.div<{
   height: 36px;
   border-radius: ${({ theme }) => theme.borderRadius.small};
   cursor: ${(props) =>
-    props.$isDue && !props.$isFuture ? "pointer" : "default"};
+    props.$isPast || props.$isToday ? "pointer" : "default"};
   opacity: ${(props) => {
-    // Full opacity for dates that are due and not in the future
-    if (props.$isDue && !props.$isFuture) return 1;
-    // Medium opacity for completed dates (even if they weren't scheduled)
-    if (props.$isCompleted) return 0.8;
-    // Lower opacity for other dates
+    // Full opacity for past or today dates
+    if (props.$isPast || props.$isToday) return 1;
+    // Lower opacity for future dates
     return 0.5;
   }};
   background-color: ${(props) => {
-    // If completed, always show success color (regardless of if it was scheduled)
-    if (props.$isCompleted) return props.theme.colors.successLight;
+    // If completed, show success color with different shade depending on if it was due
+    if (props.$isCompleted) {
+      return props.$isDue
+        ? props.theme.colors.successLight // Regular completion
+        : "#B2DFDB"; // Bonus completion - different shade for non-due dates
+    }
 
     // Today's date gets special background if not completed
     if (props.$isToday && !props.$isCompleted)

@@ -191,12 +191,6 @@ export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
       return;
     }
 
-    // Only allow toggling if the habit was scheduled for this day
-    if (!isHabitDueOnDate(habit, normalizedDate)) {
-      console.log("Date not scheduled for this habit:", normalizedDate);
-      return;
-    }
-
     console.log("Toggling date:", normalizedDate.toISOString());
     onToggleDate(habit._id, normalizedDate);
   };
@@ -258,6 +252,10 @@ export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
         <LegendItem>
           <LegendSwatch $color="#a5d6a7" />
           <span>Completed</span>
+        </LegendItem>
+        <LegendItem>
+          <LegendSwatch $color="#B2DFDB" />
+          <span>Bonus</span>
         </LegendItem>
         <LegendItem>
           <LegendSwatch $color="#ffcdd2" />
