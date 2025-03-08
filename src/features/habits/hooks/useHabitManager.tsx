@@ -158,7 +158,7 @@ export function useHabitManager() {
         if (isToday) {
           const message = isDueDate
             ? getRandomMessage(updatedHabit.name)
-            : `Bonus completion for "${updatedHabit.name}"! 🎉 (This adds to your streak!)`;
+            : `Bonus completion for "${updatedHabit.name}"! 🎉 (This adds to your streak, but missing due days will still break it)`;
           showTemporaryMessage(message);
         } else {
           const bonusMsg = isDueDate ? "" : " (bonus completion)";
