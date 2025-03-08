@@ -1,4 +1,4 @@
-name: Frontend CI
+name: UI CI
 
 on:
   push:
@@ -16,7 +16,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "20"
           cache: "npm"
 
       - name: Install dependencies
@@ -33,3 +33,14 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+      - name: Run test coverage
+        if: github.event_name == 'pull_request'
+        run: npm run test:coverage
+
+      - name: Upload coverage reports
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
