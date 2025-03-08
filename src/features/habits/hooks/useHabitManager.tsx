@@ -2,11 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { encouragingMessages } from "../constants";
 import { habitApi } from "../services/habitApi";
 import { Habit, HabitCreateDTO, TimeOfDay, WeekDay } from "../types";
-import {
-  isCompletedOnDate,
-  isCompletedToday,
-  isHabitDueOnDate,
-} from "../utils";
+import { isCompletedOnDate, isHabitDueOnDate } from "../utils";
 
 // Message type
 type Message = {
@@ -155,15 +151,19 @@ export function useHabitManager() {
 
       // Show appropriate message based on action
       if (!wasCompletedBefore && isCompletedNow) {
+        // Determine if this date is a due date for this habit
+        const isDueDate = isHabitDueOnDate(updatedHabit, date);
+
         // Habit was marked as completed
         if (isToday) {
-          const message = isDueOnDate
-            ? getRandomMessage(habit.name)
-            : `Bonus completion for "${habit.name}"! 🎉`;
+          const message = isDueDate
+            ? getRandomMessage(updatedHabit.name)
+            : `Bonus completion for "${updatedHabit.name}"! 🎉 (This adds to your streak, but missing due days will still break it)`;
           showTemporaryMessage(message);
         } else {
+          const bonusMsg = isDueDate ? "" : " (bonus completion)";
           showTemporaryMessage(
-            `Marked "${habit.name}" as complete for ${date.toLocaleDateString()}`
+            `Marked "${updatedHabit.name}" as complete for ${date.toLocaleDateString()}${bonusMsg}`
           );
         }
       } else if (wasCompletedBefore && !isCompletedNow) {
