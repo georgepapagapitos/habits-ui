@@ -171,7 +171,7 @@ describe("HabitCard", () => {
     expect(screen.getByText("Completed today")).toBeInTheDocument();
   });
 
-  test("shows next due date for future habits", () => {
+  test("shows bonus completion message for non-due day habits", () => {
     renderWithProviders(
       <HabitCard habit={mockFutureHabit} onToggleHabit={onToggleHabit} />
     );
@@ -196,8 +196,14 @@ describe("HabitCard", () => {
       nextDue = addDays(nextDue, 1);
     }
 
+    // Check for the bonus completion message instead of just next due date
     expect(
-      screen.getByText(`Next due ${format(nextDue, "MMM d")}`)
+      screen.getByText((content, element) => {
+        return (
+          content.includes(`Next due ${format(nextDue, "MMM d")}`) ||
+          content.includes("Not due today, but can be completed as a bonus")
+        );
+      })
     ).toBeInTheDocument();
   });
 
@@ -280,7 +286,7 @@ describe("HabitCard", () => {
     }
   });
 
-  test("does not call onToggleHabit when clicking on a future habit", async () => {
+  test("allows toggling non-due habits too", async () => {
     // Reset mock and ensure isHabitDueToday returns false for future habits
     vi.clearAllMocks();
     vi.mocked(isHabitDueToday).mockReturnValue(false);
@@ -301,7 +307,8 @@ describe("HabitCard", () => {
     expect(cardContent).not.toBeNull();
     if (cardContent) {
       await userEvent.click(cardContent);
-      expect(onToggleHabit).not.toHaveBeenCalled();
+      // With our changes, onToggleHabit should now be called for non-due habits too
+      expect(onToggleHabit).toHaveBeenCalledWith("habit-1");
     }
   });
 
@@ -527,7 +534,7 @@ describe("HabitCard", () => {
     ).toBe(true);
   });
 
-  test("future habits display correct visual indicator", () => {
+  test("non-due habits display correct visual indicator and message", () => {
     // Create a habit that is not due today
     vi.mocked(isHabitDueToday).mockReturnValue(false);
     vi.mocked(isCompletedToday).mockReturnValue(false);
@@ -536,9 +543,14 @@ describe("HabitCard", () => {
       <HabitCard habit={mockFutureHabit} onToggleHabit={onToggleHabit} />
     );
 
-    // Check if the component renders the sleeping (💤) emoji for future habits
+    // Check if the component renders the star (🌟) emoji for non-due habits
     const cardContent = screen.getByText("Test Habit").closest("div[class]");
-    expect(cardContent?.textContent).toContain("💤");
+    expect(cardContent?.textContent).toContain("🌟");
+
+    // Check that it shows the bonus completion message
+    expect(
+      screen.getByText(/not due today, but can be completed as a bonus/i)
+    ).toBeInTheDocument();
   });
 
   test("completed habits display correct visual indicator", () => {

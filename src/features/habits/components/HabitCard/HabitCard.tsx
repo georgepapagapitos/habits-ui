@@ -77,24 +77,22 @@ export const HabitCard = ({
 
   // Handle toggle with animation internally
   const handleToggle = () => {
-    // Only allow toggling if the habit is due today or already completed
-    if (isDue || isCompleted) {
-      // Set animation state
-      setIsCompleting(true);
+    // Allow toggling for all habits, whether due today or not
+    // Set animation state
+    setIsCompleting(true);
 
-      // Haptic feedback for successful toggle
-      if ("vibrate" in navigator) {
-        navigator.vibrate(100);
-      }
-
-      // Call the parent handler with the habit ID
-      onToggleHabit(habit._id);
-
-      // Reset the animation state after the animation completes
-      setTimeout(() => {
-        setIsCompleting(false);
-      }, 600);
+    // Haptic feedback for successful toggle
+    if ("vibrate" in navigator) {
+      navigator.vibrate(100);
     }
+
+    // Call the parent handler with the habit ID
+    onToggleHabit(habit._id);
+
+    // Reset the animation state after the animation completes
+    setTimeout(() => {
+      setIsCompleting(false);
+    }, 600);
   };
 
   // Get the latest completed date for display
@@ -214,7 +212,7 @@ export const HabitCard = ({
                   ? `🌻` // Completed today (whether due or not)
                   : isDue
                     ? `🌱` // Due but not completed
-                    : `💤` // Not due today
+                    : `🌟` // Not due today but can still be completed
               }
             </div>
             {habit.name}
@@ -226,7 +224,10 @@ export const HabitCard = ({
             ) : isDue ? (
               <span>Due today</span>
             ) : (
-              <span>Next due {format(nextDue, "MMM d")}</span>
+              <span>
+                Not due today, but can be completed as a bonus (Next due{" "}
+                {format(nextDue, "MMM d")})
+              </span>
             )}
             {lastCompleted && !isCompleted && (
               <> • Last completed {format(new Date(lastCompleted), "MMM d")}</>
