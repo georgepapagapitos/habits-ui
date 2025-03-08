@@ -77,30 +77,24 @@ export const HabitCard = ({
 
   // Handle toggle with animation internally
   const handleToggle = () => {
-    // Only allow toggling if it's due today (or toggling off if already completed)
-    if (!isDue && !isCompleted) {
-      // Provide subtle feedback that the habit isn't due today
+    // Only allow toggling if the habit is due today or already completed
+    if (isDue || isCompleted) {
+      // Set animation state
+      setIsCompleting(true);
+
+      // Haptic feedback for successful toggle
       if ("vibrate" in navigator) {
-        navigator.vibrate([20, 30, 20]); // Different vibration pattern for "not due"
+        navigator.vibrate(100);
       }
-      return;
+
+      // Call the parent handler with the habit ID
+      onToggleHabit(habit._id);
+
+      // Reset the animation state after the animation completes
+      setTimeout(() => {
+        setIsCompleting(false);
+      }, 600);
     }
-
-    // Set animation state
-    setIsCompleting(true);
-
-    // Haptic feedback for successful toggle
-    if ("vibrate" in navigator) {
-      navigator.vibrate(100);
-    }
-
-    // Call the parent handler with the habit ID
-    onToggleHabit(habit._id);
-
-    // Reset the animation state after the animation completes
-    setTimeout(() => {
-      setIsCompleting(false);
-    }, 600);
   };
 
   // Get the latest completed date for display
@@ -216,27 +210,25 @@ export const HabitCard = ({
           >
             <div>
               {
-                isDue
-                  ? isCompleted
-                    ? `🌻` // Completed today
-                    : `🌱` // Due but not completed
-                  : `💤` // Not due today
+                isCompleted
+                  ? `🌻` // Completed today (whether due or not)
+                  : isDue
+                    ? `🌱` // Due but not completed
+                    : `💤` // Not due today
               }
             </div>
             {habit.name}
             <FrequencyBadge>{getFrequencyDisplayText(habit)}</FrequencyBadge>
           </HabitName>
           <HabitMeta>
-            {isDue ? (
-              isCompleted ? (
-                <span>Completed today</span>
-              ) : (
-                <span>Due today</span>
-              )
+            {isCompleted ? (
+              <span>Completed today{!isDue ? " (bonus)" : ""}</span>
+            ) : isDue ? (
+              <span>Due today</span>
             ) : (
               <span>Next due {format(nextDue, "MMM d")}</span>
             )}
-            {lastCompleted && (!isDue || !isCompleted) && (
+            {lastCompleted && !isCompleted && (
               <> • Last completed {format(new Date(lastCompleted), "MMM d")}</>
             )}
             <> • Total completions: {totalCompletions}</>
