@@ -240,21 +240,18 @@ export const HabitCard = ({
               display: "flex",
               alignItems: "center",
               gap: "4px",
-              color:
-                habit.streak > 0 || (lastCompleted && isDue && !isCompleted)
-                  ? "#4ECB71"
-                  : "inherit",
+              color: habit.streak > 0 ? "#4ECB71" : "inherit",
             }}
           >
-            {(habit.streak > 0 || (lastCompleted && isDue && !isCompleted)) && (
-              <span>🔥</span>
-            )}
+            {habit.streak > 0 && <span>🔥</span>}
             <span>
               {habit.streak > 0
                 ? `Streak: ${habit.streak} ${habit.streak === 1 ? "day" : "days"}`
-                : lastCompleted && isDue && !isCompleted
+                : isDue && !isCompleted && habit.completedDates.length > 0
                   ? "Continue your streak today!"
-                  : "Start a streak!"}
+                  : isDue && !isCompleted
+                    ? "Start a streak!"
+                    : "No streak yet"}
             </span>
           </div>
         </CardFooter>
