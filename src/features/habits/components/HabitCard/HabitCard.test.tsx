@@ -199,10 +199,7 @@ describe("HabitCard", () => {
     // Check for the bonus completion message instead of just next due date
     expect(
       screen.getByText((content, element) => {
-        return (
-          content.includes(`Next due ${format(nextDue, "MMM d")}`) ||
-          content.includes("Not due today, but can be completed as a bonus")
-        );
+        return content.includes(`Next due ${format(nextDue, "MMM d")}`);
       })
     ).toBeInTheDocument();
   });
@@ -546,11 +543,6 @@ describe("HabitCard", () => {
     // Check if the component renders the star (🌟) emoji for non-due habits
     const cardContent = screen.getByText("Test Habit").closest("div[class]");
     expect(cardContent?.textContent).toContain("🌟");
-
-    // Check that it shows the bonus completion message
-    expect(
-      screen.getByText(/not due today, but can be completed as a bonus/i)
-    ).toBeInTheDocument();
   });
 
   test("completed habits display correct visual indicator", () => {
