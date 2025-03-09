@@ -247,9 +247,11 @@ export const HabitCard = ({
             <span>
               {habit.streak > 0
                 ? `Streak: ${habit.streak} ${habit.streak === 1 ? "day" : "days"}`
-                : isDue && !isCompleted
-                  ? "Start your streak today!"
-                  : "No current streak"}
+                : isDue && !isCompleted && habit.completedDates.length > 0
+                  ? "Continue your streak today!"
+                  : isDue && !isCompleted
+                    ? "Start a streak!"
+                    : "No current streak"}
             </span>
           </div>
         </CardFooter>
