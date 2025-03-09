@@ -17,6 +17,7 @@ import {
   subDays,
 } from "date-fns";
 import { useState } from "react";
+import theme from "@common/theme";
 import {
   CalendarContainer,
   CalendarGrid,
@@ -196,17 +197,32 @@ export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
   };
 
   return (
-    <CalendarContainer>
+    <CalendarContainer role="region" aria-label={`Calendar for ${habit.name}`}>
       <CalendarHeader>
-        <NavigationButton onClick={previousMonth}>←</NavigationButton>
+        <NavigationButton
+          onClick={previousMonth}
+          aria-label={`Previous month: ${format(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1), "MMMM yyyy")}`}
+        >
+          ←
+        </NavigationButton>
         <MonthTitle>{format(currentMonth, "MMMM yyyy")}</MonthTitle>
-        <NavigationButton onClick={nextMonth}>→</NavigationButton>
+        <NavigationButton
+          onClick={nextMonth}
+          aria-label={`Next month: ${format(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1), "MMMM yyyy")}`}
+        >
+          →
+        </NavigationButton>
       </CalendarHeader>
 
-      <CalendarGrid>
+      <CalendarGrid
+        role="grid"
+        aria-label={`${format(currentMonth, "MMMM yyyy")} calendar`}
+      >
         {/* Day headers */}
         {dayNames.map((day) => (
-          <DayHeader key={day}>{day}</DayHeader>
+          <DayHeader key={day} role="columnheader" aria-label={day}>
+            {day}
+          </DayHeader>
         ))}
 
         {/* Calendar days */}
@@ -228,6 +244,17 @@ export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
           // Use date-fns isSameDay for simple comparison
           const isTodayInUserTZ = isSameDay(normalizedDate, today);
 
+          const isClickable = isCurrentMonth && (isPast || isTodayInUserTZ);
+          const dateLabel = format(date, "EEEE, MMMM d, yyyy");
+          let statusDescription = "";
+
+          if (isCompleted && isDue) statusDescription = "Completed habit";
+          else if (isCompleted && !isDue)
+            statusDescription = "Bonus completion";
+          else if (!isCompleted && isDue && isPast)
+            statusDescription = "Missed habit";
+          else if (isDue) statusDescription = "Scheduled habit";
+
           return (
             <DateCell
               key={`${date.toISOString()}-${index}`}
@@ -241,6 +268,16 @@ export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
               style={{
                 opacity: isCurrentMonth ? 1 : 0.3,
               }}
+              role="button"
+              tabIndex={isClickable ? 0 : -1}
+              aria-label={`${dateLabel}${statusDescription ? `, ${statusDescription}` : ""}`}
+              aria-disabled={!isClickable}
+              onKeyDown={(e) => {
+                if (isClickable && (e.key === "Enter" || e.key === " ")) {
+                  e.preventDefault();
+                  handleDayClick(date);
+                }
+              }}
             >
               {format(date, "d")}
             </DateCell>
@@ -248,22 +285,26 @@ export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
         })}
       </CalendarGrid>
 
-      <Legend>
+      <Legend role="legend" aria-label="Calendar legend">
         <LegendItem>
-          <LegendSwatch $color="#a5d6a7" />
+          <LegendSwatch $color={theme.colors.successLight} />
           <span>Completed</span>
         </LegendItem>
         <LegendItem>
-          <LegendSwatch $color="#B2DFDB" />
+          <LegendSwatch $color={theme.colors.infoLight} />
           <span>Bonus</span>
         </LegendItem>
         <LegendItem>
-          <LegendSwatch $color="#ffcdd2" />
+          <LegendSwatch $color={theme.colors.errorLight} />
           <span>Missed</span>
         </LegendItem>
         <LegendItem>
-          <LegendSwatch $color="#E6D9FF" />
+          <LegendSwatch $color={theme.colors.transparent.primary20} />
           <span>Scheduled</span>
+        </LegendItem>
+        <LegendItem>
+          <LegendSwatch $color="rgba(161, 95, 205, 0.05)" />
+          <span>Available</span>
         </LegendItem>
       </Legend>
     </CalendarContainer>

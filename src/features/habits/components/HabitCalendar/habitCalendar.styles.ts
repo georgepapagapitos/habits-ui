@@ -51,7 +51,7 @@ export const DateCell = styled.div<{
     if (props.$isCompleted) {
       return props.$isDue
         ? props.theme.colors.successLight // Regular completion
-        : "#B2DFDB"; // Bonus completion - different shade for non-due dates
+        : props.theme.colors.infoLight; // Bonus completion
     }
 
     // Today's date gets special background if not completed
@@ -62,11 +62,11 @@ export const DateCell = styled.div<{
     if (props.$isDue && props.$isPast && !props.$isCompleted)
       return props.theme.colors.errorLight;
 
-    // Days that are scheduled get purple background to make them stand out
-    if (props.$isDue) return props.theme.colors.transparent.primary10;
+    // Days that are scheduled get a prominent purple background
+    if (props.$isDue) return props.theme.colors.transparent.primary20;
 
-    // Not scheduled days get default background
-    return props.theme.colors.background;
+    // Non-scheduled days get a very light purple background with higher opacity
+    return "rgba(161, 95, 205, 0.05)"; // Very light purple (using primary with 5% opacity)
   }};
   border: ${(props) => {
     // Today gets primary border
@@ -76,24 +76,73 @@ export const DateCell = styled.div<{
       return `1px solid ${props.theme.colors.borderLight}`;
     return "none";
   }};
-  color: ${(props) =>
-    props.$isCompleted ? props.theme.colors.success : props.theme.colors.text};
+  /* Use consistent text colors for better readability across all states */
+  color: ${(props) => props.theme.colors.text};
   font-weight: ${(props) => (props.$isToday ? "bold" : "normal")};
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease;
 
   &:hover {
     background-color: ${(props) => {
-      // Clickable dates (due and not in future) get hover effect
-      if (props.$isDue && !props.$isFuture) {
-        return props.$isCompleted
-          ? props.theme.colors.success // Completed - darker success color on hover
-          : props.theme.colors.primaryLight; // Not completed - primary light color on hover
+      // Only apply hover effects to clickable dates
+      if (!props.$isPast && !props.$isToday) return;
+
+      // For each state, provide a darker shade of the same color
+      if (props.$isCompleted) {
+        return props.$isDue
+          ? props.theme.colors.successDark // Darker shade of success
+          : props.theme.colors.infoDark; // Darker shade of info/bonus
       }
 
-      // Non-clickable dates keep their normal color
-      if (props.$isCompleted) return props.theme.colors.successLight;
-      if (props.$isDue) return props.theme.colors.transparent.primary10; // Scheduled days
-      return props.theme.colors.background; // Not scheduled days - default background
+      // Scheduled days that are missed (past due and not completed)
+      if (
+        props.$isDue &&
+        props.$isPast &&
+        !props.$isCompleted &&
+        !props.$isToday
+      )
+        return props.theme.colors.errorDark; // Darker shade of error for missed
+      // Scheduled days (including today if due)
+      else if (props.$isDue)
+        return props.theme.colors.primaryLight; // Using lighter primary for better contrast
+      // Non-scheduled days - slightly darker light purple
+      else return "rgba(161, 95, 205, 0.1)"; // Darker shade of light purple (10% opacity)
     }};
+    transform: ${(props) =>
+      props.$isPast || props.$isToday ? "scale(1.05)" : "none"};
+
+    /* Change text color on hover for dark backgrounds to improve contrast */
+    color: ${(props) => {
+      // For dark backgrounds on hover, use white text for better contrast
+
+      // For missed days (past due and not completed)
+      if (
+        props.$isDue &&
+        props.$isPast &&
+        !props.$isCompleted &&
+        !props.$isToday
+      )
+        return props.theme.colors.textOnDark; // White text on dark red background
+      // For bonus completion days (completed but not due) - infoDark is a dark blue
+      else if (props.$isCompleted && !props.$isDue)
+        return props.theme.colors.textOnDark; // White text on dark blue background
+      // For regular completion days - successDark is dark green
+      else if (props.$isCompleted && props.$isDue)
+        return props.theme.colors.textOnDark; // White text on dark green background
+      else return props.theme.colors.text; // Standard text color for other states
+    }};
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${(props) => props.theme.colors.focus};
+    outline-offset: 2px;
+    box-shadow: ${(props) => props.theme.shadows.small};
+  }
+
+  &:active {
+    transform: ${(props) =>
+      props.$isPast || props.$isToday ? "scale(0.98)" : "none"};
   }
 `;
 
@@ -117,10 +166,26 @@ export const NavigationButton = styled.button`
   cursor: pointer;
   padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.sm};
   border-radius: ${({ theme }) => theme.borderRadius.small};
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.1s ease;
 
   &:hover {
     background-color: ${({ theme }) => theme.colors.primaryLight};
     color: ${({ theme }) => theme.colors.primaryText};
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.focus};
+    outline-offset: 2px;
+    background-color: ${({ theme }) => theme.colors.primaryLight};
+  }
+
+  &:active {
+    transform: scale(0.95);
+    background-color: ${({ theme }) => theme.colors.primaryDark};
+    color: ${({ theme }) => theme.colors.textOnDark};
   }
 `;
 
