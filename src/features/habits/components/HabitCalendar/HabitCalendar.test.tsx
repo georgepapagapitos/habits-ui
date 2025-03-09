@@ -1,4 +1,5 @@
 import { HabitCalendar } from "@habits/components";
+import * as HabitsContext from "@habits/hooks/habitContext";
 import { Habit, WeekDay } from "@habits/types";
 import { isHabitDueOnDate } from "@habits/utils";
 import { screen } from "@testing-library/react";
@@ -153,6 +154,7 @@ const createMockHabit = (overrides = {}): Habit => {
 
 describe("HabitCalendar", () => {
   const onToggleDate = vi.fn();
+  const toggleHabit = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -163,6 +165,24 @@ describe("HabitCalendar", () => {
       const dayOfWeek: any = date?.getDay();
       const dayName = getDayName(dayOfWeek);
       return habit.frequency.includes(dayName);
+    });
+
+    // Mock useHabits hook
+    vi.spyOn(HabitsContext, "useHabits").mockReturnValue({
+      habits: [],
+      loading: false,
+      error: null,
+      messages: [],
+      handleAddHabit: vi.fn(),
+      toggleHabit: toggleHabit,
+      deleteHabit: vi.fn(),
+      updateHabit: vi.fn(),
+      resetHabit: vi.fn(),
+      getHabitHistoryForDateRange: vi.fn(),
+      getWeeklyReport: vi.fn(),
+      refreshHabits: vi.fn(),
+      showMessage: vi.fn(),
+      clearMessages: vi.fn(),
     });
   });
 

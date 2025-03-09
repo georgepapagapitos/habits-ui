@@ -1,5 +1,7 @@
 import { AuthContext } from "@auth/hooks";
 import { AuthContextType } from "@auth/types";
+import { MenuProvider, MessageProvider } from "@common/hooks";
+import { HabitProvider } from "@habits/hooks";
 import { render, RenderOptions } from "@testing-library/react";
 import theme from "@theme";
 import { ReactElement } from "react";
@@ -10,6 +12,9 @@ import { vi } from "vitest";
 interface CustomRenderOptions extends Omit<RenderOptions, "wrapper"> {
   route?: string;
   authContextValue?: Partial<AuthContextType>;
+  withHabitProvider?: boolean;
+  withMessageProvider?: boolean;
+  withMenuProvider?: boolean;
 }
 
 // Default auth context for tests
@@ -32,16 +37,37 @@ export function renderWithProviders(
   const {
     route = "/",
     authContextValue = defaultAuthContext,
+    withHabitProvider = true,
+    withMessageProvider = true,
+    withMenuProvider = true,
     ...renderOptions
   } = options;
 
   window.history.pushState({}, "Test page", route);
 
   function Wrapper({ children }: { children: React.ReactNode }) {
+    // Wrap with providers, conditionally including the new providers
+    let wrappedChildren = children;
+
+    // Add HabitProvider if requested
+    if (withHabitProvider) {
+      wrappedChildren = <HabitProvider>{wrappedChildren}</HabitProvider>;
+    }
+
+    // Add MenuProvider if requested
+    if (withMenuProvider) {
+      wrappedChildren = <MenuProvider>{wrappedChildren}</MenuProvider>;
+    }
+
+    // Add MessageProvider if requested
+    if (withMessageProvider) {
+      wrappedChildren = <MessageProvider>{wrappedChildren}</MessageProvider>;
+    }
+
     return (
       <BrowserRouter>
         <AuthContext.Provider value={authContextValue as AuthContextType}>
-          <ThemeProvider theme={theme}>{children}</ThemeProvider>
+          <ThemeProvider theme={theme}>{wrappedChildren}</ThemeProvider>
         </AuthContext.Provider>
       </BrowserRouter>
     );

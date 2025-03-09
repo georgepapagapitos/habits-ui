@@ -1,18 +1,10 @@
+import { useMessages } from "@common/hooks";
 import { MessageContainer, MessagesWrapper } from "./messages.styles";
 
-type Message = {
-  id: string | number; // Accept both string and number IDs
-  text: string;
-};
+export const Messages: React.FC = () => {
+  const { messages } = useMessages();
 
-interface MessagesProps {
-  messages: Message[];
-}
-
-export const Messages: React.FC<MessagesProps> = ({
-  messages,
-}: MessagesProps) => {
-  if (messages.length === 0) return null;
+  if (!messages || messages.length === 0) return null;
 
   return (
     <MessagesWrapper>

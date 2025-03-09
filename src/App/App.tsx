@@ -1,5 +1,5 @@
 import { HabitForm, HabitList } from "@habits/components";
-import { useHabitManager } from "@habits/hooks";
+import { useHabits } from "@habits/hooks";
 import { TimeOfDay, WeekDay } from "@habits/types";
 import { BottomNav, Header, Messages, Modal } from "@layout/components";
 import { useState } from "react";
@@ -23,18 +23,8 @@ export const App = () => {
     timeOfDay?: TimeOfDay;
   }>(null);
 
-  const {
-    habits,
-    loading,
-    error,
-    messages,
-    handleAddHabit,
-    toggleHabit,
-    deleteHabit,
-    updateHabit,
-    resetHabit,
-    refreshHabits,
-  } = useHabitManager();
+  // Use the habit context
+  const { habits, handleAddHabit, updateHabit } = useHabits();
 
   const onSubmitHabit = ({
     name,
@@ -72,39 +62,6 @@ export const App = () => {
       />
     </Modal>
   );
-
-  // Handle toggling habit for specific date
-  const handleToggleDate = async (habitId: string, date: Date) => {
-    try {
-      // This will make an API call to toggle the completion for the specified date
-      await toggleHabit(habitId, date);
-
-      // Refresh habits list to get updated data
-      await refreshHabits();
-    } catch (error) {
-      console.error("Error toggling habit for date:", error);
-    }
-  };
-
-  // Handle habit deletion
-  const handleDeleteHabit = async (habitId: string) => {
-    try {
-      await deleteHabit(habitId);
-      // No need to refresh, the habit state is updated in useHabitManager hook
-    } catch (error) {
-      console.error("Error deleting habit:", error);
-    }
-  };
-
-  // Handle habit reset
-  const handleResetHabit = async (habitId: string) => {
-    try {
-      await resetHabit(habitId);
-      // No need to refresh, the habit state is updated in useHabitManager hook
-    } catch (error) {
-      console.error("Error resetting habit:", error);
-    }
-  };
 
   // Handle habit editing - open the edit modal with the selected habit data
   const handleEditHabit = (habitId: string) => {
@@ -156,23 +113,14 @@ export const App = () => {
       <Header title="Habits" />
       <Container>
         <Content>
-          <HabitList
-            habits={habits}
-            onToggleHabit={toggleHabit}
-            onToggleDate={handleToggleDate}
-            onDeleteHabit={handleDeleteHabit}
-            onEditHabit={handleEditHabit}
-            onResetHabit={handleResetHabit}
-            loading={loading}
-            error={error}
-          />
+          <HabitList />
         </Content>
       </Container>
       <AddButton onClick={openModal}>+</AddButton>
       <BottomNav />
       {isModalOpen && renderHabitFormModal()}
       {isEditModalOpen && renderEditHabitFormModal()}
-      <Messages messages={messages} />
+      <Messages />
     </>
   );
 };

@@ -1,5 +1,6 @@
 import { Button, Dialog } from "@components";
 import { HabitCalendar } from "@habits/components";
+import { useHabits } from "@habits/hooks";
 import { Habit } from "@habits/types";
 import {
   celebrationColors,
@@ -27,11 +28,6 @@ import {
 
 interface HabitCardProps {
   habit: Habit;
-  onToggleHabit: (id: string) => void;
-  onToggleDate?: (id: string, date: Date) => void;
-  onDelete?: (id: string) => void;
-  onEdit?: (id: string) => void;
-  onReset?: (id: string) => void;
 }
 
 const Celebration = () => {
@@ -51,14 +47,8 @@ const Celebration = () => {
   );
 };
 
-export const HabitCard = ({
-  habit,
-  onToggleHabit,
-  onToggleDate,
-  onDelete,
-  onEdit,
-  onReset,
-}: HabitCardProps) => {
+export const HabitCard = ({ habit }: HabitCardProps) => {
+  const { toggleHabit, deleteHabit, updateHabit, resetHabit } = useHabits();
   const [isCompleting, setIsCompleting] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
@@ -86,8 +76,8 @@ export const HabitCard = ({
       navigator.vibrate(100);
     }
 
-    // Call the parent handler with the habit ID
-    onToggleHabit(habit._id);
+    // Call the toggle function from the context
+    toggleHabit(habit._id, new Date());
 
     // Reset the animation state after the animation completes
     setTimeout(() => {
@@ -123,17 +113,14 @@ export const HabitCard = ({
 
   // Handle date toggling in calendar
   const handleToggleDate = (habitId: string, date: Date) => {
-    if (onToggleDate) {
-      onToggleDate(habitId, date);
-    }
+    toggleHabit(habitId, date);
   };
 
   // Handle edit request
   const handleEdit = () => {
     closeMenu();
-    if (onEdit) {
-      onEdit(habit._id);
-    }
+    // We'll continue to use the App component's handler for this
+    // since it manages modal state
   };
 
   // Handle delete request
@@ -144,9 +131,7 @@ export const HabitCard = ({
 
   // Confirm and execute delete
   const confirmDelete = () => {
-    if (onDelete) {
-      onDelete(habit._id);
-    }
+    deleteHabit(habit._id);
     setShowConfirmDelete(false);
   };
 
@@ -158,9 +143,7 @@ export const HabitCard = ({
 
   // Confirm and execute reset
   const confirmReset = () => {
-    if (onReset) {
-      onReset(habit._id);
-    }
+    resetHabit(habit._id);
     setShowConfirmReset(false);
   };
 
@@ -184,21 +167,15 @@ export const HabitCard = ({
         {/* Context menu */}
         {showMenu && (
           <ContextMenu className="context-menu">
-            {onEdit && (
-              <MenuItem onClick={handleEdit}>
-                <span style={{ fontSize: "14px" }}>✏️</span> Edit
-              </MenuItem>
-            )}
-            {onReset && (
-              <MenuItem onClick={handleReset}>
-                <span style={{ fontSize: "14px" }}>🔄</span> Reset Progress
-              </MenuItem>
-            )}
-            {onDelete && (
-              <MenuItem className="delete" onClick={handleDelete}>
-                <span style={{ fontSize: "14px" }}>🗑️</span> Delete
-              </MenuItem>
-            )}
+            <MenuItem onClick={handleEdit}>
+              <span style={{ fontSize: "14px" }}>✏️</span> Edit
+            </MenuItem>
+            <MenuItem onClick={handleReset}>
+              <span style={{ fontSize: "14px" }}>🔄</span> Reset Progress
+            </MenuItem>
+            <MenuItem className="delete" onClick={handleDelete}>
+              <span style={{ fontSize: "14px" }}>🗑️</span> Delete
+            </MenuItem>
           </ContextMenu>
         )}
 

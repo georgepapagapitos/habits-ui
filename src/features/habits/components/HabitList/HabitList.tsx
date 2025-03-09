@@ -1,28 +1,10 @@
 import { HabitCard } from "@habits/components";
-import { Habit } from "@habits/types";
+import { useHabits } from "@habits/hooks";
 import { List } from "./habitList.styles";
 
-interface HabitListProps {
-  habits: Habit[];
-  onToggleHabit: (id: string) => void;
-  onToggleDate?: (id: string, date: Date) => void;
-  onDeleteHabit?: (id: string) => void;
-  onEditHabit?: (id: string) => void;
-  onResetHabit?: (id: string) => void;
-  loading?: boolean;
-  error?: string | null;
-}
+export const HabitList = () => {
+  const { habits, loading, error } = useHabits();
 
-export const HabitList = ({
-  habits,
-  onToggleHabit,
-  onToggleDate,
-  onDeleteHabit,
-  onEditHabit,
-  onResetHabit,
-  loading = false,
-  error = null,
-}: HabitListProps) => {
   if (loading) {
     return (
       <div style={{ textAlign: "center", padding: "2rem" }}>
@@ -52,15 +34,7 @@ export const HabitList = ({
   return (
     <List>
       {habits.map((habit) => (
-        <HabitCard
-          key={habit._id}
-          habit={habit}
-          onToggleHabit={onToggleHabit}
-          onToggleDate={onToggleDate}
-          onDelete={onDeleteHabit}
-          onEdit={onEditHabit}
-          onReset={onResetHabit}
-        />
+        <HabitCard key={habit._id} habit={habit} />
       ))}
     </List>
   );
