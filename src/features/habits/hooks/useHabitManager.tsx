@@ -1,20 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
+import { useMessages } from "@common/hooks";
 import { encouragingMessages } from "../constants";
 import { habitApi } from "../services/habitApi";
 import { Habit, HabitCreateDTO, TimeOfDay, WeekDay } from "../types";
 import { isCompletedOnDate, isHabitDueOnDate } from "../utils";
 
-// Message type
-type Message = {
-  id: number;
-  text: string;
-};
-
 export function useHabitManager() {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { messages, addMessage, clearAllMessages } = useMessages();
 
   // Fetch habits on component mount
   useEffect(() => {
@@ -55,34 +50,11 @@ export function useHabitManager() {
     return message;
   };
 
-  // Enhanced message display - adds to queue
+  // Use the central message system for adding messages
   const showTemporaryMessage = (message: string) => {
-    const newMessage = {
-      id: Date.now(),
-      text: message,
-    };
-    // Add to existing messages
-    setMessages((current) => [...current, newMessage]);
-    // Set timeout to remove this specific message
-    const timeoutId = setTimeout(() => {
-      setMessages((current) =>
-        current.filter((msg) => msg.id !== newMessage.id)
-      );
-    }, 4000); // 4 seconds
-
-    // Store the timeout id for cleanup (prevents memory leaks)
-    return timeoutId;
+    // Add the message to the central message system
+    addMessage(message);
   };
-
-  // Clean up all timeouts when component unmounts
-  useEffect(() => {
-    const timeoutIds: number[] = [];
-
-    return () => {
-      // Clear all timeouts when component unmounts
-      timeoutIds.forEach((id) => clearTimeout(id));
-    };
-  }, []);
 
   // Add a new habit
   const handleAddHabit = async (habitData: {
@@ -106,7 +78,14 @@ export function useHabitManager() {
 
       const newHabit = await habitApi.createHabit(newHabitData);
       setHabits((prevHabits) => [...prevHabits, newHabit]);
+
+      // Show a random encouraging message
       showTemporaryMessage(`Added new habit: ${habitData.name}`);
+
+      // Add another encouraging message after a delay
+      setTimeout(() => {
+        showTemporaryMessage(getRandomMessage(habitData.name));
+      }, 2000);
       return newHabit;
     } catch (err) {
       showTemporaryMessage("Failed to add habit. Please try again.");
@@ -331,8 +310,6 @@ export function useHabitManager() {
     loading,
     error,
     messages,
-    showMessage,
-    currentMessage,
     handleAddHabit,
     toggleHabit,
     deleteHabit,
@@ -353,5 +330,8 @@ export function useHabitManager() {
         setLoading(false);
       }
     }, []),
+    // Expose the showMessage and clearMessages functions to match the HabitContextType
+    showMessage: showTemporaryMessage,
+    clearMessages: clearAllMessages,
   };
 }

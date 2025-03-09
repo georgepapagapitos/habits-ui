@@ -1,101 +1,64 @@
 import { useCallback, useEffect, useState } from "react";
-
-// Global state for menu management
-let currentlyOpenMenuId: number | null = null;
-let nextMenuId = 0;
-
-// Custom event for menu state changes
-const MENU_STATE_CHANGED = "menu:state-changed";
+import { useMenuContext } from "./menuContext";
 
 /**
  * Hook to manage context menus throughout the application.
- * Uses a global variable to ensure only one menu is open at a time.
+ * Uses MenuContext to ensure only one menu is open at a time.
  */
 export const useMenuManager = () => {
+  const {
+    registerMenu,
+    isMenuOpen,
+    toggleMenu: contextToggleMenu,
+    closeMenu: contextCloseMenu,
+  } = useMenuContext();
+
   // Generate a unique ID for this menu instance
-  const [menuId] = useState(() => ++nextMenuId);
+  const [menuId] = useState(() => registerMenu());
 
-  // Local state to track if this menu is open
-  const [isOpen, setIsOpen] = useState(false);
+  // Use local state that syncs with the context
+  const [isOpen, setIsOpen] = useState(() => isMenuOpen(menuId));
 
-  // Set up global subscription
+  // Keep local state in sync with context
   useEffect(() => {
-    // Function to synchronize our local state with global state
-    const syncWithGlobalState = () => {
-      const shouldBeOpen = currentlyOpenMenuId === menuId;
-      if (isOpen !== shouldBeOpen) {
-        setIsOpen(shouldBeOpen);
-      }
-    };
+    setIsOpen(isMenuOpen(menuId));
+  }, [isMenuOpen, menuId]);
 
-    // Register handler for global clicks
+  // Set up click outside handler
+  useEffect(() => {
+    // Handle clicks outside the menu
     const handleGlobalClick = (event: MouseEvent) => {
-      // Handle clicks outside the menu
       if (isOpen) {
         const target = event.target as Element;
         if (
           !target.closest(".menu-button") &&
           !target.closest(".context-menu")
         ) {
-          currentlyOpenMenuId = null;
-          setIsOpen(false);
-          // Dispatch event to notify other menus
-          document.dispatchEvent(new CustomEvent(MENU_STATE_CHANGED));
+          contextCloseMenu(menuId);
         }
       }
     };
 
-    // Handler for menu state change events
-    const handleMenuStateChanged = () => {
-      syncWithGlobalState();
-    };
-
-    // Synchronize immediately
-    syncWithGlobalState();
-
     // Listen for clicks to handle outside clicks
     document.addEventListener("mousedown", handleGlobalClick);
 
-    // Listen for custom events from other menus
-    document.addEventListener(MENU_STATE_CHANGED, handleMenuStateChanged);
-
     return () => {
       document.removeEventListener("mousedown", handleGlobalClick);
-      document.removeEventListener(MENU_STATE_CHANGED, handleMenuStateChanged);
     };
-  }, [menuId, isOpen]);
+  }, [menuId, isOpen, contextCloseMenu]);
 
   // Toggle menu open/closed
   const toggleMenu = useCallback(
     (e?: React.MouseEvent) => {
-      e?.stopPropagation();
-
-      if (currentlyOpenMenuId === menuId) {
-        // Close this menu if it's already open
-        currentlyOpenMenuId = null;
-        setIsOpen(false);
-        // Dispatch event to notify other menus
-        document.dispatchEvent(new CustomEvent(MENU_STATE_CHANGED));
-      } else {
-        // Open this menu and close any other open menu
-        currentlyOpenMenuId = menuId;
-        setIsOpen(true);
-        // Dispatch event to notify other menus
-        document.dispatchEvent(new CustomEvent(MENU_STATE_CHANGED));
-      }
+      contextToggleMenu(menuId, e);
     },
-    [menuId]
+    [menuId, contextToggleMenu]
   );
 
   // Explicitly close this menu
   const closeMenu = useCallback(() => {
-    if (currentlyOpenMenuId === menuId) {
-      currentlyOpenMenuId = null;
-      // Dispatch event to notify other menus
-      document.dispatchEvent(new CustomEvent(MENU_STATE_CHANGED));
-    }
-    setIsOpen(false);
-  }, [menuId]);
+    contextCloseMenu(menuId);
+  }, [menuId, contextCloseMenu]);
 
   return {
     isOpen,

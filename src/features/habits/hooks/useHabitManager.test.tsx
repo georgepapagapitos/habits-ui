@@ -4,6 +4,16 @@ import { useHabitManager } from "@habits/hooks";
 import { habitApi } from "@habits/services";
 import { Habit, WeekDay } from "@habits/types";
 
+// Mock the useMessages hook
+vi.mock("@common/hooks", () => ({
+  useMessages: () => ({
+    messages: [],
+    addMessage: vi.fn(),
+    removeMessage: vi.fn(),
+    clearAllMessages: vi.fn(),
+  }),
+}));
+
 // Mock the habitApi
 vi.mock("../services/habitApi", () => ({
   habitApi: {

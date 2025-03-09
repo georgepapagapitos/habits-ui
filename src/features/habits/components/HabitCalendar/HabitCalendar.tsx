@@ -1,3 +1,5 @@
+import theme from "@common/theme";
+import { useHabits } from "@habits/hooks";
 import { Habit } from "@habits/types";
 import {
   dateInUserTimezone,
@@ -17,7 +19,6 @@ import {
   subDays,
 } from "date-fns";
 import { useState } from "react";
-import theme from "@common/theme";
 import {
   CalendarContainer,
   CalendarGrid,
@@ -33,7 +34,7 @@ import {
 
 interface HabitCalendarProps {
   habit: Habit;
-  onToggleDate: (habitId: string, date: Date) => void;
+  onToggleDate?: (habitId: string, date: Date) => void; // Now optional
 }
 
 export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
@@ -181,6 +182,9 @@ export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
   // Get today's date normalized to user's timezone
   const today = normalizeDate(new Date());
 
+  // Use the toggleHabit function from context
+  const { toggleHabit } = useHabits();
+
   // Function to handle day click
   const handleDayClick = (date: Date) => {
     // Normalize the date to user timezone start of day
@@ -193,7 +197,13 @@ export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
     }
 
     console.log("Toggling date:", normalizedDate.toISOString());
-    onToggleDate(habit._id, normalizedDate);
+    // Use the provided function first (for backward compatibility),
+    // otherwise use the context function
+    if (onToggleDate) {
+      onToggleDate(habit._id, normalizedDate);
+    } else {
+      toggleHabit(habit._id, normalizedDate);
+    }
   };
 
   return (

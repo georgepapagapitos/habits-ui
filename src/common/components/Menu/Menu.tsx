@@ -1,4 +1,5 @@
-import { ReactNode, useEffect, useRef, useState, useCallback } from "react";
+import { ReactNode, useRef, useEffect, useState, useCallback } from "react";
+import { useMenuManager } from "../../hooks/useMenuManager";
 import {
   MenuContainer,
   MenuDivider,
@@ -47,26 +48,41 @@ export const Menu = ({
   isOpen: controlledIsOpen,
   onClose,
 }: MenuProps) => {
-  const [isOpen, setIsOpen] = useState(controlledIsOpen || false);
+  // Use context-managed menu if no controlled state is provided
+  const { isOpen: contextIsOpen, toggleMenu, closeMenu } = useMenuManager();
+
+  // For backward compatibility, we still support controlled mode
+  const [localIsOpen, setLocalIsOpen] = useState(controlledIsOpen || false);
   const menuRef = useRef<HTMLUListElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
 
-  const handleOpen = () => {
-    if (controlledIsOpen === undefined) {
-      setIsOpen(!isOpen);
+  // Determine if we're in controlled or uncontrolled mode
+  const isControlled = controlledIsOpen !== undefined;
+  const isOpen = isControlled ? localIsOpen : contextIsOpen;
+
+  const handleOpen = (e?: React.MouseEvent) => {
+    if (isControlled) {
+      setLocalIsOpen(!localIsOpen);
+    } else {
+      toggleMenu(e);
     }
   };
 
   const handleClose = useCallback(() => {
-    if (controlledIsOpen === undefined) {
-      setIsOpen(false);
-    } else if (onClose) {
-      onClose();
+    if (isControlled) {
+      setLocalIsOpen(false);
+      if (onClose) {
+        onClose();
+      }
+    } else {
+      closeMenu();
     }
-  }, [controlledIsOpen, onClose]);
+  }, [isControlled, onClose, closeMenu]);
 
-  // Handle outside clicks
+  // Handle outside clicks for controlled mode (context handles its own clicks)
   useEffect(() => {
+    if (!isControlled) return;
+
     const handleClickOutside = (event: MouseEvent) => {
       if (
         menuRef.current &&
@@ -78,34 +94,33 @@ export const Menu = ({
       }
     };
 
-    if (isOpen || controlledIsOpen) {
+    if (localIsOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isOpen, controlledIsOpen, handleClose]);
+  }, [localIsOpen, handleClose, isControlled]);
 
   // Update local state when controlled state changes
   useEffect(() => {
     if (controlledIsOpen !== undefined) {
-      setIsOpen(controlledIsOpen);
+      setLocalIsOpen(controlledIsOpen);
     }
   }, [controlledIsOpen]);
 
   return (
-    <MenuContainer>
+    <MenuContainer className="context-menu">
       <div
         ref={triggerRef}
         onClick={handleOpen}
+        className="menu-button"
         style={{ cursor: "pointer", position: "relative" }}
       >
         {trigger}
       </div>
-      {(isOpen || controlledIsOpen) && (
-        <MenuList ref={menuRef}>{children}</MenuList>
-      )}
+      {isOpen && <MenuList ref={menuRef}>{children}</MenuList>}
     </MenuContainer>
   );
 };
