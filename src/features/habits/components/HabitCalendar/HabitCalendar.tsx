@@ -248,9 +248,7 @@ export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
           const dateLabel = format(date, "EEEE, MMMM d, yyyy");
           let statusDescription = "";
 
-          if (isCompleted && isDue) statusDescription = "Completed habit";
-          else if (isCompleted && !isDue)
-            statusDescription = "Bonus completion";
+          if (isCompleted) statusDescription = "Completed habit";
           else if (!isCompleted && isDue && isPast)
             statusDescription = "Missed habit";
           else if (isDue) statusDescription = "Scheduled habit";
@@ -289,10 +287,6 @@ export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
         <LegendItem>
           <LegendSwatch $color={theme.colors.successLight} />
           <span>Completed</span>
-        </LegendItem>
-        <LegendItem>
-          <LegendSwatch $color={theme.colors.infoLight} />
-          <span>Bonus</span>
         </LegendItem>
         <LegendItem>
           <LegendSwatch $color={theme.colors.errorLight} />

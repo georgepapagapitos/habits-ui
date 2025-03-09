@@ -47,11 +47,9 @@ export const DateCell = styled.div<{
     return 0.5;
   }};
   background-color: ${(props) => {
-    // If completed, show success color with different shade depending on if it was due
+    // All completed habits get the same success color, regardless of whether they were due or not
     if (props.$isCompleted) {
-      return props.$isDue
-        ? props.theme.colors.successLight // Regular completion
-        : props.theme.colors.infoLight; // Bonus completion
+      return props.theme.colors.successLight; // Same green for all completions
     }
 
     // Today's date gets special background if not completed
@@ -88,11 +86,9 @@ export const DateCell = styled.div<{
       // Only apply hover effects to clickable dates
       if (!props.$isPast && !props.$isToday) return;
 
-      // For each state, provide a darker shade of the same color
+      // All completed habits get the same hover color, regardless of due status
       if (props.$isCompleted) {
-        return props.$isDue
-          ? props.theme.colors.successDark // Darker shade of success
-          : props.theme.colors.infoDark; // Darker shade of info/bonus
+        return props.theme.colors.successDark; // Same dark green for all completions
       }
 
       // Scheduled days that are missed (past due and not completed)
@@ -124,11 +120,8 @@ export const DateCell = styled.div<{
         !props.$isToday
       )
         return props.theme.colors.textOnDark; // White text on dark red background
-      // For bonus completion days (completed but not due) - infoDark is a dark blue
-      else if (props.$isCompleted && !props.$isDue)
-        return props.theme.colors.textOnDark; // White text on dark blue background
-      // For regular completion days - successDark is dark green
-      else if (props.$isCompleted && props.$isDue)
+      // For all completion days (whether due or bonus) - successDark is dark green
+      else if (props.$isCompleted)
         return props.theme.colors.textOnDark; // White text on dark green background
       else return props.theme.colors.text; // Standard text color for other states
     }};
