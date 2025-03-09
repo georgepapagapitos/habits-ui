@@ -251,7 +251,7 @@ export const HabitCard = ({
                   ? "Continue your streak today!"
                   : isDue && !isCompleted
                     ? "Start a streak!"
-                    : "No current streak"}
+                    : "No streak yet"}
             </span>
           </div>
         </CardFooter>

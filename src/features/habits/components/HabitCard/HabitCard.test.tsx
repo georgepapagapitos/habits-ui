@@ -239,8 +239,8 @@ describe("HabitCard", () => {
       <HabitCard habit={zeroStreakHabit} onToggleHabit={onToggleHabit} />
     );
 
-    // Update test to match "No current streak" message for non-due habits
-    expect(screen.getByText("No current streak")).toBeInTheDocument();
+    // Update test to match "No streak yet" message for non-due habits
+    expect(screen.getByText("No streak yet")).toBeInTheDocument();
   });
 
   test("shows continue streak message for habit completed yesterday", () => {
