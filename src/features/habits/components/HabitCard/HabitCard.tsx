@@ -224,13 +224,7 @@ export const HabitCard = ({
             ) : isDue ? (
               <span>Due today</span>
             ) : (
-              <span>
-                Not due today, but can be completed as a bonus (Next due{" "}
-                {format(nextDue, "MMM d")})
-              </span>
-            )}
-            {lastCompleted && !isCompleted && (
-              <> • Last completed {format(new Date(lastCompleted), "MMM d")}</>
+              <span>Next due {format(nextDue, "MMM d")}</span>
             )}
             <> • Total completions: {totalCompletions}</>
           </HabitMeta>
