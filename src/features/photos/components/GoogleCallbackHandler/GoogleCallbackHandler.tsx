@@ -88,8 +88,12 @@ export const GoogleCallbackHandler = () => {
           return;
         }
 
-        // Process the authorization code
-        const result = await photoApi.handleAuthCallback(code);
+        // Process the authorization code and state
+        const state = searchParams.get("state");
+        const result = await photoApi.handleAuthCallback(
+          code,
+          state || undefined
+        );
         console.log("Auth callback result:", result);
 
         setStatus("success");

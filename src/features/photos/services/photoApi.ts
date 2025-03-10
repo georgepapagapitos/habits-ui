@@ -63,11 +63,15 @@ const photoApi = {
   },
 
   // Handle the OAuth callback (post code from redirect)
-  handleAuthCallback: async (code: string): Promise<{ message: string }> => {
+  handleAuthCallback: async (
+    code: string,
+    state?: string
+  ): Promise<{ message: string }> => {
     try {
+      // Include state parameter if available for proper OAuth flow validation
       const response = await axios.post(
         `${API_URL}/auth-callback`,
-        { code },
+        { code, ...(state ? { state } : {}) },
         { headers: getAuthHeaders() }
       );
       return response.data;
