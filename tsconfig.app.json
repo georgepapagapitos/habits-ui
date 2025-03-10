@@ -41,6 +41,8 @@
       "@auth/*": ["src/features/auth/*"],
       "@habits": ["src/features/habits"],
       "@habits/*": ["src/features/habits/*"],
+      "@photos": ["src/features/photos"],
+      "@photos/*": ["src/features/photos/*"],
       "@layout": ["src/layout"],
       "@layout/*": ["src/layout/*"],
       "@pages": ["src/pages"],
