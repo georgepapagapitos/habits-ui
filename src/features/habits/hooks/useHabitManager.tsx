@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
 import { useMessages } from "@common/hooks";
+import { useCallback, useEffect, useState } from "react";
 import { encouragingMessages } from "../constants";
 import { habitApi } from "../services/habitApi";
 import { Habit, HabitCreateDTO, TimeOfDay, WeekDay } from "../types";
@@ -79,13 +79,8 @@ export function useHabitManager() {
       const newHabit = await habitApi.createHabit(newHabitData);
       setHabits((prevHabits) => [...prevHabits, newHabit]);
 
-      // Show a random encouraging message
+      // Show only a single message when creating a habit
       showTemporaryMessage(`Added new habit: ${habitData.name}`);
-
-      // Add another encouraging message after a delay
-      setTimeout(() => {
-        showTemporaryMessage(getRandomMessage(habitData.name));
-      }, 2000);
       return newHabit;
     } catch (err) {
       showTemporaryMessage("Failed to add habit. Please try again.");
@@ -103,8 +98,7 @@ export function useHabitManager() {
         throw new Error("Habit not found");
       }
 
-      // Check if the habit is due on the specified date
-      const isDueOnDate = isHabitDueOnDate(habit, date);
+      // We'll check if the habit is due on the date only when we need it later
 
       // Check if this is a future date
       const isFutureDate =
@@ -210,9 +204,7 @@ export function useHabitManager() {
     }
   };
 
-  // For backward compatibility with your current App component
-  const showMessage = messages.length > 0;
-  const currentMessage = messages[0]?.text || "";
+  // We no longer need these compatibility variables with the new message system
 
   // Get habit completion data for a date range (for analytics/reports)
   const getHabitHistoryForDateRange = useCallback(

@@ -162,7 +162,7 @@ describe("HabitCalendar", () => {
     // Reset isHabitDueOnDate mock
     vi.mocked(isHabitDueOnDate).mockImplementation((habit, date) => {
       // Check if the habit is due on this day of the week
-      const dayOfWeek: any = date?.getDay();
+      const dayOfWeek: number = date?.getDay() || 0;
       const dayName = getDayName(dayOfWeek);
       return habit.frequency.includes(dayName);
     });

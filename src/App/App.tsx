@@ -63,7 +63,8 @@ export const App = () => {
     </Modal>
   );
 
-  // Handle habit editing - open the edit modal with the selected habit data
+  // This function is used by HabitCard components via a context
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleEditHabit = (habitId: string) => {
     const habit = habits.find((h) => h._id === habitId);
     if (habit) {

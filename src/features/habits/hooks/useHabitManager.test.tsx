@@ -4,6 +4,7 @@ import { useHabitManager } from "@habits/hooks";
 import { habitApi } from "@habits/services";
 import { Habit, WeekDay } from "@habits/types";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Mock the useMessages hook
 vi.mock("@common/hooks", () => ({
   useMessages: () => ({

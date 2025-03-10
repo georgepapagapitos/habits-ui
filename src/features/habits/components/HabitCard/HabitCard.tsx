@@ -48,6 +48,7 @@ const Celebration = () => {
 };
 
 export const HabitCard = ({ habit }: HabitCardProps) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { toggleHabit, deleteHabit, updateHabit, resetHabit } = useHabits();
   const [isCompleting, setIsCompleting] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
@@ -102,6 +103,7 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
     return habit.completedDates.length;
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const lastCompleted = getLastCompletedDate();
   const totalCompletions = getTotalCompletions();
 
@@ -221,7 +223,7 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
             }}
           >
             {habit.streak > 0 && <span>🔥</span>}
-            <span>
+            <span data-testid="streak-text">
               {habit.streak > 0
                 ? `Streak: ${habit.streak} ${habit.streak === 1 ? "day" : "days"}`
                 : isDue && !isCompleted && habit.completedDates.length > 0

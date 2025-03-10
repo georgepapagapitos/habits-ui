@@ -50,6 +50,8 @@ describe("HabitList", () => {
   ];
 
   const mockToggleHabit = vi.fn();
+  // mockToggleDate is not used directly but may be needed for future tests
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const mockToggleDate = vi.fn();
   const mockDeleteHabit = vi.fn();
   const mockEditHabit = vi.fn();
