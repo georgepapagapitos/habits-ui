@@ -78,14 +78,15 @@ describe("App", () => {
   test("renders the App component", () => {
     renderWithProviders(<App />);
 
-    // Check that main components or critical UI elements are present - use existing text
-    // instead of test IDs since our mock output shows Habits text exists
-    expect(screen.getByText("Habits")).toBeInTheDocument();
+    // Check that main components or critical UI elements are present
+    // The title is now dynamic, so we should look for "Today's Habits" which is the default
+    expect(screen.getByText("Today's Habits")).toBeInTheDocument();
     expect(screen.getByText("+")).toBeInTheDocument();
 
     // These are common navigation elements we can test for
     expect(screen.getByText("Today")).toBeInTheDocument();
     expect(screen.getByText("Weekly")).toBeInTheDocument();
+    expect(screen.getByText("Stats")).toBeInTheDocument();
   });
 
   // Test modal opening

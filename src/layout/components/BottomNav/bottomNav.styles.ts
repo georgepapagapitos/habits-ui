@@ -14,7 +14,7 @@ export const Nav = styled.nav`
   padding-bottom: env(safe-area-inset-bottom);
 `;
 
-export const NavItem = styled.button`
+export const NavItem = styled.button<{ $active?: boolean }>`
   border: none;
   background: transparent;
   padding: ${({ theme }) => theme.spacing.sm};
@@ -22,7 +22,21 @@ export const NavItem = styled.button`
   flex-direction: column;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.xs};
-  color: ${({ theme }) => theme.colors.primaryText};
+  color: ${({ $active, theme }) =>
+    $active ? theme.colors.primary : theme.colors.primaryText};
   cursor: pointer;
   font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 30%;
+    right: 30%;
+    height: 3px;
+    background-color: ${({ $active, theme }) =>
+      $active ? theme.colors.primary : "transparent"};
+    border-radius: 3px 3px 0 0;
+  }
 `;
