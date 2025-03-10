@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "@tests/utils";
 import React from "react";
@@ -79,14 +79,18 @@ describe("App", () => {
     renderWithProviders(<App />);
 
     // Check that main components or critical UI elements are present
-    // The title is now dynamic, so we should look for "Today's Habits" which is the default
-    expect(screen.getByText("Today's Habits")).toBeInTheDocument();
+    // The title is now dynamic, so we should look for "Habits" which is the default
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
+      "Habits"
+    );
     expect(screen.getByText("+")).toBeInTheDocument();
 
     // These are common navigation elements we can test for
-    expect(screen.getByText("Today")).toBeInTheDocument();
-    expect(screen.getByText("Weekly")).toBeInTheDocument();
-    expect(screen.getByText("Stats")).toBeInTheDocument();
+    // Use within to check for nav elements specifically
+    const navElement = screen.getByRole("navigation");
+    expect(within(navElement).getByText("Habits")).toBeInTheDocument();
+    expect(within(navElement).getByText("Rewards")).toBeInTheDocument();
+    expect(within(navElement).getByText("Stats")).toBeInTheDocument();
   });
 
   // Test modal opening

@@ -14,6 +14,7 @@ export default defineConfig({
       "@features": path.resolve(__dirname, "./src/features"),
       "@auth": path.resolve(__dirname, "./src/features/auth"),
       "@habits": path.resolve(__dirname, "./src/features/habits"),
+      "@photos": path.resolve(__dirname, "./src/features/photos"),
       "@layout": path.resolve(__dirname, "./src/layout"),
       "@pages": path.resolve(__dirname, "./src/pages"),
       "@tests": path.resolve(__dirname, "./src/tests"),

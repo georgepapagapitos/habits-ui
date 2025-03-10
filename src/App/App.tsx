@@ -2,6 +2,7 @@ import { HabitForm, HabitList } from "@habits/components";
 import { useHabits } from "@habits/hooks";
 import { TimeOfDay, WeekDay } from "@habits/types";
 import { BottomNav, Header, Messages, Modal } from "@layout/components";
+import { RewardsScreen } from "@photos/components";
 import { useState } from "react";
 import { AddButton, Container, Content } from "./app.styles";
 import { Stats } from "../components";
@@ -13,20 +14,20 @@ type HabitFormData = {
   timeOfDay?: TimeOfDay;
 };
 
-type ScreenType = "today" | "weekly" | "stats";
+type ScreenType = "habits" | "rewards" | "stats";
 
-// Helper to get initial screen from localStorage or default to "today"
+// Helper to get initial screen from localStorage or default to "habits"
 const getInitialScreen = (): ScreenType => {
   const savedScreen = localStorage.getItem("activeScreen");
   // Only use the saved screen if it's a valid ScreenType
   if (
-    savedScreen === "today" ||
-    savedScreen === "weekly" ||
+    savedScreen === "habits" ||
+    savedScreen === "rewards" ||
     savedScreen === "stats"
   ) {
     return savedScreen;
   }
-  return "today";
+  return "habits";
 };
 
 export const App = () => {
@@ -138,11 +139,9 @@ export const App = () => {
     switch (activeScreen) {
       case "stats":
         return <Stats />;
-      case "weekly":
-        // For now, we'll just display the habit list for weekly view too
-        // This can be expanded later to show a weekly calendar view
-        return <HabitList />;
-      case "today":
+      case "rewards":
+        return <RewardsScreen />;
+      case "habits":
       default:
         return <HabitList />;
     }
@@ -153,11 +152,11 @@ export const App = () => {
     switch (activeScreen) {
       case "stats":
         return "Statistics";
-      case "weekly":
-        return "Weekly View";
-      case "today":
+      case "rewards":
+        return "Photo Rewards";
+      case "habits":
       default:
-        return "Today's Habits";
+        return "Habits";
     }
   };
 
@@ -167,8 +166,10 @@ export const App = () => {
       <Container>
         <Content>{renderScreenContent()}</Content>
       </Container>
-      {/* Only show the add button for Today and Weekly screens */}
-      {activeScreen !== "stats" && <AddButton onClick={openModal}>+</AddButton>}
+      {/* Only show the add button for Habits screen */}
+      {activeScreen === "habits" && (
+        <AddButton onClick={openModal}>+</AddButton>
+      )}
       <BottomNav
         activeScreen={activeScreen}
         onScreenChange={handleScreenChange}
