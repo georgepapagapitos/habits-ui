@@ -79,13 +79,15 @@ describe("App", () => {
     renderWithProviders(<App />);
 
     // Check that main components or critical UI elements are present
-    // The title is now dynamic, so we should look for "Today's Habits" which is the default
-    expect(screen.getByText("Today's Habits")).toBeInTheDocument();
+    // The title is now dynamic, so we should look for "Habits" which is the default
+    // Use a more specific selector for the title to avoid duplicate text issues
+    expect(screen.getByRole("heading", { name: "Habits" })).toBeInTheDocument();
     expect(screen.getByText("+")).toBeInTheDocument();
 
     // These are common navigation elements we can test for
-    expect(screen.getByText("Today")).toBeInTheDocument();
-    expect(screen.getByText("Weekly")).toBeInTheDocument();
+    // Use getAllByText and check length for elements that appear multiple times
+    expect(screen.getAllByText("Habits")).toHaveLength(2); // header and nav
+    expect(screen.getByText("Rewards")).toBeInTheDocument();
     expect(screen.getByText("Stats")).toBeInTheDocument();
   });
 

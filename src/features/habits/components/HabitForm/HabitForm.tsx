@@ -34,6 +34,7 @@ export const HabitForm = ({
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>(
     initialData?.timeOfDay || "anytime"
   );
+  // showReward state removed - rewards are now automatic for all habits
 
   // Determine initial frequency type based on the provided frequency array
   const determineFrequencyType = (frequency: WeekDay[] = []): string => {
@@ -137,12 +138,16 @@ export const HabitForm = ({
         ];
     }
 
-    onSubmit({
+    const habitData = {
       name,
       frequency,
       description: description || undefined,
       timeOfDay,
-    });
+    };
+
+    console.log("Submitting habit data:", habitData);
+
+    onSubmit(habitData);
   };
 
   return (
@@ -243,6 +248,8 @@ export const HabitForm = ({
           <option value="evening">Evening</option>
         </Select>
       </FormGroup>
+
+      {/* Show reward checkbox removed - rewards are now automatic */}
 
       <div style={{ display: "flex", gap: "16px", marginTop: "16px" }}>
         <Button

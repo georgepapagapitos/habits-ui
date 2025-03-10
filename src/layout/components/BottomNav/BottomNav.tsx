@@ -1,6 +1,6 @@
 import { Nav, NavItem } from "./bottomNav.styles";
 
-type ScreenType = "today" | "weekly" | "stats";
+type ScreenType = "habits" | "rewards" | "stats";
 
 interface BottomNavProps {
   activeScreen: ScreenType;
@@ -14,16 +14,16 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   return (
     <Nav>
       <NavItem
-        $active={activeScreen === "today"}
-        onClick={() => onScreenChange("today")}
+        $active={activeScreen === "habits"}
+        onClick={() => onScreenChange("habits")}
       >
-        <span>Today</span>
+        <span>Habits</span>
       </NavItem>
       <NavItem
-        $active={activeScreen === "weekly"}
-        onClick={() => onScreenChange("weekly")}
+        $active={activeScreen === "rewards"}
+        onClick={() => onScreenChange("rewards")}
       >
-        <span>Weekly</span>
+        <span>Rewards</span>
       </NavItem>
       <NavItem
         $active={activeScreen === "stats"}
