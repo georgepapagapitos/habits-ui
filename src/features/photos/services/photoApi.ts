@@ -246,6 +246,32 @@ const photoApi = {
       );
     }
   },
+
+  // Disconnect from Google Photos by clearing tokens
+  disconnectGooglePhotos: async (): Promise<{ message: string }> => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/disconnect`,
+        {},
+        { headers: getAuthHeaders() }
+      );
+      return response.data;
+    } catch (error: unknown) {
+      const err = error as {
+        response?: { data?: { error?: string } };
+        message?: string;
+      };
+      console.error(
+        "Error disconnecting Google Photos:",
+        err.response?.data || err
+      );
+      throw (
+        err.response?.data?.error ||
+        err.message ||
+        "Failed to disconnect Google Photos"
+      );
+    }
+  },
 };
 
 // Export the types and API object

@@ -329,6 +329,23 @@ export const RewardsScreen = () => {
     addMessage("Refreshed photos from Google Photos");
   };
 
+  // Handler for disconnecting from Google Photos
+  const handleDisconnectGoogle = async () => {
+    try {
+      await photoApi.disconnectGooglePhotos();
+      addMessage("Disconnected from Google Photos successfully");
+      setConnected(false);
+      setHasSelectedAlbum(false);
+      setPhotos([]);
+
+      // Clear stored photos
+      localStorage.removeItem(DAILY_PHOTOS_STORAGE_KEY);
+    } catch (err) {
+      console.error("Failed to disconnect from Google Photos:", err);
+      addMessage("Failed to disconnect from Google Photos");
+    }
+  };
+
   // Render expanded photo dialog
   const renderExpandedPhotoDialog = () => (
     <Dialog
@@ -439,6 +456,9 @@ export const RewardsScreen = () => {
             this album as a reward.
           </Message>
           <Button onClick={handleOpenAlbumSelection}>Select Album</Button>
+          <Button onClick={handleDisconnectGoogle}>
+            Disconnect Google Photos
+          </Button>
         </InfoSection>
       );
     }
@@ -464,6 +484,9 @@ export const RewardsScreen = () => {
           </Message>
           <Button onClick={handleOpenAlbumSelection}>Change Photo Album</Button>
           <Button onClick={handleRefreshPhotos}>Get New Photos</Button>
+          <Button onClick={handleDisconnectGoogle}>
+            Disconnect Google Photos
+          </Button>
         </InfoSection>
 
         {photos.length > 0 ? (
