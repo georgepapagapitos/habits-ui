@@ -1,6 +1,6 @@
+import { Habit, HabitCreateDTO, HabitUpdateDTO } from "@habits/types";
 import { createContext, ReactNode, useContext } from "react";
 import { useHabitManager } from "./useHabitManager";
-import { Habit, HabitCreateDTO, HabitUpdateDTO } from "../types/habit.types";
 
 // Define the context shape based on the return type of useHabitManager
 type HabitContextType = {
@@ -21,7 +21,7 @@ type HabitContextType = {
     habitId: string,
     startDate: string,
     endDate: string
-  ) => Promise<any[]>; // Using any[] since HabitHistoryItem isn't explicitly defined
+  ) => Promise<{ date: Date; due: boolean; completed: boolean }[]>;
   getWeeklyReport: () => { completed: number; total: number };
   refreshHabits: () => Promise<void>;
   showMessage: (message: string) => void;
