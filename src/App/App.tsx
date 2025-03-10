@@ -4,6 +4,7 @@ import { TimeOfDay, WeekDay } from "@habits/types";
 import { BottomNav, Header, Messages, Modal } from "@layout/components";
 import { useState } from "react";
 import { AddButton, Container, Content } from "./app.styles";
+import { Stats } from "../components";
 
 type HabitFormData = {
   name: string;
@@ -12,9 +13,27 @@ type HabitFormData = {
   timeOfDay?: TimeOfDay;
 };
 
+type ScreenType = "today" | "weekly" | "stats";
+
+// Helper to get initial screen from localStorage or default to "today"
+const getInitialScreen = (): ScreenType => {
+  const savedScreen = localStorage.getItem("activeScreen");
+  // Only use the saved screen if it's a valid ScreenType
+  if (
+    savedScreen === "today" ||
+    savedScreen === "weekly" ||
+    savedScreen === "stats"
+  ) {
+    return savedScreen;
+  }
+  return "today";
+};
+
 export const App = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [activeScreen, setActiveScreen] =
+    useState<ScreenType>(getInitialScreen);
   const [habitToEdit, setHabitToEdit] = useState<null | {
     _id: string;
     name: string;
@@ -109,16 +128,51 @@ export const App = () => {
     setHabitToEdit(null);
   };
 
+  const handleScreenChange = (screen: ScreenType) => {
+    setActiveScreen(screen);
+    localStorage.setItem("activeScreen", screen);
+  };
+
+  // Render the appropriate screen content based on active screen
+  const renderScreenContent = () => {
+    switch (activeScreen) {
+      case "stats":
+        return <Stats />;
+      case "weekly":
+        // For now, we'll just display the habit list for weekly view too
+        // This can be expanded later to show a weekly calendar view
+        return <HabitList />;
+      case "today":
+      default:
+        return <HabitList />;
+    }
+  };
+
+  // Get the title for the header based on active screen
+  const getHeaderTitle = () => {
+    switch (activeScreen) {
+      case "stats":
+        return "Statistics";
+      case "weekly":
+        return "Weekly View";
+      case "today":
+      default:
+        return "Today's Habits";
+    }
+  };
+
   return (
     <>
-      <Header title="Habits" />
+      <Header title={getHeaderTitle()} />
       <Container>
-        <Content>
-          <HabitList />
-        </Content>
+        <Content>{renderScreenContent()}</Content>
       </Container>
-      <AddButton onClick={openModal}>+</AddButton>
-      <BottomNav />
+      {/* Only show the add button for Today and Weekly screens */}
+      {activeScreen !== "stats" && <AddButton onClick={openModal}>+</AddButton>}
+      <BottomNav
+        activeScreen={activeScreen}
+        onScreenChange={handleScreenChange}
+      />
       {isModalOpen && renderHabitFormModal()}
       {isEditModalOpen && renderEditHabitFormModal()}
       <Messages />
