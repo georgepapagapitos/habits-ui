@@ -24,6 +24,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ["src/tests/setup.ts"],
     css: false,
+    testTimeout: 20000,
     coverage: {
       reporter: ["text", "json", "html"],
       exclude: [

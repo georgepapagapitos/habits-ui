@@ -2,6 +2,7 @@ import { AuthContext } from "@auth/hooks";
 import { AuthContextType } from "@auth/types";
 import { MenuProvider, MessageProvider } from "@common/hooks";
 import { HabitProvider } from "@habits/hooks";
+import { RewardProvider } from "@habits/hooks/rewardContext";
 import { render, RenderOptions } from "@testing-library/react";
 import theme from "@theme";
 import { ReactElement } from "react";
@@ -15,6 +16,7 @@ interface CustomRenderOptions extends Omit<RenderOptions, "wrapper"> {
   withHabitProvider?: boolean;
   withMessageProvider?: boolean;
   withMenuProvider?: boolean;
+  withRewardProvider?: boolean;
 }
 
 // Default auth context for tests
@@ -40,6 +42,7 @@ export function renderWithProviders(
     withHabitProvider = true,
     withMessageProvider = true,
     withMenuProvider = true,
+    withRewardProvider = true,
     ...renderOptions
   } = options;
 
@@ -52,6 +55,11 @@ export function renderWithProviders(
     // Add HabitProvider if requested
     if (withHabitProvider) {
       wrappedChildren = <HabitProvider>{wrappedChildren}</HabitProvider>;
+    }
+
+    // Add RewardProvider if requested
+    if (withRewardProvider) {
+      wrappedChildren = <RewardProvider>{wrappedChildren}</RewardProvider>;
     }
 
     // Add MenuProvider if requested

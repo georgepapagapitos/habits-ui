@@ -11,6 +11,15 @@ export type WeekDay =
   | "friday"
   | "saturday";
 
+// Photo reward interface from API
+export interface PhotoReward {
+  id: string;
+  url: string;
+  thumbnailUrl?: string; // Small version for faster loading
+  width: number;
+  height: number;
+}
+
 // Habit interface matching the backend schema
 export interface Habit {
   _id: string;
@@ -26,6 +35,12 @@ export interface Habit {
   active: boolean;
   createdAt: string;
   updatedAt: string;
+  showReward?: boolean;
+}
+
+// Habit response type for habit completion - includes potential reward photo
+export interface HabitWithReward extends Habit {
+  rewardPhoto?: PhotoReward;
 }
 
 // DTO for creating a new habit
@@ -37,6 +52,7 @@ export interface HabitCreateDTO {
   frequency: WeekDay[];
   timeOfDay?: TimeOfDay;
   startDate?: Date;
+  showReward?: boolean;
 }
 
 // DTO for updating an existing habit
@@ -48,4 +64,5 @@ export interface HabitUpdateDTO {
   frequency?: WeekDay[];
   timeOfDay?: TimeOfDay;
   active?: boolean;
+  showReward?: boolean;
 }

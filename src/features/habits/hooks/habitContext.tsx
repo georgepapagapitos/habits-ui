@@ -1,6 +1,6 @@
-import { Habit, HabitCreateDTO, HabitUpdateDTO } from "@habits/types";
-import { createContext, ReactNode, useContext } from "react";
+import { Habit, WeekDay } from "../types/habit.types";
 import { useHabitManager } from "./useHabitManager";
+import { createContext, ReactNode, useContext } from "react";
 
 // Define the context shape based on the return type of useHabitManager
 type HabitContextType = {
@@ -8,21 +8,35 @@ type HabitContextType = {
   loading: boolean;
   error: string | null;
   messages: { id: string; text: string; duration?: number }[];
-  handleAddHabit: (habit: HabitCreateDTO) => Promise<Habit | undefined>;
-  toggleHabit: (
-    habitId: string,
-    date: Date | string,
-    completed?: boolean
-  ) => Promise<void>;
-  deleteHabit: (habitId: string) => Promise<void>;
-  updateHabit: (habitId: string, updatedHabit: HabitUpdateDTO) => Promise<void>;
-  resetHabit: (habitId: string) => Promise<void>;
+  handleAddHabit: (habitData: {
+    name: string;
+    frequency: WeekDay[];
+    description?: string;
+    color?: string;
+    icon?: string;
+    timeOfDay?: string;
+  }) => Promise<Habit>;
+  toggleHabit: (id: string, date?: Date) => Promise<void>;
+  deleteHabit: (id: string) => Promise<void>;
+  updateHabit: (id: string, habitData: Partial<Habit>) => Promise<Habit>;
+  resetHabit: (id: string) => Promise<Habit>;
   getHabitHistoryForDateRange: (
     habitId: string,
-    startDate: string,
-    endDate: string
-  ) => Promise<{ date: Date; due: boolean; completed: boolean }[]>;
-  getWeeklyReport: () => { completed: number; total: number };
+    startDate: Date,
+    endDate: Date
+  ) => { date: Date; due: boolean; completed: boolean }[];
+  getWeeklyReport: () => {
+    startDate: Date;
+    endDate: Date;
+    habitReports: {
+      habitId: string;
+      habitName: string;
+      dueCount: number;
+      completedCount: number;
+      completionRate: number;
+    }[];
+    overallCompletionRate: number;
+  } | null;
   refreshHabits: () => Promise<void>;
   showMessage: (message: string) => void;
   clearMessages: () => void;

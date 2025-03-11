@@ -1,6 +1,6 @@
 import { RequireAuth } from "@auth/components";
 import { MenuProvider, MessageProvider } from "@common/hooks";
-import { HabitProvider } from "@habits/hooks";
+import { HabitProvider, RewardProvider } from "@habits/hooks";
 import { LoginPage, RegisterPage } from "@pages";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { App } from "./App";
@@ -18,9 +18,11 @@ export const AppRoutes = () => {
             path="/"
             element={
               <RequireAuth>
-                <HabitProvider>
-                  <App />
-                </HabitProvider>
+                <RewardProvider>
+                  <HabitProvider>
+                    <App />
+                  </HabitProvider>
+                </RewardProvider>
               </RequireAuth>
             }
           />
