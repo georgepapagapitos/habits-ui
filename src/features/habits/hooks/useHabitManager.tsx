@@ -89,10 +89,6 @@ export function useHabitManager() {
           return;
         }
 
-        // IMPORTANT: For debug purposes, consider ALL completed habits as needing rewards
-        console.log(
-          "FOR DEBUGGING: Considering all completed habits as needing rewards"
-        );
         const habitsNeedingRewards = completedHabitsToday.filter((habit) => {
           // Check if it has a valid reward in the context
           const hasValidReward =
@@ -111,8 +107,6 @@ export function useHabitManager() {
             }
           );
 
-          // For debugging, provide rewards for ANY completed habit that doesn't have a valid reward
-          // regardless of showReward setting
           return !hasValidReward;
         });
 
@@ -130,9 +124,6 @@ export function useHabitManager() {
           }
         });
 
-        // Get a deterministic seed for today to ensure consistent images per day
-        const dateSeed = generateDateSeed(today);
-
         // Create a batch of rewards to add
         const rewardsToAdd: { habitId: string; photo: PhotoReward }[] = [];
 
@@ -140,19 +131,17 @@ export function useHabitManager() {
         // This is significantly faster than sequential requests
         const photoPromises = habitsNeedingRewards.map(async (habit) => {
           try {
-            // Create a deterministic seed that combines the date and habit ID
+            // Generate a deterministic seed based on habit ID and today's date
+            // This ensures the same habit gets the same photo on a given day
+            const todayStr = new Date().toISOString().split("T")[0];
+            const dateSeed = generateDateSeed(todayStr);
             const habitSeed = generateHabitSeed(habit._id, dateSeed);
 
-            // Check the cache first
-            if (habitApi._photoCache?.has(habitSeed)) {
-              const cachedData = habitApi._photoCache.get(habitSeed);
-              // If cached data exists and is still valid
-              if (cachedData && cachedData.photo && cachedData.photo.url) {
-                return { habitId: habit._id, photo: cachedData.photo };
-              }
-            }
+            console.log(
+              `Fetching photo for habit "${habit.name}" with consistent seed: ${habitSeed}`
+            );
 
-            // Fetch photo if not in cache
+            // Use the deterministic seed to get a consistent photo for this habit+day combo
             const photoResponse = await habitApi.getRandomPhoto(habitSeed);
 
             if (photoResponse && photoResponse.url) {
@@ -192,7 +181,7 @@ export function useHabitManager() {
     [rewards, batchAddRewards, removeReward]
   );
 
-  // Generate a date seed that's unique per day
+  // Generate a date-based seed that's consistent for the same date
   const generateDateSeed = (dateString: string): number => {
     // A simple hash function to convert the date string to a number
     let hash = 0;
@@ -204,6 +193,7 @@ export function useHabitManager() {
   };
 
   // Generate a deterministic seed for a habit on a specific day
+  // This ensures the same habit+date combo always gets the same photo
   const generateHabitSeed = (habitId: string, dateSeed: number): number => {
     // Combine the habit ID with the date seed
     let hash = dateSeed;
@@ -393,19 +383,20 @@ export function useHabitManager() {
         return;
       }
 
-      // Get today's date as string
-      const todayString = new Date().toISOString().split("T")[0];
-
       // Always reset the rewardsLastChecked flag to force fresh reward checking
       localStorage.removeItem("rewardsLastChecked");
 
-      // Create a deterministic seed for this habit and today
+      // Get today's date as string
+      const todayString = new Date().toISOString().split("T")[0];
+
+      // Generate a consistent seed for this habit and today's date
+      // This ensures the same habit gets the same photo each day
       const dateSeed = generateDateSeed(todayString);
       const habitSeed = generateHabitSeed(id, dateSeed);
 
-      // Make API call to toggle completion (include the seed for consistent photo)
+      // Make API call to toggle completion with a consistent seed
       console.log(
-        `Making API call to toggle habit "${habit.name}" with seed ${habitSeed}`
+        `Making API call to toggle habit "${habit.name}" with consistent seed ${habitSeed}`
       );
       const updatedHabit = await habitApi.toggleCompletion(id, date, habitSeed);
       console.log(`Toggle response for habit "${habit.name}":`, updatedHabit);
@@ -479,61 +470,50 @@ export function useHabitManager() {
           // For today's completion without a reward, we'll try to fetch one
           // DEBUGGING: Force fetch reward regardless of showReward property
           if (isToday) {
-            // Create a deterministic seed for today
+            // Get today's date as string and generate a consistent seed
+            // This ensures the same habit gets the same photo on a given day
             const today = new Date().toISOString().split("T")[0];
             const dateSeed = generateDateSeed(today);
             const habitSeed = generateHabitSeed(id, dateSeed);
 
             console.log(
-              "Attempting to fetch reward manually with seed:",
+              "Attempting to fetch reward with consistent seed:",
               habitSeed
             );
 
             // Force clear the checked flag to ensure rewards get checked next time
             localStorage.removeItem("rewardsLastChecked");
 
-            // Try to get from cache first
-            if (habitApi._photoCache.has(habitSeed)) {
-              const cachedData = habitApi._photoCache.get(habitSeed);
-              if (cachedData && cachedData.photo && cachedData.photo.url) {
-                console.log("Using cached photo for reward:", cachedData.photo);
-                addReward(id, cachedData.photo);
-              }
-            } else {
-              // Fetch photo asynchronously to not block the UI
-              habitApi
-                .getRandomPhoto(habitSeed)
-                .then((photoResponse) => {
-                  if (photoResponse && photoResponse.url) {
-                    console.log(
-                      "Successfully fetched manual reward photo:",
-                      photoResponse
-                    );
-                    addReward(id, photoResponse);
+            // Fetch photo asynchronously to not block the UI
+            habitApi
+              .getRandomPhoto(habitSeed)
+              .then((photoResponse) => {
+                if (photoResponse && photoResponse.url) {
+                  console.log(
+                    "Successfully fetched manual reward photo:",
+                    photoResponse
+                  );
+                  addReward(id, photoResponse);
 
-                    // Also store it in the rewards object in localStorage directly
-                    try {
-                      const rewardsObj = JSON.parse(
-                        localStorage.getItem("habitRewards") || "{}"
-                      );
-                      rewardsObj[id] = photoResponse;
-                      localStorage.setItem(
-                        "habitRewards",
-                        JSON.stringify(rewardsObj)
-                      );
-                      console.log("Saved reward directly to localStorage");
-                    } catch (e) {
-                      console.error(
-                        "Failed to save reward to localStorage:",
-                        e
-                      );
-                    }
+                  // Also store it in the rewards object in localStorage directly
+                  try {
+                    const rewardsObj = JSON.parse(
+                      localStorage.getItem("habitRewards") || "{}"
+                    );
+                    rewardsObj[id] = photoResponse;
+                    localStorage.setItem(
+                      "habitRewards",
+                      JSON.stringify(rewardsObj)
+                    );
+                    console.log("Saved reward directly to localStorage");
+                  } catch (e) {
+                    console.error("Failed to save reward to localStorage:", e);
                   }
-                })
-                .catch((err) => {
-                  console.error("Error fetching manual reward:", err);
-                });
-            }
+                }
+              })
+              .catch((err) => {
+                console.error("Error fetching manual reward:", err);
+              });
           }
         }
 
@@ -721,78 +701,84 @@ export function useHabitManager() {
     resetHabit,
     getHabitHistoryForDateRange,
     getWeeklyReport,
-    refreshHabits: useCallback(async () => {
-      // Prevent refreshing if already loading
-      if (loadingHabitsRef.current) return;
-      loadingHabitsRef.current = true;
+    refreshHabits: function () {
+      // Use a named function expression to enable self-reference
+      const refreshFn = async () => {
+        // Prevent refreshing if already loading
+        if (loadingHabitsRef.current) return;
+        loadingHabitsRef.current = true;
 
-      try {
-        setLoading(true);
-
-        let fetchedHabits;
         try {
-          fetchedHabits = await habitApi.getAllHabits();
-          // Reset retry counter on success
-          retryAttemptsRef.current = 0;
-        } catch (fetchError) {
-          // Handle rate limiting with exponential backoff
-          if (
-            fetchError === "Too many requests, please try again later." &&
-            retryAttemptsRef.current < MAX_RETRY_ATTEMPTS
-          ) {
-            retryAttemptsRef.current++;
-            const backoffTime = 1000 * Math.pow(2, retryAttemptsRef.current);
+          setLoading(true);
 
-            setError(
-              `Rate limited. Will retry in ${backoffTime / 1000} seconds...`
-            );
-            console.log(
-              `Rate limited during refresh, retrying in ${backoffTime / 1000}s (attempt ${retryAttemptsRef.current}/${MAX_RETRY_ATTEMPTS})...`
-            );
-
-            // Clean up
-            setLoading(false);
-            loadingHabitsRef.current = false;
-
-            // Schedule retry
-            setTimeout(() => {
-              refreshHabits();
-            }, backoffTime);
-
-            return; // Exit early
-          }
-
-          // Either not a rate limit error or max retries exceeded
-          throw fetchError;
-        }
-
-        setHabits(fetchedHabits);
-        setError(null);
-
-        // Only check for rewards if we haven't checked today
-        // This is handled within checkForCompletedHabitsWithoutRewards itself
-        if (fetchedHabits.length > 0) {
+          let fetchedHabits;
           try {
-            await checkForCompletedHabitsWithoutRewards(fetchedHabits);
-          } catch (rewardError) {
-            console.error(
-              "Error checking for rewards during refresh:",
-              rewardError
-            );
+            fetchedHabits = await habitApi.getAllHabits();
+            // Reset retry counter on success
+            retryAttemptsRef.current = 0;
+          } catch (fetchError) {
+            // Handle rate limiting with exponential backoff
+            if (
+              fetchError === "Too many requests, please try again later." &&
+              retryAttemptsRef.current < MAX_RETRY_ATTEMPTS
+            ) {
+              retryAttemptsRef.current++;
+              const backoffTime = 1000 * Math.pow(2, retryAttemptsRef.current);
+
+              setError(
+                `Rate limited. Will retry in ${backoffTime / 1000} seconds...`
+              );
+              console.log(
+                `Rate limited during refresh, retrying in ${backoffTime / 1000}s (attempt ${retryAttemptsRef.current}/${MAX_RETRY_ATTEMPTS})...`
+              );
+
+              // Clean up
+              setLoading(false);
+              loadingHabitsRef.current = false;
+
+              // Schedule retry
+              setTimeout(() => {
+                refreshFn(); // Use the function itself
+              }, backoffTime);
+
+              return; // Exit early
+            }
+
+            // Either not a rate limit error or max retries exceeded
+            throw fetchError;
           }
+
+          setHabits(fetchedHabits);
+          setError(null);
+
+          // Only check for rewards if we haven't checked today
+          // This is handled within checkForCompletedHabitsWithoutRewards itself
+          if (fetchedHabits.length > 0) {
+            try {
+              await checkForCompletedHabitsWithoutRewards(fetchedHabits);
+            } catch (rewardError) {
+              console.error(
+                "Error checking for rewards during refresh:",
+                rewardError
+              );
+            }
+          }
+        } catch (err) {
+          if (typeof err === "string") {
+            setError(err);
+          } else {
+            setError("Failed to refresh habits. Please try again later.");
+          }
+          console.error("Error refreshing habits:", err);
+        } finally {
+          setLoading(false);
+          loadingHabitsRef.current = false;
         }
-      } catch (err) {
-        if (typeof err === "string") {
-          setError(err);
-        } else {
-          setError("Failed to refresh habits. Please try again later.");
-        }
-        console.error("Error refreshing habits:", err);
-      } finally {
-        setLoading(false);
-        loadingHabitsRef.current = false;
-      }
-    }, [checkForCompletedHabitsWithoutRewards]),
+      };
+
+      // Return the refresh function
+      return refreshFn();
+    },
     // Expose the showMessage and clearMessages functions to match the HabitContextType
     showMessage: showTemporaryMessage,
     clearMessages: clearAllMessages,
