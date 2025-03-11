@@ -100,6 +100,24 @@ habits-ui/
 └── vite.config.ts     # Vite configuration
 ```
 
+## Documentation
+
+For detailed documentation on various aspects of the project, see the following guides:
+
+- **Components**
+
+  - [Component Overview](./docs/components/component-overview.md)
+  - [Component Styling](./docs/components/component-styling.md)
+
+- **Development**
+
+  - [State Management](./docs/development/state-management.md)
+  - [API Integration](./docs/development/api-integration.md)
+
+- **Testing**
+  - [Testing Guide](./docs/testing/testing-guide.md)
+  - [Test Writing Guide](./docs/testing/test-writing-guide.md)
+
 ## Design Decisions
 
 ### Component Structure
@@ -123,16 +141,22 @@ Components are organized into two main categories:
 
 ## Testing
 
-The project uses Vitest and React Testing Library for testing:
-
-- **Unit Tests**: For individual functions and utilities
-- **Component Tests**: For UI components
-- **Integration Tests**: For feature workflows
+The project uses Vitest and React Testing Library for testing. For detailed information, see the [Testing Guide](./docs/testing/testing-guide.md).
 
 Run tests with:
 
 ```bash
+# Run all tests
 npm run test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with UI
+npm run test:ui
+
+# Run coverage report
+npm run test:coverage
 ```
 
 ## Docker Deployment
