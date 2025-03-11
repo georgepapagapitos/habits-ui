@@ -68,7 +68,9 @@ export const LoginForm = () => {
         />
       </Group>
 
-      {(formError || error) && <Error>{formError || error}</Error>}
+      {(formError || error) && (
+        <div data-testid="form-error">{formError || error}</div>
+      )}
 
       <Button type="submit" disabled={isLoading}>
         {isLoading ? "Logging in..." : "Login"}
