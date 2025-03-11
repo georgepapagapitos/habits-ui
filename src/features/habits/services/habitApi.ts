@@ -7,7 +7,7 @@ import {
 } from "../types/habit.types";
 import { getUserTimezone } from "../utils/habitUtils";
 import axios, { AxiosRequestConfig } from "axios";
-import { format } from "date-fns";
+import { logger } from "@utils/logger";
 
 // Using HabitWithReward interface imported from types
 
@@ -172,13 +172,13 @@ export const habitApi = {
         };
         message?: string;
       };
-      console.error(
+      logger.error(
         `Error resetting habit ${id} [Status: ${err.response?.status} ${err.response?.statusText}]:`,
         err.response?.data || err
       );
 
       if (err.response?.data) {
-        console.error(
+        logger.error(
           `Server response details:`,
           JSON.stringify(err.response.data, null, 2)
         );
@@ -202,8 +202,8 @@ export const habitApi = {
     queue: [] as {
       url: string;
       config: AxiosRequestConfig;
-      resolve: (value: any) => void;
-      reject: (reason?: any) => void;
+      resolve: (value: unknown) => void;
+      reject: (reason?: unknown) => void;
     }[],
     // Flag to track if we're processing the queue
     processing: false,
@@ -212,8 +212,8 @@ export const habitApi = {
     enqueue: function (
       url: string,
       config: AxiosRequestConfig,
-      resolve: (value: any) => void,
-      reject: (reason?: any) => void
+      resolve: (value: unknown) => void,
+      reject: (reason?: unknown) => void
     ) {
       this.queue.push({ url, config, resolve, reject });
 
@@ -318,8 +318,8 @@ export const habitApi = {
       habitApi._requestController.enqueue(
         url,
         config || {},
-        (value: any) => resolve(value as T),
-        (reason?: any) => reject(reason)
+        (value: unknown) => resolve(value as T),
+        (reason?: unknown) => reject(reason)
       );
     });
   },
@@ -344,12 +344,12 @@ export const habitApi = {
 
       // Provide user-friendly error for rate limiting
       if (err.response?.status === 429) {
-        console.error(
+        logger.error(
           "Error fetching habits: Too many requests, please try again later."
         );
         throw "Too many requests, please try again later.";
       } else {
-        console.error("Error fetching habits:", err.response?.data || err);
+        logger.error("Error fetching habits:", err.response?.data || err);
         throw (
           err.response?.data?.error || err.message || "Failed to fetch habits"
         );
@@ -370,7 +370,7 @@ export const habitApi = {
         response?: { data?: { error?: string } };
         message?: string;
       };
-      console.error(`Error fetching habit ${id}:`, err.response?.data || err);
+      logger.error(`Error fetching habit ${id}:`, err.response?.data || err);
       throw err.response?.data?.error || err.message || "Failed to fetch habit";
     }
   },
@@ -378,19 +378,19 @@ export const habitApi = {
   // Create a new habit
   createHabit: async (habitData: HabitCreateDTO): Promise<Habit> => {
     try {
-      console.log("Creating habit with data:", habitData);
+      logger.debug("Creating habit with data:", habitData);
       const response = await axios.post(API_URL, habitData, {
         headers: getAuthHeaders(),
       });
 
-      console.log("Create habit response:", response.data);
+      logger.debug("Create habit response:", response.data);
       return response.data.data;
     } catch (error: unknown) {
       const err = error as {
         response?: { data?: { error?: string } };
         message?: string;
       };
-      console.error("Error creating habit:", err.response?.data || err);
+      logger.error("Error creating habit:", err.response?.data || err);
       throw (
         err.response?.data?.error || err.message || "Failed to create habit"
       );
@@ -403,19 +403,19 @@ export const habitApi = {
     habitData: HabitUpdateDTO
   ): Promise<Habit> => {
     try {
-      console.log(`Updating habit ${id} with data:`, habitData);
+      logger.debug(`Updating habit ${id} with data:`, habitData);
       const response = await axios.put(`${API_URL}/${id}`, habitData, {
         headers: getAuthHeaders(),
       });
 
-      console.log("Update habit response:", response.data);
+      logger.debug("Update habit response:", response.data);
       return response.data.data;
     } catch (error: unknown) {
       const err = error as {
         response?: { data?: { error?: string } };
         message?: string;
       };
-      console.error(`Error updating habit ${id}:`, err.response?.data || err);
+      logger.error(`Error updating habit ${id}:`, err.response?.data || err);
       throw (
         err.response?.data?.error || err.message || "Failed to update habit"
       );
@@ -433,7 +433,7 @@ export const habitApi = {
         response?: { data?: { error?: string } };
         message?: string;
       };
-      console.error(`Error deleting habit ${id}:`, err.response?.data || err);
+      logger.error(`Error deleting habit ${id}:`, err.response?.data || err);
       throw (
         err.response?.data?.error || err.message || "Failed to delete habit"
       );
@@ -468,7 +468,7 @@ export const habitApi = {
         { headers: getAuthHeaders() }
       );
 
-      console.log(
+      logger.debug(
         "Toggle completion response (full):",
         JSON.stringify(response.data)
       );
@@ -478,16 +478,16 @@ export const habitApi = {
 
       // Handle reward photo extraction - could be in different places in the response
       if (response.data.rewardPhoto) {
-        console.log("Found reward photo at top level");
+        logger.debug("Found reward photo at top level");
         rewardPhoto = response.data.rewardPhoto;
       } else if (response.data.data && response.data.data.rewardPhoto) {
-        console.log("Found reward photo in nested data");
+        logger.debug("Found reward photo in nested data");
         rewardPhoto = response.data.data.rewardPhoto;
       }
 
       // Verify the reward photo has the expected structure
       if (rewardPhoto && !rewardPhoto.url) {
-        console.error("Invalid reward photo format:", rewardPhoto);
+        logger.error("Invalid reward photo format:", rewardPhoto);
         rewardPhoto = undefined;
       }
 
@@ -496,7 +496,7 @@ export const habitApi = {
         rewardPhoto: rewardPhoto,
       };
 
-      console.log("Processed habit with reward:", {
+      logger.debug("Processed habit with reward:", {
         habitId: habitWithReward._id,
         habitName: habitWithReward.name,
         hasRewardPhoto: !!habitWithReward.rewardPhoto,
@@ -520,13 +520,13 @@ export const habitApi = {
 
       // Handle rate limiting
       if (err.response?.status === 429) {
-        console.error(
+        logger.error(
           `Rate limited when toggling habit ${id}. Will retry later.`
         );
         throw "Too many requests, please try again later.";
       }
 
-      console.error(
+      logger.error(
         `Error toggling completion for habit ${id} [Status: ${err.response?.status} ${err.response?.statusText}]:`,
         err.response?.data || err
       );

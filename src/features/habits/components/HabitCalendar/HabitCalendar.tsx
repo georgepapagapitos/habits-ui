@@ -3,11 +3,11 @@ import { useHabits } from "@habits/hooks";
 import { Habit } from "@habits/types";
 import {
   dateInUserTimezone,
-  getUserTimezone,
   isCompletedOnDate,
   isHabitDueOnDate,
   normalizeDate,
 } from "@habits/utils";
+import { logger } from "@utils/logger";
 import {
   addDays,
   eachDayOfInterval,
@@ -50,12 +50,12 @@ export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
   const endDate = endOfMonth(currentMonth);
 
   // Debug the month bounds
-  console.log(
+  logger.debug(
     "Month start:",
     startDate.toISOString(),
     `(${startDate.getDate()}, ${startDate.getDay()})`
   );
-  console.log(
+  logger.debug(
     "Month end:",
     endDate.toISOString(),
     `(${endDate.getDate()}, ${endDate.getDay()})`
@@ -65,7 +65,7 @@ export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
   const daysInMonth = eachDayOfInterval({ start: startDate, end: endDate });
 
   // Create a debug log of all days in the month for inspection
-  console.log(
+  logger.debug(
     "Calendar days:",
     daysInMonth
       .map((d) => `${format(d, "EEE")} ${format(d, "d")} (${d.getDay()})`)
@@ -98,7 +98,7 @@ export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
   const days = [...prevMonthDays, ...daysInMonth, ...nextMonthDays];
 
   // Debug the complete grid
-  console.log(
+  logger.debug(
     "Complete calendar grid:",
     days
       .map(
@@ -117,7 +117,7 @@ export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
   // Functions to navigate months - use proper month navigation
   const previousMonth = () => {
     setCurrentMonth((prevMonth) => {
-      console.log("Navigating to previous month from:", prevMonth);
+      logger.debug("Navigating to previous month from:", prevMonth);
 
       // Create a new date for the previous month
       const newDate = new Date(prevMonth);
@@ -133,14 +133,14 @@ export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
       newDate.setDate(day);
 
       const result = dateInUserTimezone(newDate);
-      console.log("New month will be:", format(result, "MMMM yyyy"));
+      logger.debug("New month will be:", format(result, "MMMM yyyy"));
       return result;
     });
   };
 
   const nextMonth = () => {
     setCurrentMonth((prevMonth) => {
-      console.log("Navigating to next month from:", prevMonth);
+      logger.debug("Navigating to next month from:", prevMonth);
 
       // Create a new date for the next month
       const newDate = new Date(prevMonth);
@@ -156,7 +156,7 @@ export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
       newDate.setDate(day);
 
       const result = dateInUserTimezone(newDate);
-      console.log("New month will be:", format(result, "MMMM yyyy"));
+      logger.debug("New month will be:", format(result, "MMMM yyyy"));
       return result;
     });
   };
@@ -174,11 +174,16 @@ export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
 
     // Only allow toggling past or current dates
     if (isAfter(normalizedDate, today)) {
-      console.log("Can't toggle future date:", normalizedDate, "today:", today);
+      logger.debug(
+        "Can't toggle future date:",
+        normalizedDate,
+        "today:",
+        today
+      );
       return;
     }
 
-    console.log("Toggling date:", normalizedDate.toISOString());
+    logger.debug("Toggling date:", normalizedDate.toISOString());
     // Use the provided function first (for backward compatibility),
     // otherwise use the context function
     if (onToggleDate) {
