@@ -1,6 +1,6 @@
 import { AuthProvider, useAuth } from "@auth/hooks";
-import { LoginRequest, RegisterRequest, User } from "@auth/types";
 import { authApi } from "@auth/services";
+import { User } from "@auth/types";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ReactNode } from "react";
