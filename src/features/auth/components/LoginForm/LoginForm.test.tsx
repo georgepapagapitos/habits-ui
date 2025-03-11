@@ -9,7 +9,8 @@ import { AuthContextType } from "@auth/types";
 vi.mock("react-router-dom", async (importOriginal) => {
   const actual = await importOriginal();
   return {
-    ...(actual as any),
+    // Use a more specific type instead of any
+    ...(actual as Record<string, unknown>),
     useNavigate: () => navigateMock,
   };
 });
