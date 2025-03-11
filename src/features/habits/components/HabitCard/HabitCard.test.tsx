@@ -252,21 +252,16 @@ describe("HabitCard", () => {
       <HabitCard habit={zeroStreakHabit} />
     );
 
-    // Debug the rendered component
-    console.log("Rendered component:", container.innerHTML);
+    // Debug the rendered component - commented out to pass linting
+    // console.log("Rendered component:", container.innerHTML);
 
     // Find all span elements to see what's actually being rendered
-    const allSpans = screen.getAllByText(/./i, { selector: "span" });
-    console.log(
-      "All spans:",
-      allSpans.map((span) => span.textContent)
-    );
+    // Commented out to pass linting
+    // const allSpans = screen.getAllByText(/./i, { selector: "span" });
 
     // Look specifically at the footer (which contains the streak message)
-    const footer = container.querySelector(".sc-dXYVqG"); // Using the class name we saw in error message
-    if (footer) {
-      console.log("Footer content:", footer.innerHTML);
-    }
+    // Commented out to pass linting
+    // const footer = container.querySelector(".sc-dXYVqG");
 
     // Use a more flexible approach to find the streak message
     // It might be "No streak yet" or something similar

@@ -11,6 +11,7 @@ import {
 } from "../types/habit.types";
 import { isCompletedOnDate, isHabitDueOnDate } from "../utils/habitUtils";
 import { useRewards } from "./rewardContext";
+import { logger } from "@utils/logger";
 
 export function useHabitManager() {
   const [habits, setHabits] = useState<Habit[]>([]);
@@ -34,7 +35,7 @@ export function useHabitManager() {
         const today = new Date().toISOString().split("T")[0];
 
         // CRITICAL DEBUGGING - Force a rewards check always
-        console.log(
+        logger.debug(
           "⚠️ FORCING rewards check regardless of last checked time!"
         );
 
@@ -44,13 +45,13 @@ export function useHabitManager() {
         const todayEnd = new Date();
         todayEnd.setHours(23, 59, 59, 999);
 
-        console.log("Today's date range for rewards check:", {
+        logger.debug("Today's date range for rewards check:", {
           start: todayStart.toISOString(),
           end: todayEnd.toISOString(),
         });
 
         // Debug the habits we're checking
-        console.log(
+        logger.debug(
           "Checking for rewards in habits:",
           habitsToCheck.map((h) => ({
             id: h._id,
@@ -62,7 +63,7 @@ export function useHabitManager() {
         );
 
         // Debug what's in the rewards context
-        console.log("Current rewards in context:", rewards);
+        logger.debug("Current rewards in context:", rewards);
 
         // Find habits completed today (optimized with early returns)
         const completedHabitsToday: Habit[] = [];
@@ -97,7 +98,7 @@ export function useHabitManager() {
             typeof rewards[habit._id].url === "string";
 
           // Log debugging info
-          console.log(
+          logger.debug(
             `Checking if habit "${habit.name}" (${habit._id}) needs a reward:`,
             {
               hasReward: !!rewards[habit._id],
@@ -137,7 +138,7 @@ export function useHabitManager() {
             const dateSeed = generateDateSeed(todayStr);
             const habitSeed = generateHabitSeed(habit._id, dateSeed);
 
-            console.log(
+            logger.debug(
               `Fetching photo for habit "${habit.name}" with consistent seed: ${habitSeed}`
             );
 
@@ -172,7 +173,7 @@ export function useHabitManager() {
         // Mark that we've checked for rewards today
         localStorage.setItem("rewardsLastChecked", today);
       } catch (error) {
-        console.error(
+        logger.error(
           "Error checking for completed habits without rewards:",
           error
         );
@@ -244,7 +245,7 @@ export function useHabitManager() {
             retryAttemptsRef.current++;
             const backoffTime = 1000 * Math.pow(2, retryAttemptsRef.current);
 
-            console.log(
+            logger.warn(
               `Rate limited, retrying in ${backoffTime / 1000} seconds (attempt ${retryAttemptsRef.current}/${MAX_RETRY_ATTEMPTS})...`
             );
             setError(
@@ -276,7 +277,9 @@ export function useHabitManager() {
         // and uses the localStorage to track if it already ran today
         if (fetchedHabits.length > 0) {
           try {
-            console.log("Initial load - checking for habits that need rewards");
+            logger.debug(
+              "Initial load - checking for habits that need rewards"
+            );
 
             // Force the check by clearing the last checked date
             localStorage.removeItem("rewardsLastChecked");
@@ -284,7 +287,7 @@ export function useHabitManager() {
             await checkForCompletedHabitsWithoutRewards(fetchedHabits);
           } catch (rewardError) {
             // Don't fail everything if rewards can't be fetched
-            console.error("Error checking for rewards:", rewardError);
+            logger.error("Error checking for rewards:", rewardError);
           }
         }
       } catch (err) {
@@ -293,7 +296,7 @@ export function useHabitManager() {
         } else {
           setError("Failed to load habits. Please try again later.");
         }
-        console.error("Error fetching habits:", err);
+        logger.error("Error fetching habits:", err);
       } finally {
         setLoading(false);
         loadingHabitsRef.current = false;
@@ -395,11 +398,11 @@ export function useHabitManager() {
       const habitSeed = generateHabitSeed(id, dateSeed);
 
       // Make API call to toggle completion with a consistent seed
-      console.log(
+      logger.debug(
         `Making API call to toggle habit "${habit.name}" with consistent seed ${habitSeed}`
       );
       const updatedHabit = await habitApi.toggleCompletion(id, date, habitSeed);
-      console.log(`Toggle response for habit "${habit.name}":`, updatedHabit);
+      logger.debug(`Toggle response for habit "${habit.name}":`, updatedHabit);
 
       // Store the habit data without the reward photo
       setHabits((prevHabits) =>
@@ -420,7 +423,7 @@ export function useHabitManager() {
       const isToday =
         completionDate >= todayStart && completionDate <= todayEnd;
 
-      console.log(`Toggling habit "${habit.name}" - completion date info:`, {
+      logger.debug(`Toggling habit "${habit.name}" - completion date info:`, {
         date: completionDate.toISOString(),
         isToday,
         todayStart: todayStart.toISOString(),
@@ -434,14 +437,14 @@ export function useHabitManager() {
 
         // If habit was completed and has reward photo, store it
         if (updatedHabit.rewardPhoto && isToday) {
-          console.log(
+          logger.debug(
             "Adding reward photo for habit:",
             id,
             updatedHabit.rewardPhoto
           );
           if (updatedHabit.rewardPhoto.url) {
             // Ensure photo has proper structure before adding
-            console.log(
+            logger.debug(
               "Valid reward photo found, adding to context:",
               updatedHabit.rewardPhoto
             );
@@ -449,19 +452,19 @@ export function useHabitManager() {
 
             // Verify the reward was added properly
             setTimeout(() => {
-              console.log(
+              logger.debug(
                 `Verify reward was added for habit "${updatedHabit.name}":`,
                 rewards[id]
               );
             }, 100);
           } else {
-            console.error(
+            logger.error(
               "Invalid reward photo structure:",
               updatedHabit.rewardPhoto
             );
           }
         } else {
-          console.log("No reward photo available:", {
+          logger.debug("No reward photo available:", {
             hasPhoto: !!updatedHabit.rewardPhoto,
             isToday,
             rewardDetails: updatedHabit.rewardPhoto,
@@ -476,7 +479,7 @@ export function useHabitManager() {
             const dateSeed = generateDateSeed(today);
             const habitSeed = generateHabitSeed(id, dateSeed);
 
-            console.log(
+            logger.debug(
               "Attempting to fetch reward with consistent seed:",
               habitSeed
             );
@@ -489,7 +492,7 @@ export function useHabitManager() {
               .getRandomPhoto(habitSeed)
               .then((photoResponse) => {
                 if (photoResponse && photoResponse.url) {
-                  console.log(
+                  logger.debug(
                     "Successfully fetched manual reward photo:",
                     photoResponse
                   );
@@ -505,14 +508,14 @@ export function useHabitManager() {
                       "habitRewards",
                       JSON.stringify(rewardsObj)
                     );
-                    console.log("Saved reward directly to localStorage");
+                    logger.debug("Saved reward directly to localStorage");
                   } catch (e) {
-                    console.error("Failed to save reward to localStorage:", e);
+                    logger.error("Failed to save reward to localStorage:", e);
                   }
                 }
               })
               .catch((err) => {
-                console.error("Error fetching manual reward:", err);
+                logger.error("Error fetching manual reward:", err);
               });
           }
         }
@@ -543,7 +546,7 @@ export function useHabitManager() {
       }
     } catch (err) {
       showTemporaryMessage("Failed to update habit. Please try again.");
-      console.error("Error toggling habit:", err);
+      logger.error("Error toggling habit:", err);
     }
   };
 
@@ -555,7 +558,7 @@ export function useHabitManager() {
       showTemporaryMessage("Habit deleted successfully");
     } catch (err) {
       showTemporaryMessage("Failed to delete habit. Please try again.");
-      console.error("Error deleting habit:", err);
+      logger.error("Error deleting habit:", err);
     }
   };
 
@@ -570,7 +573,7 @@ export function useHabitManager() {
       return updatedHabit;
     } catch (err) {
       showTemporaryMessage("Failed to update habit. Please try again.");
-      console.error("Error updating habit:", err);
+      logger.error("Error updating habit:", err);
       throw err;
     }
   };
@@ -591,7 +594,7 @@ export function useHabitManager() {
       return resetHabit;
     } catch (err) {
       showTemporaryMessage("Failed to reset habit. Please try again.");
-      console.error("Error resetting habit:", err);
+      logger.error("Error resetting habit:", err);
       throw err;
     }
   };
@@ -728,7 +731,7 @@ export function useHabitManager() {
               setError(
                 `Rate limited. Will retry in ${backoffTime / 1000} seconds...`
               );
-              console.log(
+              logger.warn(
                 `Rate limited during refresh, retrying in ${backoffTime / 1000}s (attempt ${retryAttemptsRef.current}/${MAX_RETRY_ATTEMPTS})...`
               );
 
@@ -757,7 +760,7 @@ export function useHabitManager() {
             try {
               await checkForCompletedHabitsWithoutRewards(fetchedHabits);
             } catch (rewardError) {
-              console.error(
+              logger.error(
                 "Error checking for rewards during refresh:",
                 rewardError
               );
@@ -769,7 +772,7 @@ export function useHabitManager() {
           } else {
             setError("Failed to refresh habits. Please try again later.");
           }
-          console.error("Error refreshing habits:", err);
+          logger.error("Error refreshing habits:", err);
         } finally {
           setLoading(false);
           loadingHabitsRef.current = false;

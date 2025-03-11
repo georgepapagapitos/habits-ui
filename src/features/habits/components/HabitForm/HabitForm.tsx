@@ -1,6 +1,7 @@
 import { Button, Form, Group, Input, Label, Title } from "@components";
 import { TimeOfDay, WeekDay } from "@habits/types";
 import { useState } from "react";
+import { logger } from "@utils/logger";
 import { DayButton, FormGroup, Select, StyledSelect } from "./habitForm.styles";
 
 interface HabitFormProps {
@@ -145,7 +146,7 @@ export const HabitForm = ({
       timeOfDay,
     };
 
-    console.log("Submitting habit data:", habitData);
+    logger.debug("Submitting habit data:", habitData);
 
     onSubmit(habitData);
   };

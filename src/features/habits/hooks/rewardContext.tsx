@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { logger } from "@utils/logger";
 
 // Interface to store daily rewards by habit ID
 interface RewardMap {
@@ -161,10 +162,10 @@ export const RewardProvider: React.FC<{ children: React.ReactNode }> = ({
     // Schedule a new save operation
     savePendingRef.current = setTimeout(() => {
       if (Object.keys(rewardsToSave).length > 0) {
-        console.log("Saving rewards to localStorage:", rewardsToSave);
+        logger.debug("Saving rewards to localStorage:", rewardsToSave);
         storageHelpers.setItem(REWARDS_STORAGE_KEY, rewardsToSave);
       } else {
-        console.log("No rewards to save, removing from localStorage");
+        logger.debug("No rewards to save, removing from localStorage");
         storageHelpers.removeItem(REWARDS_STORAGE_KEY);
       }
       savePendingRef.current = null;

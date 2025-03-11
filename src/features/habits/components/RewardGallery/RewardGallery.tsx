@@ -7,6 +7,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { logger } from "@utils/logger";
 import { PhotoReward } from "../../types/habit.types";
 import {
   Container,
@@ -125,12 +126,12 @@ export const RewardGallery = () => {
     // Skip if already refreshing, loading, or we've tried already
     if (loading || isRefreshing || hasTriedRefreshRef.current) return;
 
-    console.log("RewardGallery - Check if we need to refresh:");
-    console.log(
+    logger.debug("RewardGallery - Check if we need to refresh:");
+    logger.debug(
       "Completed habits today:",
       completedHabitsToday.map((h) => h.name)
     );
-    console.log(
+    logger.debug(
       "Habits with rewards:",
       completedHabitsWithRewards.map((h) => h.name)
     );
@@ -139,13 +140,13 @@ export const RewardGallery = () => {
     const missingRewardsCount =
       completedHabitsToday.length - completedHabitsWithRewards.length;
 
-    console.log(
+    logger.debug(
       `There are ${missingRewardsCount} completed habits missing rewards`
     );
 
     // If we have completed habits but they're missing from rewards, refresh
     if (completedHabitsToday.length > 0 && missingRewardsCount > 0) {
-      console.log(
+      logger.debug(
         "Some completed habits are missing rewards - refreshing habits"
       );
 
@@ -155,8 +156,8 @@ export const RewardGallery = () => {
       // Perform the refresh
       setIsRefreshing(true);
       refreshHabits()
-        .then(() => console.log("Habits refreshed successfully"))
-        .catch((err) => console.error("Error refreshing habits:", err))
+        .then(() => logger.debug("Habits refreshed successfully"))
+        .catch((err) => logger.error("Error refreshing habits:", err))
         .finally(() => setIsRefreshing(false));
 
       // Set flag so we don't try again this session
@@ -174,8 +175,8 @@ export const RewardGallery = () => {
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true);
     refreshHabits()
-      .then(() => console.log("Manual refresh completed"))
-      .catch((err) => console.error("Error during manual refresh:", err))
+      .then(() => logger.debug("Manual refresh completed"))
+      .catch((err) => logger.error("Error during manual refresh:", err))
       .finally(() => setIsRefreshing(false));
   }, [refreshHabits]);
 
