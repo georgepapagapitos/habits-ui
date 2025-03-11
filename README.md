@@ -36,15 +36,15 @@ A modern habit tracking application built with React, TypeScript, and Vite, desi
 
 - Node.js (v18+)
 - npm or yarn
-- Habits API running (see [Habits API README](../habits-api/README.md))
+- Habits API running (see [Habits API Repository](https://github.com/georgepapagapitos/habits-api))
 
 ### Installation
 
 1. Clone the repository
 
    ```bash
-   git clone https://github.com/georgepapagapitos/hannahs-habits.git
-   cd hannahs-habits/habits-ui
+   git clone https://github.com/georgepapagapitos/habits-ui.git
+   cd habits-ui
    ```
 
 2. Install dependencies
