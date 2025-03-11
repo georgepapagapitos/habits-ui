@@ -1,96 +1,43 @@
-name: Deploy UI
+name: UI CI
 
 on:
   push:
     branches:
-      - main # Deploy to production on main branch push
-      - staging # Deploy to staging on staging branch push
-  workflow_dispatch: # Allow manual trigger
+      - main
+      - staging
+  pull_request:
+    branches:
+      - main
+      - staging
+  workflow_dispatch:
 
 jobs:
-  deploy:
-    name: Deploy to ${{ github.ref == 'refs/heads/main' && 'Production' || 'Staging' }}
-    runs-on: self-hosted
+  test:
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set environment variables
-        id: env
-        run: |
-          if [[ ${{ github.ref }} == 'refs/heads/main' ]]; then
-            echo "DEPLOY_ENV=prod" >> $GITHUB_ENV
-            echo "DEPLOY_PATH=/var/www/habits-ui/production" >> $GITHUB_ENV
-            echo "API_URL=http://backend:5050" >> $GITHUB_ENV
-            echo "PORT=5173" >> $GITHUB_ENV
-          else
-            echo "DEPLOY_ENV=staging" >> $GITHUB_ENV
-            echo "DEPLOY_PATH=/var/www/habits-ui/staging" >> $GITHUB_ENV
-            echo "API_URL=http://backend-staging:5050" >> $GITHUB_ENV
-            echo "PORT=5174" >> $GITHUB_ENV
-          fi
-
-      - name: Print environment info
-        run: |
-          echo "Deploying to ${{ env.DEPLOY_ENV }} environment"
-          echo "Deploy path: ${{ env.DEPLOY_PATH }}"
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Create environment file
-        run: |
-          echo "VITE_API_URL=/api" > .env
-          echo "VITE_BACKEND_URL=${{ env.API_URL }}" >> .env
+      - name: Run linting
+        run: npm run lint || true
 
-      - name: Type check
-        run: npm run typecheck || echo "Type checking skipped"
+      - name: Run type check
+        run: npm run typecheck
 
-      - name: Build application
-        run: npm run build
-
-      - name: Deploy application
-        run: |
-          # Create deploy directory if it doesn't exist
-          mkdir -p ${{ env.DEPLOY_PATH }}
-
-          # Copy files to deployment directory
-          rsync -av --exclude='.git' --exclude='node_modules' . ${{ env.DEPLOY_PATH }}/
-
-          # Copy built files
-          rsync -av dist/ ${{ env.DEPLOY_PATH }}/dist/
-
-          # Copy Dockerfile and nginx config
-          cp Dockerfile ${{ env.DEPLOY_PATH }}/
-          cp nginx.conf ${{ env.DEPLOY_PATH }}/
-
-          # Deploy with Docker
-          cd ${{ env.DEPLOY_PATH }}
-
-          # Build and run Docker container
-          docker build -t habits-ui-${{ env.DEPLOY_ENV }} .
-
-          # Stop any existing container
-          docker stop habits-ui-${{ env.DEPLOY_ENV }} || true
-          docker rm habits-ui-${{ env.DEPLOY_ENV }} || true
-
-          # Run the new container
-          docker run -d --name habits-ui-${{ env.DEPLOY_ENV }} \
-            -p ${{ env.PORT }}:80 \
-            --network app-network \
-            -e BACKEND_URL=${{ env.API_URL }} \
-            habits-ui-${{ env.DEPLOY_ENV }}
-
-      - name: Verify deployment
-        run: |
-          # Wait for the service to start
-          sleep 10
-
-          # Check if the service is running
-          curl -f http://localhost:${{ env.PORT }} || exit 1
+      - name: Run tests
+        run: npm test
+        env:
+          VITE_API_URL: "/api"
 
       - name: Notify on success
         if: success()
-        run: |
-          echo "UI deployment to ${{ env.DEPLOY_ENV }} completed successfully!"
+        run: echo "All tests passed successfully!"
