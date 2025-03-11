@@ -72,7 +72,9 @@ export const habitApi = {
       // Use throttled request to avoid rate limiting
       interface PhotoResponse {
         data?: PhotoReward;
+        id?: string;
         url?: string;
+        thumbnailUrl?: string;
         width?: number;
         height?: number;
       }
@@ -85,17 +87,24 @@ export const habitApi = {
       let photoReward: PhotoReward | null = null;
 
       if (response) {
-        if (response.data && response.data.url) {
+        if (response.data && response.data.url && response.data.id) {
           // Response is wrapped in data object
           photoReward = response.data;
-        } else if (response.url) {
+        } else if (response.url && response.id) {
           // Response is the photo object directly
-          photoReward = response;
+          // Ensure all required fields are present
+          photoReward = {
+            id: response.id,
+            url: response.url,
+            thumbnailUrl: response.thumbnailUrl,
+            width: response.width || 0,
+            height: response.height || 0,
+          };
         }
       }
 
       // Validate the photo data
-      if (photoReward && photoReward.url) {
+      if (photoReward && photoReward.url && photoReward.id) {
         // Store in cache if seed provided
         if (seed !== undefined) {
           habitApi._photoCache.set(seed, {
@@ -193,8 +202,8 @@ export const habitApi = {
     queue: [] as {
       url: string;
       config: AxiosRequestConfig;
-      resolve: (data: unknown) => void;
-      reject: (error: unknown) => void;
+      resolve: (value: any) => void;
+      reject: (reason?: any) => void;
     }[],
     // Flag to track if we're processing the queue
     processing: false,
@@ -203,8 +212,8 @@ export const habitApi = {
     enqueue: function (
       url: string,
       config: AxiosRequestConfig,
-      resolve: (data: unknown) => void,
-      reject: (error: unknown) => void
+      resolve: (value: any) => void,
+      reject: (reason?: any) => void
     ) {
       this.queue.push({ url, config, resolve, reject });
 
@@ -305,8 +314,13 @@ export const habitApi = {
     url: string,
     config?: AxiosRequestConfig
   ): Promise<T> => {
-    return new Promise((resolve, reject) => {
-      habitApi._requestController.enqueue(url, config || {}, resolve, reject);
+    return new Promise<T>((resolve, reject) => {
+      habitApi._requestController.enqueue(
+        url,
+        config || {},
+        (value: any) => resolve(value as T),
+        (reason?: any) => reject(reason)
+      );
     });
   },
 
@@ -440,19 +454,12 @@ export const habitApi = {
       // This preserves the exact moment in time across timezones
       const isoDate = date.toISOString();
 
-      // Log the request details for debugging
       const requestData = {
         date: isoDate,
         timezone: userTimezone,
         // Include the seed if provided for deterministic photo selection
         ...(seed !== undefined && { seed }),
       };
-
-      console.log(
-        `Toggling habit ${id} for date ${format(date, "yyyy-MM-dd")} in timezone ${userTimezone}`,
-        `Request body:`,
-        requestData
-      );
 
       // Use the throttled request for consistency
       const response = await axios.patch(
@@ -523,14 +530,6 @@ export const habitApi = {
         `Error toggling completion for habit ${id} [Status: ${err.response?.status} ${err.response?.statusText}]:`,
         err.response?.data || err
       );
-
-      // More detailed error for debugging
-      if (err.response?.data) {
-        console.error(
-          `Server response details:`,
-          JSON.stringify(err.response.data, null, 2)
-        );
-      }
 
       throw (
         err.response?.data?.error ||

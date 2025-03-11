@@ -38,24 +38,6 @@ interface HabitCalendarProps {
 }
 
 export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
-  // For debugging
-  console.log("Calendar render - current date:", new Date().toISOString());
-  console.log("User timezone:", getUserTimezone());
-
-  // Print today's date in user timezone for debugging
-  const nowInUserTz = dateInUserTimezone(new Date());
-  try {
-    console.log(
-      "Today in user timezone:",
-      nowInUserTz.toISOString(),
-      `Day of month: ${nowInUserTz.getDate()}`,
-      `Day of week: ${nowInUserTz.getDay()} (${
-        ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][nowInUserTz.getDay()]
-      })`
-    );
-  } catch (error) {
-    console.error("Error logging date information:", error);
-  }
   // Get a date object for the current month in user's timezone
   const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date();
