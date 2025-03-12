@@ -30,16 +30,43 @@ const RewardPhoto = React.memo(
     photo: PhotoReward;
   }) => {
     const [isLoaded, setIsLoaded] = useState(false);
+    const [loadError, setLoadError] = useState(false);
+    const [retryCount, setRetryCount] = useState(0);
+    const maxRetries = 3;
 
-    // Use an effect to preload the image
+    // Use an effect to preload the image with better error handling
     useEffect(() => {
       if (!photo.url) return;
 
       const img = new Image();
 
       // Set up handlers
-      img.onload = () => setIsLoaded(true);
-      img.onerror = () => setIsLoaded(true); // Still mark as loaded on error to show something
+      img.onload = () => {
+        setIsLoaded(true);
+        setLoadError(false);
+      };
+
+      img.onerror = () => {
+        // If we have a thumbnail URL and this is the first error, try the thumbnail
+        if (photo.thumbnailUrl && retryCount === 0) {
+          logger.debug(`Image load error for ${habitName}, trying thumbnail`);
+          setRetryCount(1);
+          img.src = photo.thumbnailUrl;
+        } else if (retryCount < maxRetries) {
+          // Try to reload the image with a cache-busting parameter
+          logger.debug(`Retry ${retryCount} for ${habitName} image`);
+          const cacheBuster = `?retry=${Date.now()}`;
+          setRetryCount((prev) => prev + 1);
+          img.src = `${photo.url}${cacheBuster}`;
+        } else {
+          // After max retries, mark as loaded but with error
+          logger.error(
+            `Failed to load image for ${habitName} after ${maxRetries} retries`
+          );
+          setIsLoaded(true);
+          setLoadError(true);
+        }
+      };
 
       // Start loading
       img.src = photo.url;
@@ -49,7 +76,7 @@ const RewardPhoto = React.memo(
         img.onload = null;
         img.onerror = null;
       };
-    }, [photo.url]);
+    }, [photo.url, photo.thumbnailUrl, habitName, retryCount]);
 
     if (!photo.url) return null;
 
@@ -64,17 +91,46 @@ const RewardPhoto = React.memo(
           style={{
             transition: "opacity 0.3s ease-in-out",
             opacity: isLoaded ? 1 : 0.7,
+            filter: loadError ? "grayscale(100%)" : "none", // Visual indication of error
           }}
           onError={(e) => {
-            // Try to reload the image once
+            // Enhanced error handling
             const target = e.target as HTMLImageElement;
+
+            // When using our proxy endpoint, try to refresh the image
             if (!target.dataset.retried) {
-              target.dataset.retried = "true";
-              target.src = photo.url;
+              target.dataset.retried = "1";
+
+              // Try the thumbnail as fallback if available
+              if (photo.thumbnailUrl) {
+                target.src = photo.thumbnailUrl;
+                return;
+              }
+            } else if (target.dataset.retried === "1" && photo.thumbnailUrl) {
+              // If we already tried the thumbnail, add a cache buster
+              target.dataset.retried = "2";
+              const cacheBuster = `?cb=${Date.now()}`;
+              target.src = `${photo.url}${cacheBuster}`;
             }
+            // Otherwise, we will let the image show in error state
           }}
-          onLoad={() => setIsLoaded(true)}
+          onLoad={() => {
+            setIsLoaded(true);
+            setLoadError(false);
+          }}
         />
+        {loadError && (
+          <div
+            style={{
+              color: "#999",
+              fontSize: "12px",
+              textAlign: "center",
+              marginTop: "5px",
+            }}
+          >
+            Image could not be loaded
+          </div>
+        )}
       </PhotoCard>
     );
   }
