@@ -2,7 +2,9 @@ name: UI Build and Deploy
 
 on:
   push:
-    branches: [main] # Only run on main branch pushes
+    branches:
+      - main # Production build
+      - staging # Staging build
 
 jobs:
   build:
@@ -28,6 +30,20 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+      # Set environment-specific variables for build
+      - name: Set environment variables
+        id: env
+        run: |
+          if [[ ${{ github.ref }} == 'refs/heads/main' ]]; then
+            echo "ENV_TAG=latest" >> $GITHUB_OUTPUT
+            echo "VITE_API_URL=/api" >> .env
+            echo "VITE_BACKEND_URL=http://backend:5050" >> .env
+          else
+            echo "ENV_TAG=staging" >> $GITHUB_OUTPUT
+            echo "VITE_API_URL=/api" >> .env
+            echo "VITE_BACKEND_URL=http://backend-staging:5050" >> .env
+          fi
 
       - name: Build
         run: npm run build
@@ -56,8 +72,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/habits-ui:latest
+            ${{ secrets.DOCKER_USERNAME }}/habits-ui:${{ steps.env.outputs.ENV_TAG }}
             ${{ secrets.DOCKER_USERNAME }}/habits-ui:${{ steps.version.outputs.sha_short }}
-            ${{ secrets.DOCKER_USERNAME }}/habits-ui:${{ steps.version.outputs.date }}
+            ${{ secrets.DOCKER_USERNAME }}/habits-ui:${{ steps.version.outputs.date }}-${{ steps.env.outputs.ENV_TAG }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
