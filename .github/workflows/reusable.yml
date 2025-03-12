@@ -1,0 +1,124 @@
+name: Reusable UI Workflow
+
+on:
+  workflow_call:
+    inputs:
+      run-tests:
+        required: false
+        type: boolean
+        default: true
+      run-build:
+        required: false
+        type: boolean
+        default: true
+      run-docker:
+        required: false
+        type: boolean
+        default: false
+      environment-tag:
+        required: false
+        type: string
+        default: ""
+    secrets:
+      VITE_API_URL:
+        required: false
+      VITE_BACKEND_URL:
+        required: false
+      DOCKER_USERNAME:
+        required: false
+      DOCKER_PASSWORD:
+        required: false
+
+jobs:
+  standard-process:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint || true # Allow linting to fail without stopping workflow
+
+      - name: Run type check
+        run: npm run typecheck
+
+      # Conditionally run tests
+      - name: Run tests
+        if: inputs.run-tests
+        run: npm test
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL || '/api' }}
+
+      # Conditionally run test coverage on PRs
+      - name: Run test coverage
+        if: inputs.run-tests && github.event_name == 'pull_request'
+        run: npm run test:coverage
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL || '/api' }}
+
+      # Upload coverage reports on PRs
+      - name: Upload coverage reports
+        if: inputs.run-tests && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-coverage-report
+          path: coverage/
+
+      # Set environment variables for build if needed
+      - name: Set environment variables
+        if: inputs.run-build && inputs.environment-tag != ''
+        run: |
+          if [[ "${{ inputs.environment-tag }}" == "latest" ]]; then
+            echo "VITE_API_URL=/api" >> .env
+            echo "VITE_BACKEND_URL=http://backend:5050" >> .env
+          elif [[ "${{ inputs.environment-tag }}" == "staging" ]]; then
+            echo "VITE_API_URL=/api" >> .env
+            echo "VITE_BACKEND_URL=http://backend-staging:5050" >> .env
+          fi
+
+      # Conditionally build
+      - name: Build
+        if: inputs.run-build
+        run: npm run build
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL || '/api' }}
+
+      # Conditionally build and push Docker image
+      - name: Extract version info for tagging
+        if: inputs.run-docker
+        id: version
+        run: |
+          echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        if: inputs.run-docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        if: inputs.run-docker
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        if: inputs.run-docker && inputs.environment-tag != ''
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/habits-ui:${{ inputs.environment-tag }}
+            ${{ secrets.DOCKER_USERNAME }}/habits-ui:${{ steps.version.outputs.sha_short }}
+            ${{ secrets.DOCKER_USERNAME }}/habits-ui:${{ steps.version.outputs.date }}-${{ inputs.environment-tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
