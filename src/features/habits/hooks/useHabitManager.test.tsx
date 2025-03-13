@@ -1,12 +1,30 @@
-import { renderHook, act } from "@testing-library/react";
-import { vi, describe, it, expect, beforeEach } from "vitest";
-import { useHabitManager } from "./useHabitManager";
+import { act, renderHook } from "@testing-library/react";
+import React from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { habitApi } from "../services/habitApi";
 import { Habit, WeekDay } from "../types/habit.types";
-import { RewardProvider } from "./rewardContext";
-import React from "react";
+import { useHabitManager } from "./useHabitManager";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+// Create a mock for clearExpiredRewards at module level
+const mockClearExpiredRewards = vi.fn();
+
+// Mock the reward context at module level
+vi.mock("./rewardContext", () => ({
+  RewardProvider: ({ children }: { children: React.ReactNode }) => children,
+  useRewards: () => ({
+    rewards: {},
+    addReward: vi.fn(),
+    removeReward: vi.fn(),
+    getReward: vi.fn(),
+    hasRewardForToday: vi.fn(),
+    batchAddRewards: vi.fn(),
+    clearExpiredRewards: mockClearExpiredRewards,
+    isRewardsLoaded: true,
+  }),
+}));
+
 // Mock the useMessages hook
 vi.mock("@common/hooks", () => ({
   useMessages: () => ({
@@ -125,9 +143,7 @@ describe("useHabitManager", () => {
 
     // Execute hook in an async act block
     let addedHabit: Habit | null = null;
-    const { result } = renderHook(() => useHabitManager(), {
-      wrapper: ({ children }) => <RewardProvider>{children}</RewardProvider>,
-    });
+    const { result } = renderHook(() => useHabitManager());
 
     // Wait for initial load to settle
     await vi.waitFor(() => {
@@ -169,9 +185,7 @@ describe("useHabitManager", () => {
 
   it("deletes a habit", async () => {
     // Execute
-    const { result } = renderHook(() => useHabitManager(), {
-      wrapper: ({ children }) => <RewardProvider>{children}</RewardProvider>,
-    });
+    const { result } = renderHook(() => useHabitManager());
 
     // Wait for initial load to settle
     await vi.waitFor(() => {
@@ -207,9 +221,7 @@ describe("useHabitManager", () => {
     console.warn = vi.fn();
 
     // Execute
-    const { result } = renderHook(() => useHabitManager(), {
-      wrapper: ({ children }) => <RewardProvider>{children}</RewardProvider>,
-    });
+    const { result } = renderHook(() => useHabitManager());
 
     // Wait for initial load to settle
     await vi.waitFor(() => {
@@ -240,9 +252,7 @@ describe("useHabitManager", () => {
     (habitApi.getAllHabits as any).mockResolvedValue([mockHabit]);
 
     // Execute hook
-    const { result } = renderHook(() => useHabitManager(), {
-      wrapper: ({ children }) => <RewardProvider>{children}</RewardProvider>,
-    });
+    const { result } = renderHook(() => useHabitManager());
 
     // Wait for initial load to settle
     await vi.waitFor(() => {
@@ -264,9 +274,7 @@ describe("useHabitManager", () => {
     (habitApi.getAllHabits as any).mockResolvedValue([mockHabit]);
 
     // Execute hook
-    const { result } = renderHook(() => useHabitManager(), {
-      wrapper: ({ children }) => <RewardProvider>{children}</RewardProvider>,
-    });
+    const { result } = renderHook(() => useHabitManager());
 
     // Wait for initial state to be populated from the mock API call
     await vi.waitFor(() => {
@@ -316,9 +324,7 @@ describe("useHabitManager", () => {
     (habitApi.updateHabit as any).mockResolvedValue(updatedHabit);
 
     // Execute hook
-    const { result } = renderHook(() => useHabitManager(), {
-      wrapper: ({ children }) => <RewardProvider>{children}</RewardProvider>,
-    });
+    const { result } = renderHook(() => useHabitManager());
 
     // Wait for initial state to be populated from the mock API call
     await vi.waitFor(() => {
@@ -369,9 +375,7 @@ describe("useHabitManager", () => {
     (habitApi.resetHabit as any).mockResolvedValue(resetHabit);
 
     // Execute hook
-    const { result } = renderHook(() => useHabitManager(), {
-      wrapper: ({ children }) => <RewardProvider>{children}</RewardProvider>,
-    });
+    const { result } = renderHook(() => useHabitManager());
 
     // Wait for initial state to be populated from the mock API call
     await vi.waitFor(() => {
@@ -396,5 +400,174 @@ describe("useHabitManager", () => {
     expect(returnedHabit).toEqual(resetHabit);
     expect(returnedHabit?.completedDates).toEqual([]);
     expect(returnedHabit?.streak).toBe(0);
+  });
+
+  // Test photo reward generation behavior
+  describe("Photo Rewards", () => {
+    // Mock Date for testing different days
+    const mockDate = (date: Date) => {
+      const OriginalDate = global.Date;
+      // @ts-expect-error - intentionally overwriting Date for testing
+      global.Date = class extends OriginalDate {
+        constructor(...args: any[]) {
+          if (args.length === 0) {
+            return new OriginalDate(date);
+          }
+          // @ts-expect-error - handling any arguments for Date constructor
+          return new OriginalDate(...args);
+        }
+        static now() {
+          return new OriginalDate(date).getTime();
+        }
+        toISOString() {
+          return new OriginalDate(date).toISOString();
+        }
+      };
+      return () => {
+        global.Date = OriginalDate;
+      };
+    };
+
+    beforeEach(() => {
+      vi.clearAllMocks();
+
+      // Mock localStorage
+      vi.spyOn(Storage.prototype, "getItem").mockImplementation((key) => {
+        if (key === "userName") return "Hannah";
+        if (key === "habitRewards") return null;
+        return null;
+      });
+
+      vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {});
+      vi.spyOn(Storage.prototype, "removeItem").mockImplementation(() => {});
+    });
+
+    it("generates different seeds for the same habit on different days", async () => {
+      // Mock day 1
+      const day1 = new Date("2023-03-15");
+      const resetDay1 = mockDate(day1);
+
+      // Render hook on day 1
+      const { result, rerender } = renderHook(() => useHabitManager());
+
+      // Access the internal seed generation function
+      // @ts-expect-error - accessing internal function for testing
+      const generateSeedForHabit = result.current.generateSeedForHabit;
+
+      // Generate a seed for a habit on day 1
+      const habitId = "habit-123";
+      const day1Str = day1.toISOString().split("T")[0];
+      const seedDay1 = generateSeedForHabit(habitId, day1Str);
+
+      // Restore original Date
+      resetDay1();
+
+      // Mock day 2
+      const day2 = new Date("2023-03-16");
+      const resetDay2 = mockDate(day2);
+
+      // Re-render hook for day 2
+      rerender();
+
+      // Generate a seed for the same habit on day 2
+      const day2Str = day2.toISOString().split("T")[0];
+      const seedDay2 = generateSeedForHabit(habitId, day2Str);
+
+      // Restore original Date
+      resetDay2();
+
+      // Seeds should be different for different days
+      expect(seedDay1).not.toEqual(seedDay2);
+    });
+
+    it("generates the same seed for the same habit on the same day", async () => {
+      // Mock a fixed date
+      const testDate = new Date("2023-03-15");
+      const resetDate = mockDate(testDate);
+
+      // Render hook
+      const { result } = renderHook(() => useHabitManager());
+
+      // Access the internal seed generation function
+      // @ts-expect-error - accessing internal function for testing
+      const generateSeedForHabit = result.current.generateSeedForHabit;
+
+      // Generate seeds twice for the same habit and date
+      const habitId = "habit-123";
+      const dateStr = testDate.toISOString().split("T")[0];
+      const seed1 = generateSeedForHabit(habitId, dateStr);
+      const seed2 = generateSeedForHabit(habitId, dateStr);
+
+      // Restore original Date
+      resetDate();
+
+      // Seeds should be identical for the same habit+date
+      expect(seed1).toEqual(seed2);
+    });
+
+    it("passes seed to API when toggling habit completion", async () => {
+      // Mock today's date
+      const today = new Date("2023-03-15");
+      const resetDate = mockDate(today);
+
+      // Setup a mock habit
+      const mockHabit = createMockHabit();
+      (habitApi.getAllHabits as any).mockResolvedValue([mockHabit]);
+      (habitApi.toggleCompletion as any).mockResolvedValue({
+        ...mockHabit,
+        completedDates: [today.toISOString()],
+      });
+
+      // Render hook
+      const { result } = renderHook(() => useHabitManager());
+
+      // Wait for initial load
+      await vi.waitFor(() => {
+        expect(result.current.habits).toHaveLength(1);
+      });
+
+      // Mock console.warn
+      const originalWarn = console.warn;
+      console.warn = vi.fn();
+
+      // Toggle habit completion
+      await act(async () => {
+        await result.current.toggleHabit("habit-1");
+      });
+
+      // Restore console.warn
+      console.warn = originalWarn;
+
+      // Assert that toggleCompletion was called with a seed
+      expect(habitApi.toggleCompletion).toHaveBeenCalled();
+      const callArgs = (habitApi.toggleCompletion as any).mock.calls[0];
+      expect(callArgs.length).toBeGreaterThanOrEqual(3); // At least 3 args (id, date, seed)
+
+      // The seed should be a number
+      const providedSeed = callArgs[2];
+      expect(typeof providedSeed).toBe("number");
+
+      // Restore original Date
+      resetDate();
+    });
+
+    // Mock the clearExpiredRewards test more directly to avoid timing issues
+    it("calls clearExpiredRewards during initialization", async () => {
+      // Reset the mock before our test
+      mockClearExpiredRewards.mockClear();
+
+      // Day 1 setup
+      const day1 = new Date("2023-03-15");
+      const resetDay1 = mockDate(day1);
+
+      // First render - this should call clearExpiredRewards during initialization
+      renderHook(() => useHabitManager());
+
+      // Verify clearExpiredRewards was called during initialization
+      expect(mockClearExpiredRewards).toHaveBeenCalled();
+
+      // Cleanup
+      resetDay1();
+    });
   });
 });
