@@ -76,13 +76,8 @@ jobs:
       - name: Set environment variables
         if: inputs.run-build && inputs.environment-tag != ''
         run: |
-          if [[ "${{ inputs.environment-tag }}" == "latest" ]]; then
-            echo "VITE_API_URL=/api" >> .env
-            echo "VITE_BACKEND_URL=http://backend:5050" >> .env
-          elif [[ "${{ inputs.environment-tag }}" == "staging" ]]; then
-            echo "VITE_API_URL=/api" >> .env
-            echo "VITE_BACKEND_URL=http://backend-staging:5050" >> .env
-          fi
+          echo "VITE_API_URL=/api" >> .env
+          echo "VITE_BACKEND_URL=http://backend:5050" >> .env
 
       # Conditionally build
       - name: Build
