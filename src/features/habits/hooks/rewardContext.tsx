@@ -266,11 +266,32 @@ export const RewardProvider: React.FC<{ children: React.ReactNode }> = ({
   const clearExpiredRewards = useCallback(() => {
     const today = new Date().toISOString().split("T")[0];
     if (lastSavedDate !== today) {
+      // Clear all rewards when the date changes to ensure fresh photos
+      logger.debug(
+        `Date changed from ${lastSavedDate || "unknown"} to ${today}. Clearing all reward photos.`
+      );
       setRewards({});
       setLastSavedDate(today);
+
+      // Update localStorage
       storageHelpers.setItem(REWARDS_DATE_KEY, today);
       storageHelpers.removeItem(REWARDS_STORAGE_KEY);
       storageHelpers.removeItem(REWARDS_LAST_CHECKED_KEY);
+
+      // Also clear any individual reward flags that might exist
+      const localStorageKeys = Object.keys(localStorage);
+      const rewardKeys = localStorageKeys.filter(
+        (key) =>
+          key.startsWith("habitReward_") ||
+          key === REWARDS_STORAGE_KEY ||
+          key === REWARDS_LAST_CHECKED_KEY
+      );
+
+      // Remove all reward-related keys
+      rewardKeys.forEach((key) => {
+        logger.debug(`Clearing expired reward key: ${key}`);
+        localStorage.removeItem(key);
+      });
     }
   }, [lastSavedDate]);
 

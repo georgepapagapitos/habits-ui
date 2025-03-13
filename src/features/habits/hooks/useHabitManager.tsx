@@ -1,4 +1,5 @@
 import { useMessages } from "@hooks";
+import { logger } from "@utils/logger";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { encouragingMessages } from "../constants";
 import { habitApi } from "../services/habitApi";
@@ -11,7 +12,6 @@ import {
 } from "../types/habit.types";
 import { isCompletedOnDate, isHabitDueOnDate } from "../utils/habitUtils";
 import { useRewards } from "./rewardContext";
-import { logger } from "@utils/logger";
 
 export function useHabitManager() {
   const [habits, setHabits] = useState<Habit[]>([]);
@@ -34,10 +34,9 @@ export function useHabitManager() {
         // Get today's date
         const today = new Date().toISOString().split("T")[0];
 
-        // CRITICAL DEBUGGING - Force a rewards check always
-        logger.debug(
-          "⚠️ FORCING rewards check regardless of last checked time!"
-        );
+        // Always check for rewards at the start of the day
+        // This ensures we're using the API's improved photo selection logic
+        logger.debug("Checking for rewards for completed habits");
 
         // Calculate today's date range
         const todayStart = new Date();
@@ -135,8 +134,7 @@ export function useHabitManager() {
             // Generate a deterministic seed based on habit ID and today's date
             // This ensures the same habit gets the same photo on a given day
             const todayStr = new Date().toISOString().split("T")[0];
-            const dateSeed = generateDateSeed(todayStr);
-            const habitSeed = generateHabitSeed(habit._id, dateSeed);
+            const habitSeed = generateSeedForHabit(habit._id, todayStr);
 
             logger.debug(
               `Fetching photo for habit "${habit.name}" with consistent seed: ${habitSeed}`
@@ -182,27 +180,37 @@ export function useHabitManager() {
     [rewards, batchAddRewards, removeReward]
   );
 
-  // Generate a date-based seed that's consistent for the same date
-  const generateDateSeed = (dateString: string): number => {
-    // A simple hash function to convert the date string to a number
-    let hash = 0;
-    for (let i = 0; i < dateString.length; i++) {
-      hash = (hash << 5) - hash + dateString.charCodeAt(i);
-      hash |= 0; // Convert to 32bit integer
-    }
-    return Math.abs(hash);
-  };
+  // Generate a seed for photo rewards
+  // This is a simplified version that matches the API's expectations
+  // The API now owns the full logic for how to interpret the seed
+  const generateSeedForHabit = (
+    habitId: string,
+    dateString: string
+  ): number => {
+    // We'll use a much simpler approach that still guarantees:
+    // 1. The same habit+date combination gets the same seed
+    // 2. Different habits get different seeds
+    // 3. Different dates get different seeds
 
-  // Generate a deterministic seed for a habit on a specific day
-  // This ensures the same habit+date combo always gets the same photo
-  const generateHabitSeed = (habitId: string, dateSeed: number): number => {
-    // Combine the habit ID with the date seed
-    let hash = dateSeed;
-    for (let i = 0; i < habitId.length; i++) {
-      hash = (hash << 5) - hash + habitId.charCodeAt(i);
-      hash |= 0; // Convert to 32bit integer
-    }
-    return Math.abs(hash);
+    // Simple hash functions for both components
+    const getDateNumber = (date: string): number => {
+      // Convert YYYY-MM-DD to YYYYMMDD number
+      return parseInt(date.replace(/-/g, ""));
+    };
+
+    const getHabitNumber = (id: string): number => {
+      // Simple hash for the habit ID
+      let hash = 0;
+      for (let i = 0; i < id.length; i++) {
+        hash = (hash << 5) - hash + id.charCodeAt(i);
+        hash |= 0; // Convert to 32bit integer
+      }
+      // Make sure it's positive and scale it to be much larger than date portion
+      return Math.abs(hash) * 1000000;
+    };
+
+    // Combine them - scaled habit hash + date number
+    return getHabitNumber(habitId) + getDateNumber(dateString);
   };
 
   // Ref to track initial mount to prevent duplicate fetches
@@ -281,8 +289,11 @@ export function useHabitManager() {
               "Initial load - checking for habits that need rewards"
             );
 
-            // Force the check by clearing the last checked date
+            // Force a fresh check for rewards to ensure we're using the latest API logic
             localStorage.removeItem("rewardsLastChecked");
+            logger.debug(
+              "Cleared rewards last checked flag to ensure fresh rewards"
+            );
 
             await checkForCompletedHabitsWithoutRewards(fetchedHabits);
           } catch (rewardError) {
@@ -388,14 +399,16 @@ export function useHabitManager() {
 
       // Always reset the rewardsLastChecked flag to force fresh reward checking
       localStorage.removeItem("rewardsLastChecked");
+      logger.debug(
+        "Cleared rewards last checked flag during habit toggle to ensure fresh rewards"
+      );
 
       // Get today's date as string
       const todayString = new Date().toISOString().split("T")[0];
 
       // Generate a consistent seed for this habit and today's date
       // This ensures the same habit gets the same photo each day
-      const dateSeed = generateDateSeed(todayString);
-      const habitSeed = generateHabitSeed(id, dateSeed);
+      const habitSeed = generateSeedForHabit(id, todayString);
 
       // Make API call to toggle completion with a consistent seed
       logger.debug(
@@ -476,8 +489,7 @@ export function useHabitManager() {
             // Get today's date as string and generate a consistent seed
             // This ensures the same habit gets the same photo on a given day
             const today = new Date().toISOString().split("T")[0];
-            const dateSeed = generateDateSeed(today);
-            const habitSeed = generateHabitSeed(id, dateSeed);
+            const habitSeed = generateSeedForHabit(id, today);
 
             logger.debug(
               "Attempting to fetch reward with consistent seed:",
@@ -704,6 +716,8 @@ export function useHabitManager() {
     resetHabit,
     getHabitHistoryForDateRange,
     getWeeklyReport,
+    // Expose seed generation function for testing
+    generateSeedForHabit,
     refreshHabits: function () {
       // Use a named function expression to enable self-reference
       const refreshFn = async () => {

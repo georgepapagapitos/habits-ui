@@ -35,31 +35,52 @@ const getAuthHeaders = () => {
 };
 
 export const habitApi = {
-  // Improved photo cache with expiration
+  // Minimal client-side caching to avoid redundant API calls
+  // while still respecting the API's photo selection logic
   _photoCache: new Map<number, CachedPhotoData>(),
 
-  // Cache TTL in milliseconds (24 hours)
-  _photoCacheTTL: 24 * 60 * 60 * 1000,
+  // Cache TTL in milliseconds (10 minutes)
+  // Very short to ensure fresh photos throughout the day
+  _photoCacheTTL: 10 * 60 * 1000, // 10 minutes
 
   // Get a random photo from Google Photos API with better caching
   // If a seed is provided, it's used for a deterministic random photo
   getRandomPhoto: async (seed?: number): Promise<PhotoReward | null> => {
     try {
+      const today = new Date().toISOString().split("T")[0];
+
+      // Create a date-specific seed to ensure we check for new photos daily
+      // We combine the seed with today's date to create a date-specific cache key
+      const cacheKey =
+        seed !== undefined
+          ? seed + parseInt(today.replace(/-/g, ""))
+          : undefined;
+
+      logger.debug(
+        `Photo request with seed ${seed}, using cache key: ${cacheKey}`
+      );
+
       // Check cache first if seed is provided - this avoids unnecessary API calls
-      if (seed !== undefined && habitApi._photoCache.has(seed)) {
-        const cachedData = habitApi._photoCache.get(seed);
+      if (cacheKey !== undefined && habitApi._photoCache.has(cacheKey)) {
+        const cachedData = habitApi._photoCache.get(cacheKey);
 
         // Check if the cached data is still valid
         if (
           cachedData &&
           Date.now() - cachedData.timestamp < habitApi._photoCacheTTL
         ) {
+          logger.debug(
+            `Using cached photo for seed ${seed} (cache key: ${cacheKey})`
+          );
           return cachedData.photo;
         }
 
         // If expired, remove from cache
         if (cachedData) {
-          habitApi._photoCache.delete(seed);
+          logger.debug(
+            `Cache expired for seed ${seed}, will fetch fresh photo`
+          );
+          habitApi._photoCache.delete(cacheKey);
         }
       }
 
@@ -105,27 +126,37 @@ export const habitApi = {
 
       // Validate the photo data
       if (photoReward && photoReward.url && photoReward.id) {
-        // Store in cache if seed provided
-        if (seed !== undefined) {
-          habitApi._photoCache.set(seed, {
+        // Store in cache if seed provided, using our date-specific cache key
+        if (cacheKey !== undefined) {
+          logger.debug(
+            `Caching photo for seed ${seed} with cache key ${cacheKey}`
+          );
+          habitApi._photoCache.set(cacheKey, {
             photo: photoReward,
             timestamp: Date.now(),
           });
 
-          // Prune cache if it gets too large (keep most recent 100 items)
-          if (habitApi._photoCache.size > 100) {
-            // Convert to array to sort by timestamp
-            const cacheEntries = Array.from(habitApi._photoCache.entries());
-            cacheEntries.sort((a, b) => a[1].timestamp - b[1].timestamp);
-
-            // Remove oldest entries
-            const entriesToRemove = cacheEntries.slice(
-              0,
-              cacheEntries.length - 100
+          // Prune cache if it gets too large (keep most recent 20 items)
+          // We've reduced the cache size dramatically since we're now relying on the API's
+          // better photo selection logic and consistent seed generation
+          if (habitApi._photoCache.size > 20) {
+            logger.debug(
+              `Cache size of ${habitApi._photoCache.size} exceeds limit of 20, pruning oldest entries`
             );
-            for (const [key] of entriesToRemove) {
-              habitApi._photoCache.delete(key);
-            }
+
+            // Find the 20 most recent entries to keep
+            const entries = Array.from(habitApi._photoCache.entries());
+            entries.sort((a, b) => b[1].timestamp - a[1].timestamp); // Descending order by timestamp
+
+            // Clear the entire cache and re-add only the most recent 20 entries
+            habitApi._photoCache.clear();
+
+            // Add back the 20 most recent entries
+            entries.slice(0, 20).forEach(([key, value]) => {
+              habitApi._photoCache.set(key, value);
+            });
+
+            logger.debug(`Pruned cache to 20 most recent entries`);
           }
         }
 
