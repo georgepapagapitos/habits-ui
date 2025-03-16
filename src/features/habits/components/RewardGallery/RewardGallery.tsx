@@ -17,6 +17,7 @@ import {
   PhotoImage,
   Title,
 } from "./rewardGallery.styles";
+import { Confetti } from "@components/Confetti";
 
 // Create a memoized individual photo component to prevent unnecessary rerenders
 const RewardPhoto = React.memo(
@@ -32,6 +33,17 @@ const RewardPhoto = React.memo(
     const [isLoaded, setIsLoaded] = useState(false);
     const [loadError, setLoadError] = useState(false);
     const [retryCount, setRetryCount] = useState(0);
+    const [isRevealed, setIsRevealed] = useState(() => {
+      // Initialize from localStorage on component mount
+      try {
+        const localStorageKey = `revealed_photo_${habitId}_${new Date().toISOString().split("T")[0]}`;
+        const storedValue = localStorage.getItem(localStorageKey);
+        return storedValue === "true";
+      } catch (e) {
+        return false;
+      }
+    });
+    const [showConfetti, setShowConfetti] = useState(false);
     const maxRetries = 3;
 
     // Use an effect to preload the image with better error handling
@@ -78,59 +90,120 @@ const RewardPhoto = React.memo(
       };
     }, [photo.url, photo.thumbnailUrl, habitName, retryCount]);
 
+    const handleReveal = () => {
+      if (!isRevealed && isLoaded) {
+        setShowConfetti(true);
+        setIsRevealed(true);
+
+        // Store the revealed state in localStorage
+        try {
+          const localStorageKey = `revealed_photo_${habitId}_${new Date().toISOString().split("T")[0]}`;
+          localStorage.setItem(localStorageKey, "true");
+        } catch (e) {
+          logger.error(
+            `Failed to save revealed state for ${habitName} to localStorage:`,
+            e
+          );
+        }
+
+        // Reset confetti after animation completes
+        setTimeout(() => {
+          setShowConfetti(false);
+        }, 1000);
+      }
+    };
+
     if (!photo.url) return null;
 
     return (
       <PhotoCard key={habitId}>
         <h3>{habitName}</h3>
-        <PhotoImage
-          src={photo.url}
-          alt={`Reward for ${habitName}`}
-          $width={photo.width || 300}
-          $height={photo.height || 200}
+        <div
           style={{
-            transition: "opacity 0.3s ease-in-out",
-            opacity: isLoaded ? 1 : 0.7,
-            filter: loadError ? "grayscale(100%)" : "none", // Visual indication of error
+            position: "relative",
+            cursor: isLoaded && !isRevealed ? "pointer" : "default",
+            overflow: "hidden",
+            borderRadius: "0 0 8px 8px",
           }}
-          onError={(e) => {
-            // Enhanced error handling
-            const target = e.target as HTMLImageElement;
-
-            // When using our proxy endpoint, try to refresh the image
-            if (!target.dataset.retried) {
-              target.dataset.retried = "1";
-
-              // Try the thumbnail as fallback if available
-              if (photo.thumbnailUrl) {
-                target.src = photo.thumbnailUrl;
-                return;
-              }
-            } else if (target.dataset.retried === "1" && photo.thumbnailUrl) {
-              // If we already tried the thumbnail, add a cache buster
-              target.dataset.retried = "2";
-              const cacheBuster = `?cb=${Date.now()}`;
-              target.src = `${photo.url}${cacheBuster}`;
-            }
-            // Otherwise, we will let the image show in error state
-          }}
-          onLoad={() => {
-            setIsLoaded(true);
-            setLoadError(false);
-          }}
-        />
-        {loadError && (
-          <div
+          onClick={handleReveal}
+        >
+          {showConfetti && <Confetti active={true} count={30} />}
+          <PhotoImage
+            src={photo.url}
+            alt={`Reward for ${habitName}`}
+            $width={photo.width || 300}
+            $height={photo.height || 200}
             style={{
-              color: "#999",
-              fontSize: "12px",
-              textAlign: "center",
-              marginTop: "5px",
+              transition: "all 0.5s ease-in-out",
+              opacity: isLoaded ? 1 : 0.7,
+              filter: !isRevealed
+                ? "blur(15px)"
+                : loadError
+                  ? "grayscale(100%)"
+                  : "none",
             }}
-          >
-            Image could not be loaded
-          </div>
-        )}
+            onError={(e) => {
+              // Enhanced error handling
+              const target = e.target as HTMLImageElement;
+
+              // When using our proxy endpoint, try to refresh the image
+              if (!target.dataset.retried) {
+                target.dataset.retried = "1";
+
+                // Try the thumbnail as fallback if available
+                if (photo.thumbnailUrl) {
+                  target.src = photo.thumbnailUrl;
+                  return;
+                }
+              } else if (target.dataset.retried === "1" && photo.thumbnailUrl) {
+                // If we already tried the thumbnail, add a cache buster
+                target.dataset.retried = "2";
+                const cacheBuster = `?cb=${Date.now()}`;
+                target.src = `${photo.url}${cacheBuster}`;
+              }
+              // Otherwise, we will let the image show in error state
+            }}
+            onLoad={() => {
+              setIsLoaded(true);
+              setLoadError(false);
+            }}
+          />
+          {!isRevealed && isLoaded && (
+            <div
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                color: "#fff",
+                backgroundColor: "rgba(0, 0, 0, 0.6)",
+                padding: "10px 20px",
+                borderRadius: "30px",
+                pointerEvents: "none",
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+                fontSize: "16px",
+                fontWeight: "bold",
+                letterSpacing: "0.5px",
+                backdropFilter: "blur(4px)",
+              }}
+            >
+              Tap to reveal!
+            </div>
+          )}
+          {loadError && (
+            <div
+              style={{
+                color: "#999",
+                fontSize: "12px",
+                textAlign: "center",
+                marginTop: "5px",
+                padding: "10px",
+              }}
+            >
+              Image could not be loaded
+            </div>
+          )}
+        </div>
       </PhotoCard>
     );
   }

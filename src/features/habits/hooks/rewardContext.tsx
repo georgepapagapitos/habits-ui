@@ -280,9 +280,16 @@ export const RewardProvider: React.FC<{ children: React.ReactNode }> = ({
 
       // Also clear any individual reward flags that might exist
       const localStorageKeys = Object.keys(localStorage);
+
+      // We only need to clear previous days' revealed states, not today's
+      const previousDay = new Date(today);
+      previousDay.setDate(previousDay.getDate() - 1);
+      const previousDateStr = previousDay.toISOString().split("T")[0];
+
       const rewardKeys = localStorageKeys.filter(
         (key) =>
           key.startsWith("habitReward_") ||
+          (key.startsWith("revealed_photo_") && !key.includes(today)) ||
           key === REWARDS_STORAGE_KEY ||
           key === REWARDS_LAST_CHECKED_KEY
       );

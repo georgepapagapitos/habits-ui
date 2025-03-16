@@ -6,7 +6,10 @@ import { Stats } from "./Stats";
 
 // Mock axios
 vi.mock("axios");
-const mockAxios = axios as jest.Mocked<typeof axios>;
+const mockAxios = axios as unknown as {
+  get: ReturnType<typeof vi.fn>;
+  isAxiosError: ReturnType<typeof vi.fn>;
+};
 
 describe("Stats Component", () => {
   beforeEach(() => {

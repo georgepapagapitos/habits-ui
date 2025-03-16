@@ -1,9 +1,8 @@
-import { HabitForm, HabitList, RewardGallery } from "@habits/components";
+import { HabitForm, HabitList, RewardGallery, Stats } from "@habits/components";
 import { useHabits } from "@habits/hooks";
 import { TimeOfDay, WeekDay } from "@habits/types";
 import { BottomNav, Header, Messages, Modal } from "@layout/components";
 import { useState } from "react";
-import { Stats } from "../components";
 import { AddButton, Container, Content } from "./app.styles";
 
 type HabitFormData = {
