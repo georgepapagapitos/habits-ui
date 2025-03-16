@@ -137,7 +137,7 @@ const RewardPhoto = React.memo(
               transition: "all 0.5s ease-in-out",
               opacity: isLoaded ? 1 : 0.7,
               filter: !isRevealed
-                ? "blur(15px)"
+                ? "blur(40px)"
                 : loadError
                   ? "grayscale(100%)"
                   : "none",
