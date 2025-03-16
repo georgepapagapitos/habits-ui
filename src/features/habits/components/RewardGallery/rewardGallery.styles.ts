@@ -28,7 +28,7 @@ export const EmptyState = styled.div`
 
   p {
     margin-bottom: 0.5rem;
-    color: ${({ theme }) => theme.colors.textSecondary};
+    color: ${({ theme }) => theme.colors.textLight};
   }
 `;
 
@@ -40,17 +40,18 @@ export const GalleryGrid = styled.div`
 `;
 
 export const PhotoCard = styled.div`
-  background-color: ${({ theme }) => theme.colors.cardBackground};
+  background-color: ${({ theme }) => theme.colors.surface};
   border-radius: ${({ theme }) => theme.borderRadius.medium};
   box-shadow: ${({ theme }) => theme.shadows.medium};
   overflow: hidden;
-  transition: transform 0.2s ease-in-out;
+  transition: all 0.3s ease-in-out;
   display: flex;
   flex-direction: column;
   height: 100%;
 
   &:hover {
-    transform: scale(1.02);
+    transform: translateY(-4px);
+    box-shadow: ${({ theme }) => theme.shadows.large};
   }
 
   h3 {
@@ -59,18 +60,42 @@ export const PhotoCard = styled.div`
     font-size: 1rem;
     background-color: ${({ theme }) => theme.colors.primary};
     color: white;
+    text-align: center;
   }
 `;
 
 export const PhotoImage = styled.img<{ $width: number; $height: number }>`
   width: 100%;
-  height: auto;
+  height: 100%;
   display: block;
-  object-fit: contain;
-  background-color: #f5f5f5;
-  padding: 10px;
+  object-fit: cover;
+  background-color: #f0f0f0;
+  aspect-ratio: 4/3;
   box-sizing: border-box;
-  flex: 1;
-  min-height: 250px;
-  max-height: 350px;
+  transition: transform 0.5s ease-in-out;
+
+  ${({ $width, $height }) => {
+    // Calculate the aspect ratio
+    const aspectRatio = $width && $height ? $width / $height : 4 / 3;
+
+    // If it's portrait (taller than wide), use different settings
+    if (aspectRatio < 0.8) {
+      return `
+        aspect-ratio: 3/4;
+        object-position: center;
+      `;
+    } else if (aspectRatio > 1.8) {
+      // Very wide panorama
+      return `
+        aspect-ratio: 16/9;
+        object-position: center;
+      `;
+    }
+
+    return "";
+  }}
+
+  &:hover {
+    transform: scale(1.03);
+  }
 `;
