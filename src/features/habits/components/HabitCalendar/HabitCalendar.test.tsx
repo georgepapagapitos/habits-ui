@@ -252,19 +252,24 @@ describe("HabitCalendar", () => {
     ).toBe(true);
   });
 
-  test("has navigation buttons", () => {
-    const mockHabit = createMockHabit();
+  test("renders navigation buttons", () => {
+    // Create a basic habit
+    const habit = createMockHabit();
 
+    // Render the calendar
     renderWithProviders(
-      <HabitCalendar habit={mockHabit} onToggleDate={onToggleDate} />
+      <HabitCalendar habit={habit} onToggleDate={() => undefined} />
     );
 
     // Get the navigation buttons
     const navButtons = screen.getAllByTestId("nav-button");
     expect(navButtons).toHaveLength(2);
 
-    // Check that we have prev/next buttons
-    expect(navButtons[0].textContent).toBe("←");
-    expect(navButtons[1].textContent).toBe("→");
+    // Check that we have prev/next buttons with icons
+    const leftIcon = navButtons[0].querySelector("svg");
+    const rightIcon = navButtons[1].querySelector("svg");
+
+    expect(leftIcon).toBeInTheDocument();
+    expect(rightIcon).toBeInTheDocument();
   });
 });

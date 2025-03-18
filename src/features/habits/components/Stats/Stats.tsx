@@ -1,14 +1,16 @@
+import { useAuth } from "@auth/hooks";
+import { Spinner } from "@components/Spinner";
+import axios from "axios";
 import { useEffect, useState } from "react";
 import {
-  StatsContainer,
+  ErrorMessage,
+  LoadingContainer,
   StatCard,
+  StatsContainer,
+  StatsHeader,
   StatTitle,
   StatValue,
-  ErrorMessage,
-  LoadingSpinner,
 } from "./stats.styles";
-import { useAuth } from "@auth/hooks";
-import axios from "axios";
 
 interface StatsData {
   totalHabits: number;
@@ -77,7 +79,11 @@ export const Stats: React.FC = () => {
   }, [token]);
 
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+      <LoadingContainer>
+        <Spinner label="Loading statistics" />
+      </LoadingContainer>
+    );
   }
 
   if (error) {
@@ -89,48 +95,103 @@ export const Stats: React.FC = () => {
   }
 
   return (
-    <StatsContainer>
-      <StatCard>
-        <StatTitle>Total Habits</StatTitle>
-        <StatValue>{stats.totalHabits}</StatValue>
-      </StatCard>
+    <>
+      <StatsHeader data-testid="stats-header">
+        <h2>Your Progress</h2>
+        <p>
+          Track your habit journey with these key insights into your consistency
+          and achievements
+        </p>
+      </StatsHeader>
+      <StatsContainer data-testid="stats-container">
+        <StatCard data-testid="stat-total-habits">
+          <StatTitle>Total Habits</StatTitle>
+          <StatValue>
+            <span data-testid="total-habits-value">{stats.totalHabits}</span>{" "}
+            habits created
+          </StatValue>
+        </StatCard>
 
-      <StatCard>
-        <StatTitle>Total Completions</StatTitle>
-        <StatValue>{stats.totalCompletions}</StatValue>
-      </StatCard>
+        <StatCard data-testid="stat-total-completions">
+          <StatTitle>Total Completions</StatTitle>
+          <StatValue>
+            <span data-testid="total-completions-value">
+              {stats.totalCompletions}
+            </span>{" "}
+            total check-ins
+          </StatValue>
+        </StatCard>
 
-      <StatCard>
-        <StatTitle>Longest Streak</StatTitle>
-        <StatValue>
-          {stats.longestStreak.habit
-            ? `${stats.longestStreak.streak} days (${stats.longestStreak.habit.name})`
-            : "No streaks yet"}
-        </StatValue>
-      </StatCard>
+        <StatCard data-testid="stat-longest-streak">
+          <StatTitle>Longest Streak</StatTitle>
+          <StatValue>
+            {stats.longestStreak.habit ? (
+              <>
+                <span data-testid="longest-streak-value">
+                  {stats.longestStreak.streak}
+                </span>{" "}
+                days
+                <br />
+                <small data-testid="longest-streak-habit">
+                  {stats.longestStreak.habit.name}
+                </small>
+              </>
+            ) : (
+              "No streaks yet"
+            )}
+          </StatValue>
+        </StatCard>
 
-      <StatCard>
-        <StatTitle>Most Consistent Habit</StatTitle>
-        <StatValue>
-          {stats.mostConsistent.habit
-            ? `${stats.mostConsistent.percentage}% (${stats.mostConsistent.habit.name})`
-            : "No data yet"}
-        </StatValue>
-      </StatCard>
+        <StatCard data-testid="stat-most-consistent">
+          <StatTitle>Most Consistent</StatTitle>
+          <StatValue>
+            {stats.mostConsistent.habit ? (
+              <>
+                <span data-testid="most-consistent-value">
+                  {stats.mostConsistent.percentage}%
+                </span>{" "}
+                completion
+                <br />
+                <small data-testid="most-consistent-habit">
+                  {stats.mostConsistent.habit.name}
+                </small>
+              </>
+            ) : (
+              "No data yet"
+            )}
+          </StatValue>
+        </StatCard>
 
-      <StatCard>
-        <StatTitle>Most Completed Habit</StatTitle>
-        <StatValue>
-          {stats.mostCompletedHabit.habit
-            ? `${stats.mostCompletedHabit.count} times (${stats.mostCompletedHabit.habit.name})`
-            : "No completions yet"}
-        </StatValue>
-      </StatCard>
+        <StatCard data-testid="stat-most-completed">
+          <StatTitle>Most Completed</StatTitle>
+          <StatValue>
+            {stats.mostCompletedHabit.habit ? (
+              <>
+                <span data-testid="most-completed-value">
+                  {stats.mostCompletedHabit.count}
+                </span>{" "}
+                times
+                <br />
+                <small data-testid="most-completed-habit">
+                  {stats.mostCompletedHabit.habit.name}
+                </small>
+              </>
+            ) : (
+              "No completions yet"
+            )}
+          </StatValue>
+        </StatCard>
 
-      <StatCard>
-        <StatTitle>Average Streak</StatTitle>
-        <StatValue>{stats.averageStreak} days</StatValue>
-      </StatCard>
-    </StatsContainer>
+        <StatCard data-testid="stat-average-streak">
+          <StatTitle>Average Streak</StatTitle>
+          <StatValue>
+            <span data-testid="average-streak-value">
+              {stats.averageStreak}
+            </span>{" "}
+            days
+          </StatValue>
+        </StatCard>
+      </StatsContainer>
+    </>
   );
 };

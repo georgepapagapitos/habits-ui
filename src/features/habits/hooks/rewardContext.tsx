@@ -1,4 +1,4 @@
-import { PhotoReward } from "@habits/types/habit.types";
+import { PhotoReward } from "@habits/types";
 import {
   createContext,
   useCallback,

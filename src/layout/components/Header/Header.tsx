@@ -1,5 +1,6 @@
 import { useAuth } from "@auth/hooks";
 import { useLocation } from "react-router-dom";
+import { FaSync } from "react-icons/fa";
 import {
   HeaderActions,
   HeaderContainer,
@@ -30,7 +31,7 @@ export const Header: React.FC<HeaderProps> = ({ title }: HeaderProps) => {
 
   return (
     <HeaderContainer>
-      <Title>{title || "Hannah's Habits"}</Title>
+      <Title>{title || "Habits"}</Title>
       <HeaderActions>
         {showAuthControls && user && (
           <>
@@ -39,22 +40,7 @@ export const Header: React.FC<HeaderProps> = ({ title }: HeaderProps) => {
           </>
         )}
         <RefreshButton onClick={handleRefresh} aria-label="Refresh app">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M23 4v6h-6"></path>
-            <path d="M1 20v-6h6"></path>
-            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"></path>
-            <path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-          </svg>
+          <FaSync size={20} />
         </RefreshButton>
       </HeaderActions>
     </HeaderContainer>

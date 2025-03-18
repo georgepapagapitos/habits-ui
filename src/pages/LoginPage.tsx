@@ -1,20 +1,6 @@
-import styled from "styled-components";
 import { LoginForm } from "@auth/components";
 import { Header } from "@layout/components";
-
-const PageContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-`;
-
-const Content = styled.div`
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-`;
+import { BrandingText, Content, PageContainer } from "./loginPage.styles";
 
 export const LoginPage = () => {
   return (
@@ -22,6 +8,7 @@ export const LoginPage = () => {
       <Header title="Login" />
       <Content>
         <LoginForm />
+        <BrandingText>Track your habits and achieve your goals!</BrandingText>
       </Content>
     </PageContainer>
   );

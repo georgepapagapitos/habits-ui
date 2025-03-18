@@ -26,11 +26,6 @@ Object.defineProperty(window, "localStorage", {
   value: mockLocalStorage,
 });
 
-// Create a simple mock component for providers
-const MockProvider = ({ children }: { children: React.ReactNode }) => {
-  return <>{children}</>;
-};
-
 // Mock the required hooks and providers
 vi.mock("../../hooks/rewardContext", () => ({
   useRewards: vi.fn(() => ({

@@ -1,7 +1,11 @@
 import { HabitCard } from "@habits/components";
 import * as HabitsContext from "@habits/hooks/habitContext";
 import { Habit, WeekDay } from "@habits/types";
-import { isCompletedToday, isHabitDueToday } from "@habits/utils";
+import {
+  getNextDueDate,
+  isCompletedToday,
+  isHabitDueToday,
+} from "@habits/utils";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "@tests/utils";
@@ -216,16 +220,17 @@ describe("HabitCard", () => {
     ).toBeInTheDocument();
   });
 
-  test("shows streak count correctly with fire emoji for positive streaks", () => {
+  test("shows streak count correctly with fire icon for positive streaks", () => {
     renderWithProviders(<HabitCard habit={mockDueHabit} />);
 
     // Look for the combined text within the streak display element
     const streakElement = screen.getByText(/streak: 2 days/i);
     expect(streakElement).toBeInTheDocument();
 
-    // Check that the container includes the fire emoji
+    // Check that the container includes the fire icon (not the emoji)
     const streakContainer = streakElement.parentElement;
-    expect(streakContainer?.textContent).toContain("🔥");
+    const fireIcon = streakContainer?.querySelector("svg");
+    expect(fireIcon).toBeInTheDocument();
   });
 
   test("shows singular day text for streak of 1", () => {
@@ -480,10 +485,11 @@ describe("HabitCard", () => {
     // Should show the streak count
     expect(screen.getByText(/streak: 5 days/i)).toBeInTheDocument();
 
-    // Should have the fire emoji
+    // Should have the fire icon
     const streakElement = screen.getByText(/streak: 5 days/i);
     const container = streakElement.parentElement;
-    expect(container?.textContent).toContain("🔥");
+    const fireIcon = container?.querySelector("svg");
+    expect(fireIcon).toBeInTheDocument();
   });
 
   test("shows correct streak message for last completed habit", () => {
@@ -513,43 +519,94 @@ describe("HabitCard", () => {
   });
 
   test("non-due habits display correct visual indicator and message", () => {
-    // Create a habit that is not due today
+    // Set up mocks for a non-due habit
     vi.mocked(isHabitDueToday).mockReturnValue(false);
     vi.mocked(isCompletedToday).mockReturnValue(false);
 
+    const nextDueDate = addDays(new Date(), 1);
+    vi.mocked(getNextDueDate).mockReturnValue(nextDueDate);
+
     renderWithProviders(<HabitCard habit={mockFutureHabit} />);
 
-    // Check if the component renders the star (🌟) emoji for non-due habits
-    const cardContent = screen.getByText("Test Habit").closest("div[class]");
-    expect(cardContent?.textContent).toContain("🌟");
+    // Check for the text
+    expect(screen.getByText(/next due/i)).toBeInTheDocument();
+
+    // Check if the component renders the star (FaStar) icon
+    const cardContent = screen.getByText("Test Habit").closest("div");
+    const starIcon = cardContent?.querySelector("svg");
+    expect(starIcon).toBeInTheDocument();
   });
 
   test("completed habits display correct visual indicator", () => {
-    // Create a habit that is completed today
-    vi.mocked(isHabitDueToday).mockReturnValue(true);
+    // Set up mocks for a completed habit
     vi.mocked(isCompletedToday).mockReturnValue(true);
 
     const completedHabit = createMockHabit({
-      frequency: [getTodayName()],
-      completedDates: [new Date().toISOString()],
+      completedDates: [format(new Date(), "yyyy-MM-dd")],
     });
 
     renderWithProviders(<HabitCard habit={completedHabit} />);
 
-    // Check if the component renders the completed (🌻) emoji
-    const cardContent = screen.getByText("Test Habit").closest("div[class]");
-    expect(cardContent?.textContent).toContain("🌻");
+    // Check if the component renders the completed (FaCheckCircle) icon
+    const cardContent = screen.getByText("Test Habit").closest("div");
+    const checkIcon = cardContent?.querySelector("svg");
+    expect(checkIcon).toBeInTheDocument();
   });
 
   test("due but not completed habits display correct visual indicator", () => {
-    // Create a habit that is due today but not completed
+    // Set up mocks for a due but not completed habit
+    vi.mocked(isHabitDueToday).mockReturnValue(true);
+    vi.mocked(isCompletedToday).mockReturnValue(false);
+
+    const dueHabit = createMockHabit({ completedDates: [] });
+
+    renderWithProviders(<HabitCard habit={dueHabit} />);
+
+    // Check if the component renders the due (FaSeedling) icon
+    const cardContent = screen.getByText("Test Habit").closest("div");
+    const seedlingIcon = cardContent?.querySelector("svg");
+    expect(seedlingIcon).toBeInTheDocument();
+  });
+
+  test("renders completed emoji for completed habit", async () => {
+    // Mock isCompletedToday to return true
+    vi.mocked(isCompletedToday).mockReturnValue(true);
+
+    const completedHabit = createMockHabit({
+      completedDates: [format(new Date(), "yyyy-MM-dd")],
+    });
+
+    renderWithProviders(<HabitCard habit={completedHabit} />);
+
+    // Check if the component renders the completed (CheckCircle) icon
+    const cardContent = screen.getByText(completedHabit.name).closest("div");
+    const checkIcon = cardContent?.querySelector("svg");
+    expect(checkIcon).toBeInTheDocument();
+  });
+
+  test("renders due emoji for due but uncompleted habit", () => {
+    // Mock isHabitDueToday to return true and isCompletedToday to return false
     vi.mocked(isHabitDueToday).mockReturnValue(true);
     vi.mocked(isCompletedToday).mockReturnValue(false);
 
     renderWithProviders(<HabitCard habit={mockDueHabit} />);
 
-    // Check if the component renders the due (🌱) emoji
-    const cardContent = screen.getByText("Test Habit").closest("div[class]");
-    expect(cardContent?.textContent).toContain("🌱");
+    // Check if the component renders the due (Seedling) icon
+    const cardContent = screen.getByText(mockDueHabit.name).closest("div");
+    const seedlingIcon = cardContent?.querySelector("svg");
+    expect(seedlingIcon).toBeInTheDocument();
+  });
+
+  test("renders star emoji for non-due habit", () => {
+    // Mock both conditions to return false
+    vi.mocked(isHabitDueToday).mockReturnValue(false);
+    vi.mocked(isCompletedToday).mockReturnValue(false);
+
+    renderWithProviders(<HabitCard habit={mockFutureHabit} />);
+
+    // Check if the component renders the star (Star) icon
+    const cardContent = screen.getByText(mockFutureHabit.name).closest("div");
+    const starIcon = cardContent?.querySelector("svg");
+    expect(starIcon).toBeInTheDocument();
   });
 });

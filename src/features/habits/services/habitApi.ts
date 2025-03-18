@@ -2,12 +2,12 @@ import {
   Habit,
   HabitCreateDTO,
   HabitUpdateDTO,
-  PhotoReward,
   HabitWithReward,
-} from "../types/habit.types";
-import { getUserTimezone } from "../utils/habitUtils";
-import axios, { AxiosRequestConfig } from "axios";
+  PhotoReward,
+} from "@habits/types";
+import { getUserTimezone } from "@habits/utils";
 import { logger } from "@utils/logger";
+import axios, { AxiosRequestConfig } from "axios";
 
 // Using HabitWithReward interface imported from types
 

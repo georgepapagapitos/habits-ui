@@ -1,5 +1,5 @@
-import { Habit, WeekDay } from "../types/habit.types";
-import { useHabitManager } from "./useHabitManager";
+import { useHabitManager } from "@habits/hooks";
+import { Habit, WeekDay } from "@habits/types";
 import { createContext, ReactNode, useContext } from "react";
 
 // Define the context shape based on the return type of useHabitManager

@@ -13,6 +13,14 @@ import { useMenuManager } from "@hooks/useMenuManager";
 import { format } from "date-fns";
 import { useState } from "react";
 import {
+  FaEllipsisV,
+  FaFire,
+  FaPencilAlt,
+  FaSync,
+  FaTrash,
+} from "react-icons/fa";
+import { LuFlower2, LuSprout, LuStar } from "react-icons/lu";
+import {
   CardContent,
   CardFooter,
   ConfettiPiece,
@@ -163,20 +171,29 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
           aria-label="Options"
           className="menu-button"
         >
-          ⋮
+          <FaEllipsisV />
         </MenuButton>
 
         {/* Context menu */}
         {showMenu && (
           <ContextMenu className="context-menu">
             <MenuItem onClick={handleEdit}>
-              <span style={{ fontSize: "14px" }}>✏️</span> Edit
+              <span style={{ fontSize: "14px" }}>
+                <FaPencilAlt />
+              </span>{" "}
+              Edit
             </MenuItem>
             <MenuItem onClick={handleReset}>
-              <span style={{ fontSize: "14px" }}>🔄</span> Reset Progress
+              <span style={{ fontSize: "14px" }}>
+                <FaSync />
+              </span>{" "}
+              Reset Progress
             </MenuItem>
             <MenuItem className="delete" onClick={handleDelete}>
-              <span style={{ fontSize: "14px" }}>🗑️</span> Delete
+              <span style={{ fontSize: "14px" }}>
+                <FaTrash />
+              </span>{" "}
+              Delete
             </MenuItem>
           </ContextMenu>
         )}
@@ -186,13 +203,13 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
             style={{ display: "flex", alignItems: "center", gap: "8px" }}
           >
             <div>
-              {
-                isCompleted
-                  ? `🌻` // Completed today (whether due or not)
-                  : isDue
-                    ? `🌱` // Due but not completed
-                    : `🌟` // Not due today but can still be completed
-              }
+              {isCompleted ? (
+                <LuFlower2 color="#66bb6a" data-testid="flower-icon" />
+              ) : isDue ? (
+                <LuSprout color="#66bb6a" data-testid="seedling-icon" />
+              ) : (
+                <LuStar color="#ffcc00" data-testid="star-icon" />
+              )}
             </div>
             {habit.name}
             <FrequencyBadge>{getFrequencyDisplayText(habit)}</FrequencyBadge>
@@ -222,7 +239,7 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
               color: habit.streak > 0 ? "#4ECB71" : "inherit",
             }}
           >
-            {habit.streak > 0 && <span>🔥</span>}
+            {habit.streak > 0 && <FaFire color="#ff5722" />}
             <span data-testid="streak-text">
               {habit.streak > 0
                 ? `Streak: ${habit.streak} ${habit.streak === 1 ? "day" : "days"}`
