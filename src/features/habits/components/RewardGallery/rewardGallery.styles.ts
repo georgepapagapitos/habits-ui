@@ -69,10 +69,40 @@ export const GalleryGrid = styled.div`
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
   margin-top: 1rem;
+  width: 100%;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 1rem;
+  }
+
+  /* Fix for Safari/iOS grid issues */
+  @supports (-webkit-touch-callout: none) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    & > * {
+      flex: 0 0 auto;
+      width: 85%;
+      margin-bottom: 1rem;
+    }
+
+    @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+      & > * {
+        flex: 0 0 auto;
+        width: 42%;
+        margin: 0 1% 1rem 1%;
+      }
+    }
+
+    @media (min-width: ${({ theme }) => theme.breakpoints.lg}) {
+      & > * {
+        flex: 0 0 auto;
+        width: 30%;
+        margin: 0 1% 1rem 1%;
+      }
+    }
   }
 `;
 
@@ -86,6 +116,17 @@ export const PhotoCard = styled.div`
   flex-direction: column;
   height: 100%;
   position: relative;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+
+  /* Fix for iOS to eliminate white space */
+  @supports (-webkit-touch-callout: none) {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    max-height: 400px;
+  }
 
   &:hover {
     transform: translateY(-4px);
@@ -114,6 +155,24 @@ export const PhotoImageContainer = styled.div`
   padding-bottom: 75%; /* 4:3 aspect ratio */
   overflow: hidden;
   background-color: #f0f0f0;
+  flex-grow: 1;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+
+  /* Fix specific to iOS to eliminate white space */
+  @supports (-webkit-touch-callout: none) {
+    height: auto;
+    padding-bottom: 0;
+    flex: 1;
+    aspect-ratio: 4/3;
+
+    /* Force container to expand to content */
+    &::after {
+      content: "";
+      display: block;
+      padding-bottom: 0;
+    }
+  }
 `;
 
 export const PhotoImage = styled.img<{ $width: number; $height: number }>`
@@ -127,6 +186,9 @@ export const PhotoImage = styled.img<{ $width: number; $height: number }>`
   background-color: #f0f0f0;
   box-sizing: border-box;
   transition: transform 0.5s ease-in-out;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
 
   ${({ $width, $height }) => {
     // Calculate the aspect ratio
@@ -147,6 +209,19 @@ export const PhotoImage = styled.img<{ $width: number; $height: number }>`
 
     return "";
   }}
+
+  /* Fix for iOS Safari */
+  @supports (-webkit-touch-callout: none) {
+    position: relative;
+    height: auto !important;
+    min-height: 300px;
+    aspect-ratio: 4/3;
+    width: 100% !important;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    object-fit: cover;
+    display: block;
+  }
 
   &:hover {
     transform: scale(1.03);
