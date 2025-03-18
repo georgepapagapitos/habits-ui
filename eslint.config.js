@@ -6,7 +6,12 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["dist", "**/hooks/*Context.tsx", "**/hooks/*Context/*.tsx"],
+    ignores: [
+      "dist",
+      "coverage/**",
+      "**/hooks/*Context.tsx",
+      "**/hooks/*Context/*.tsx",
+    ],
   },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],

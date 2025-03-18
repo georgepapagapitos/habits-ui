@@ -1,28 +1,34 @@
+import { ANIMATION, createTransition } from "@common/theme/animations";
 import styled, { css, keyframes } from "styled-components";
 
 // Animations
-export const popAndSpin = keyframes`
+export const pulse = keyframes`
   0% {
-    transform: scale(1);
+    transform: scale3d(1, 1, 1);
   }
-  30% {
-    transform: scale(1.2) rotate(0deg);
-  }
-  60% {
-    transform: scale(1.2) rotate(180deg);
+  50% {
+    transform: scale3d(1.03, 1.03, 1);
   }
   100% {
-    transform: scale(1) rotate(360deg);
+    transform: scale3d(1, 1, 1);
   }
 `;
 
 export const confetti = keyframes`
   0% {
-    transform: translateY(0) rotate(0deg);
+    transform: translateY(0) rotate(0deg) scale(0);
+    opacity: 0;
+  }
+  10% {
+    transform: translateY(-5px) rotate(45deg) scale(1);
+    opacity: 1;
+  }
+  30% {
+    transform: translateY(-30px) rotate(180deg) scale(1.3);
     opacity: 1;
   }
   100% {
-    transform: translateY(-100px) rotate(720deg);
+    transform: translateY(-120px) rotate(720deg) scale(0.5);
     opacity: 0;
   }
 `;
@@ -48,11 +54,14 @@ export const fadeInOut = keyframes`
 // Component styles
 export const ConfettiPiece = styled.div`
   position: absolute;
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   background: ${(props) => props.color};
   border-radius: 50%;
-  animation: ${confetti} 0.6s ease-out forwards;
+  animation: ${confetti} 1.5s ${ANIMATION.easing.bouncy} forwards;
+  z-index: 30; /* Ensure it's above all card elements including the ::after pseudo-element */
+  pointer-events: none;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
 `;
 
 export const StyledHabitCard = styled.div<{
@@ -60,36 +69,70 @@ export const StyledHabitCard = styled.div<{
   $isCompleted: boolean;
   $expanded?: boolean;
 }>`
+  /* Use the background color based on isCompleted state */
   background: ${(props) =>
     props.$isCompleted
-      ? props.theme.colors.transparent.primary20 // Using 20% transparent primary color
+      ? props.theme.colors.transparent.primary20
       : props.theme.colors.surface};
   border-radius: ${({ theme }) => theme.borderRadius.medium};
   padding: ${({ theme }) => theme.spacing.md};
-  box-shadow: ${({ theme }) => theme.shadows.small};
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   position: relative;
   overflow: visible; /* Always make card overflow visible to show the menu button */
   width: 100%;
-  transition: all ${({ theme }) => theme.animations.transitions.short};
+  transform-origin: center center;
+  margin: 2px 0;
+
+  /* Apply consistent transitions for interactive effects */
+  transition: ${createTransition(["transform", "box-shadow"], "medium")};
+
+  /* Deliberately not transitioning background-color to avoid flicker */
+  /* During animation phase, background-color will not transition */
+
+  /* During animation, apply pulse effect and prevent clicks */
+  &.animating {
+    pointer-events: none; /* Prevent additional clicks during animation */
+    z-index: 10; /* Ensure it stays on top during animation */
+    /* Fix background color to prevent flickering during animation */
+    will-change: transform;
+  }
+
   ${(props) =>
     props.$isCompleting &&
     css`
-      animation: ${popAndSpin} 0.6s ease-in-out;
+      /* Simple pulse animation instead of flip */
+      animation: ${pulse} 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+      will-change: transform;
     `}
+
+  &:hover {
+    transform: scale(1.01);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
+  }
 `;
 
 export const CardContent = styled.div`
   cursor: pointer;
+  transition: ${createTransition(["opacity"], "short")};
+  padding: ${({ theme }) => theme.spacing.xs} 0;
+
+  &:hover {
+    opacity: 0.95;
+  }
+
+  &:active {
+    opacity: 0.9;
+  }
 `;
 
 export const CardFooter = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: ${({ theme }) => theme.spacing.md};
+  margin-top: ${({ theme }) => theme.spacing.sm};
   padding-top: ${({ theme }) => theme.spacing.sm};
   border-top: 1px solid ${({ theme }) => theme.colors.borderLight};
-  font-size: ${({ theme }) => theme.typography.fontSizes.sm};
+  transition: ${createTransition(["opacity"], "medium")};
 `;
 
 export const ExpandButton = styled.button`
@@ -97,15 +140,22 @@ export const ExpandButton = styled.button`
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadius.small};
   color: ${({ theme }) => theme.colors.text};
-  padding: 4px 8px;
+  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.sm};
   font-size: ${({ theme }) => theme.typography.fontSizes.xs};
   cursor: pointer;
-  transition: all 0.2s;
+  transition: ${createTransition(["all"], "short")};
 
   &:hover {
     background-color: ${({ theme }) => theme.colors.backgroundAlt};
     border-color: ${({ theme }) => theme.colors.primary};
     color: ${({ theme }) => theme.colors.primary};
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: none;
   }
 `;
 
@@ -114,20 +164,22 @@ export const HabitName = styled.h3`
   font-size: ${({ theme }) => theme.typography.fontSizes.lg};
   font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
   color: ${({ theme }) => theme.colors.text};
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
+  transition: ${createTransition(["color"], "medium")};
 `;
 
 export const HabitMeta = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.sm};
+  margin-top: ${({ theme }) => theme.spacing.xs};
   font-size: ${({ theme }) => theme.typography.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textLight};
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: ${createTransition(["color"], "medium")};
 `;
 
 export const FrequencyBadge = styled.span`
-  background: #f3f4f6;
-  padding: 4px 8px;
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.sm};
   border-radius: ${({ theme }) => theme.borderRadius.pill};
   font-size: ${({ theme }) => theme.typography.fontSizes.xs};
   margin-left: ${({ theme }) => theme.spacing.sm};
@@ -139,67 +191,29 @@ export const MenuButton = styled.button`
   border: none;
   color: ${({ theme }) => theme.colors.textLight};
   cursor: pointer;
-  font-size: 20px;
-  font-weight: bold;
   padding: 0;
-  position: absolute;
-  top: ${({ theme }) => theme.spacing.sm};
-  right: ${({ theme }) => theme.spacing.sm};
-  z-index: 5;
   width: ${({ theme }) => theme.spacing.xl}; // 32px
   height: ${({ theme }) => theme.spacing.xl}; // 32px
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  transition: ${createTransition(["all"], "short")};
 
   &:hover {
     background-color: ${({ theme }) => theme.colors.hover};
     color: ${({ theme }) => theme.colors.text};
+    transform: scale(1.05);
   }
 
   &:active {
     background-color: ${({ theme }) => theme.colors.pressed};
+    transform: scale(0.95);
   }
 
   &:focus {
     outline: none;
-  }
-`;
-
-// Context menu styles
-export const ContextMenu = styled.div`
-  position: absolute;
-  top: 40px;
-  right: 10px;
-  background: ${({ theme }) => theme.colors.surface};
-  border-radius: ${({ theme }) => theme.borderRadius.small};
-  box-shadow: ${({ theme }) => theme.shadows.medium};
-  overflow: hidden;
-  z-index: 10;
-  min-width: 120px;
-`;
-
-export const MenuItem = styled.button`
-  background: none;
-  border: none;
-  width: 100%;
-  text-align: left;
-  padding: 10px 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: ${({ theme }) => theme.colors.text};
-  font-size: ${({ theme }) => theme.typography.fontSizes.sm};
-
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.backgroundAlt};
-  }
-
-  &.delete {
-    color: ${({ theme }) => theme.colors.error};
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.transparent.primary20};
   }
 `;
 
@@ -243,20 +257,22 @@ export const CancelButton = styled.button`
   background: ${({ theme }) => theme.colors.backgroundAlt};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadius.small};
-  padding: 8px 16px;
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
   color: ${({ theme }) => theme.colors.text};
   cursor: pointer;
   font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
+  transition: ${createTransition(["all"], "short")};
 `;
 
 export const DeleteConfirmButton = styled.button`
   background: ${({ theme }) => theme.colors.error};
   border: none;
   border-radius: ${({ theme }) => theme.borderRadius.small};
-  padding: 8px 16px;
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
   color: white;
   cursor: pointer;
   font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
+  transition: ${createTransition(["background"], "short")};
 
   &:hover {
     background: #c0392b; /* Darker red for hover state */
@@ -266,7 +282,7 @@ export const DeleteConfirmButton = styled.button`
 export const StreakIndicator = styled.div<{ $hasStreak: boolean }>`
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: ${({ theme }) => theme.spacing.xs};
   color: ${({ theme, $hasStreak }) =>
     $hasStreak ? theme.colors.success : "inherit"};
   font-weight: ${({ theme, $hasStreak }) =>

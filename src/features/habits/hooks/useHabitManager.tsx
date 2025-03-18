@@ -379,13 +379,16 @@ export function useHabitManager() {
   // Toggle habit completion for today or a specific date
   const toggleHabit = async (id: string, date: Date = new Date()) => {
     try {
+      // Check if this card is currently being animated - if so, don't interfere
+      const isAnimating = !!document.querySelector(
+        `.styledHabitCard[data-habit-id="${id}"].animating`
+      );
+
       const habit = habits.find((h) => h._id === id);
 
       if (!habit) {
         throw new Error("Habit not found");
       }
-
-      // We'll check if the habit is due on the date only when we need it later
 
       // Check if this is a future date
       const isFutureDate =
@@ -417,14 +420,38 @@ export function useHabitManager() {
       const updatedHabit = await habitApi.toggleCompletion(id, date, habitSeed);
       logger.debug(`Toggle response for habit "${habit.name}":`, updatedHabit);
 
-      // Store the habit data without the reward photo
-      setHabits((prevHabits) =>
-        prevHabits.map((h) => (h._id === id ? updatedHabit : h))
-      );
+      // If the card is animating, wait for animation to complete before updating context
+      if (isAnimating) {
+        // Delay updating the context until after animation completes
+        setTimeout(() => {
+          // Update the habit state in React context
+          setHabits((prevHabits) =>
+            prevHabits.map((h) => (h._id === id ? updatedHabit : h))
+          );
+        }, 950); // Slightly longer than animation duration
+      } else {
+        // Update the habit state in React context immediately
+        setHabits((prevHabits) =>
+          prevHabits.map((h) => (h._id === id ? updatedHabit : h))
+        );
+      }
 
-      // Get completion status before and after
+      // Get completion status before and after for messaging
       const wasCompletedBefore = isCompletedOnDate(habit, date);
       const isCompletedNow = isCompletedOnDate(updatedHabit, date);
+
+      // Only dispatch event if it's not coming from a habit card
+      // (which has already dispatched the event and is handling animation)
+      if (!isAnimating) {
+        document.dispatchEvent(
+          new CustomEvent("habit-toggled", {
+            detail: {
+              habitId: id,
+              isCompleted: isCompletedNow,
+            },
+          })
+        );
+      }
 
       // Check if the completion date is today using a more accurate comparison
       const completionDate = new Date(date);

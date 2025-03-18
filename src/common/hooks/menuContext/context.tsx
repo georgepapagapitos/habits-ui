@@ -24,6 +24,7 @@ export const MenuProvider: React.FC<{ children: ReactNode }> = ({
   );
 
   const openMenu = useCallback((id: number) => {
+    // First close any other open menus to ensure only one is open
     setActiveMenuId(id);
   }, []);
 
@@ -36,18 +37,22 @@ export const MenuProvider: React.FC<{ children: ReactNode }> = ({
     [activeMenuId]
   );
 
-  const toggleMenu = useCallback(
-    (id: number, e?: React.MouseEvent) => {
-      e?.stopPropagation();
+  const toggleMenu = useCallback((id: number, e?: React.MouseEvent) => {
+    if (e) {
+      // Prevent event from propagating to document
+      e.stopPropagation();
+      e.preventDefault();
+    }
 
-      if (activeMenuId === id) {
-        setActiveMenuId(null);
+    // Update the active menu state
+    setActiveMenuId((prevId) => {
+      if (prevId === id) {
+        return null; // Close if already open
       } else {
-        setActiveMenuId(id);
+        return id; // Open this menu, closing any other open menu
       }
-    },
-    [activeMenuId]
-  );
+    });
+  }, []);
 
   const closeAllMenus = useCallback(() => {
     setActiveMenuId(null);
