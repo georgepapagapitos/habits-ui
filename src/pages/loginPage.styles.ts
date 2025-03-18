@@ -13,22 +13,27 @@ export const Content = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 2rem 1.5rem;
+  padding: ${({ theme }) => theme.spacing.lg} ${({ theme }) => theme.spacing.md};
+  width: 100%;
+  max-width: 100%;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    padding: 1rem;
+    padding: ${({ theme }) => theme.spacing.md};
+    padding-top: calc(${({ theme }) => theme.spacing.xl} + 60px);
     justify-content: flex-start;
-    padding-top: 2rem;
+    margin: 0 auto;
   }
 `;
 
 export const BrandingText = styled.p`
   text-align: center;
   color: ${({ theme }) => theme.colors.textLight};
-  margin-top: 2rem;
-  font-size: 0.9rem;
+  margin-top: ${({ theme }) => theme.spacing.lg};
+  font-size: ${({ theme }) => theme.typography.fontSizes.sm};
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    margin-top: 1.5rem;
+    margin-top: ${({ theme }) => theme.spacing.md};
+    font-size: ${({ theme }) => theme.typography.fontSizes.xs};
+    padding: 0 ${({ theme }) => theme.spacing.sm};
   }
 `;

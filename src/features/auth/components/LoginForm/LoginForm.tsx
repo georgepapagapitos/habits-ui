@@ -55,7 +55,7 @@ export const LoginForm = () => {
 
   return (
     <Form onSubmit={handleSubmit}>
-      <Title>Login to Habits</Title>
+      <Title>Login</Title>
 
       <FormGroup>
         <Label htmlFor="email" required>
@@ -113,7 +113,7 @@ export const LoginForm = () => {
       <LinkText>
         Don't have an account?{" "}
         <StyledLink onClick={handleRegisterClick} tabIndex={0}>
-          Register here
+          Register
         </StyledLink>
       </LinkText>
     </Form>
