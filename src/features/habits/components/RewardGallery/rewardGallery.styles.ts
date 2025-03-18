@@ -69,10 +69,29 @@ export const GalleryGrid = styled.div`
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
   margin-top: 1rem;
+  width: 100%;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 1rem;
+  }
+
+  /* Fix for Safari/iOS grid issues */
+  @supports (-webkit-touch-callout: none) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+
+    & > * {
+      flex: 0 0 calc(50% - 0.5rem);
+      margin-bottom: 1rem;
+    }
+
+    @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+      & > * {
+        flex: 0 0 calc(33.33% - 1rem);
+      }
+    }
   }
 `;
 
@@ -86,6 +105,9 @@ export const PhotoCard = styled.div`
   flex-direction: column;
   height: 100%;
   position: relative;
+  transform: translateZ(0); /* Force hardware acceleration */
+  -webkit-transform: translateZ(0);
+  will-change: transform; /* Hint for browser optimization */
 
   &:hover {
     transform: translateY(-4px);
@@ -114,6 +136,9 @@ export const PhotoImageContainer = styled.div`
   padding-bottom: 75%; /* 4:3 aspect ratio */
   overflow: hidden;
   background-color: #f0f0f0;
+  flex-grow: 1;
+  transform: translateZ(0); /* Force hardware acceleration */
+  -webkit-transform: translateZ(0);
 `;
 
 export const PhotoImage = styled.img<{ $width: number; $height: number }>`
@@ -127,6 +152,9 @@ export const PhotoImage = styled.img<{ $width: number; $height: number }>`
   background-color: #f0f0f0;
   box-sizing: border-box;
   transition: transform 0.5s ease-in-out;
+  transform: translateZ(0); /* Force hardware acceleration */
+  -webkit-transform: translateZ(0);
+  will-change: transform; /* Hint for browser optimization */
 
   ${({ $width, $height }) => {
     // Calculate the aspect ratio
@@ -147,6 +175,14 @@ export const PhotoImage = styled.img<{ $width: number; $height: number }>`
 
     return "";
   }}
+
+  /* Fix for iOS Safari */
+  @supports (-webkit-touch-callout: none) {
+    height: 100% !important;
+    width: 100% !important;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
 
   &:hover {
     transform: scale(1.03);
