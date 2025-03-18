@@ -12,8 +12,8 @@ export default defineConfig(({ mode }) => {
         registerType: "autoUpdate",
         manifest: {
           name: "Habits",
-          short_name: "",
-          description: "",
+          short_name: "Habits",
+          description: "Track your habits",
           theme_color: "#ffffff",
           icons: [
             {
