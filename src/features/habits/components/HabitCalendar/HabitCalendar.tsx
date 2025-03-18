@@ -19,6 +19,7 @@ import {
   subDays,
 } from "date-fns";
 import { useState } from "react";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import {
   CalendarContainer,
   CalendarGrid,
@@ -199,15 +200,17 @@ export const HabitCalendar = ({ habit, onToggleDate }: HabitCalendarProps) => {
         <NavigationButton
           onClick={previousMonth}
           aria-label={`Previous month: ${format(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1), "MMMM yyyy")}`}
+          data-testid="nav-button"
         >
-          ←
+          <FaChevronLeft />
         </NavigationButton>
         <MonthTitle>{format(currentMonth, "MMMM yyyy")}</MonthTitle>
         <NavigationButton
           onClick={nextMonth}
           aria-label={`Next month: ${format(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1), "MMMM yyyy")}`}
+          data-testid="nav-button"
         >
-          →
+          <FaChevronRight />
         </NavigationButton>
       </CalendarHeader>
 

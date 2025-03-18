@@ -82,7 +82,11 @@ describe("App", () => {
     // The title is now dynamic, so we should look for "Habits" which is the default
     // Use a more specific selector for the title to avoid duplicate text issues
     expect(screen.getByRole("heading", { name: "Habits" })).toBeInTheDocument();
-    expect(screen.getByText("+")).toBeInTheDocument();
+
+    // Check for the add button (instead of looking for "+" text)
+    expect(
+      screen.getByRole("button", { name: /add habit/i })
+    ).toBeInTheDocument();
 
     // These are common navigation elements we can test for
     // Use getAllByText and check length for elements that appear multiple times
@@ -95,8 +99,8 @@ describe("App", () => {
   test("opens modal when add button is clicked", async () => {
     renderWithProviders(<App />);
 
-    // The add button has a + character
-    const addButton = screen.getByText("+");
+    // Find the add button by its aria-label
+    const addButton = screen.getByRole("button", { name: /add habit/i });
     expect(addButton).toBeInTheDocument();
 
     // Click the add button using userEvent

@@ -33,7 +33,7 @@ describe("Header", () => {
   test("renders the default title when no title is provided", () => {
     renderWithProviders(<Header />);
 
-    expect(screen.getByText("Hannah's Habits")).toBeInTheDocument();
+    expect(screen.getByText("Habits")).toBeInTheDocument();
   });
 
   test("renders the provided title", () => {

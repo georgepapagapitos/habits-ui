@@ -1,5 +1,5 @@
-import { Habit } from "@habits/types/habit.types";
-import { getDay, addDays, startOfDay, isSameDay, parseISO } from "date-fns";
+import { Habit } from "@habits/types";
+import { addDays, getDay, isSameDay, parseISO, startOfDay } from "date-fns";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 
 // Get current user timezone (safely for tests)

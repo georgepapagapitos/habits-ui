@@ -30,7 +30,7 @@ export const ConfettiPiece = styled.div<{ $color: string; $duration: number }>`
   width: 10px;
   height: 10px;
   background: ${(props) => props.$color};
-  border-radius: ${(props) => (Math.random() > 0.5 ? "50%" : "0")};
+  border-radius: 50%;
   top: 100%;
   animation: ${confettiAnimation} ${(props) => props.$duration}s ease-out
     forwards;

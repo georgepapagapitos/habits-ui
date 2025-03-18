@@ -27,7 +27,7 @@ describe("LoginForm Component", () => {
   // Mock auth context values
   const createAuthContext = (
     isLoading = false,
-    error = null
+    error: string | null = null
   ): Partial<AuthContextType> => ({
     login: mockLoginFn,
     clearError: mockClearErrorFn,
@@ -47,10 +47,18 @@ describe("LoginForm Component", () => {
     // Verify form elements exist
     expect(screen.getByRole("heading", { name: /login/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: /email/i })).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText(/enter your password/i)
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /login/i })).toBeInTheDocument();
     expect(screen.getByText(/don't have an account\?/i)).toBeInTheDocument();
     expect(screen.getByText(/register/i)).toBeInTheDocument();
+
+    // Verify password toggle button exists
+    expect(
+      screen.getByRole("button", { name: /show password/i })
+    ).toBeInTheDocument();
   });
 
   test("handles form submission with valid inputs", async () => {
@@ -63,7 +71,10 @@ describe("LoginForm Component", () => {
 
     // Fill in the form
     await user.type(screen.getByLabelText(/email/i), validEmail);
-    await user.type(screen.getByLabelText(/password/i), validPassword);
+    await user.type(
+      screen.getByPlaceholderText(/enter your password/i),
+      validPassword
+    );
 
     // Submit the form
     await user.click(screen.getByRole("button", { name: /login/i }));
@@ -131,7 +142,7 @@ describe("LoginForm Component", () => {
     expect(
       screen.getByRole("button", { name: /logging in/i })
     ).toBeInTheDocument();
-    expect(screen.getByRole("button")).toBeDisabled();
+    expect(screen.getByRole("button", { name: /logging in/i })).toBeDisabled();
   });
 
   test("navigates to register page when register link is clicked", async () => {
@@ -158,7 +169,10 @@ describe("LoginForm Component", () => {
 
     // Fill in the form
     await user.type(screen.getByLabelText(/email/i), validEmail);
-    await user.type(screen.getByLabelText(/password/i), validPassword);
+    await user.type(
+      screen.getByPlaceholderText(/enter your password/i),
+      validPassword
+    );
 
     // Submit the form
     await user.click(screen.getByRole("button", { name: /login/i }));
@@ -177,7 +191,10 @@ describe("LoginForm Component", () => {
 
     // Fill in the form
     await user.type(screen.getByLabelText(/email/i), validEmail);
-    await user.type(screen.getByLabelText(/password/i), validPassword);
+    await user.type(
+      screen.getByPlaceholderText(/enter your password/i),
+      validPassword
+    );
 
     // Submit the form
     await user.click(screen.getByRole("button", { name: /login/i }));
@@ -188,5 +205,38 @@ describe("LoginForm Component", () => {
     // Verify navigation did NOT occur on failed login
     await new Promise((resolve) => setTimeout(resolve, 50));
     expect(navigateMock).not.toHaveBeenCalled();
+  });
+
+  test("toggles password visibility when show/hide button is clicked", async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(<LoginForm />, {
+      authContextValue: createAuthContext(),
+    });
+
+    // Get password input and toggle button
+    const passwordInput = screen.getByPlaceholderText(/enter your password/i);
+    const toggleButton = screen.getByRole("button", { name: /show password/i });
+
+    // Initially password should be hidden
+    expect(passwordInput).toHaveAttribute("type", "password");
+
+    // Click toggle button to show password
+    await user.click(toggleButton);
+
+    // Password should now be visible
+    expect(passwordInput).toHaveAttribute("type", "text");
+    expect(
+      screen.getByRole("button", { name: /hide password/i })
+    ).toBeInTheDocument();
+
+    // Click toggle button again to hide password
+    await user.click(screen.getByRole("button", { name: /hide password/i }));
+
+    // Password should be hidden again
+    expect(passwordInput).toHaveAttribute("type", "password");
+    expect(
+      screen.getByRole("button", { name: /show password/i })
+    ).toBeInTheDocument();
   });
 });

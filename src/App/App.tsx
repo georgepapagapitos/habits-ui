@@ -4,6 +4,7 @@ import { TimeOfDay, WeekDay } from "@habits/types";
 import { BottomNav, Header, Messages, Modal } from "@layout/components";
 import { useState } from "react";
 import { AddButton, Container, Content } from "./app.styles";
+import { LuPlus } from "react-icons/lu";
 
 type HabitFormData = {
   name: string;
@@ -167,7 +168,9 @@ export const App = () => {
       </Container>
       {/* Only show the add button for Today screen */}
       {activeScreen === "habits" && (
-        <AddButton onClick={openModal}>+</AddButton>
+        <AddButton onClick={openModal} aria-label="Add habit">
+          <LuPlus size={24} />
+        </AddButton>
       )}
       <BottomNav
         activeScreen={activeScreen}

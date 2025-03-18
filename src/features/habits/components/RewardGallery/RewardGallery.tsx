@@ -1,5 +1,7 @@
-import { useHabits } from "../../hooks/habitContext";
-import { useRewards } from "../../hooks/rewardContext";
+import { Confetti } from "@components/Confetti";
+import { useHabits, useRewards } from "@habits/hooks";
+import { PhotoReward } from "@habits/types";
+import { logger } from "@utils/logger";
 import React, {
   useCallback,
   useEffect,
@@ -7,17 +9,17 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { logger } from "@utils/logger";
-import { PhotoReward } from "../../types/habit.types";
 import {
   Container,
   EmptyState,
+  ErrorMessage,
   GalleryGrid,
   PhotoCard,
   PhotoImage,
+  PhotoImageContainer,
+  RevealOverlay,
   Title,
 } from "./rewardGallery.styles";
-import { Confetti } from "@components/Confetti";
 
 // Create a memoized individual photo component to prevent unnecessary rerenders
 const RewardPhoto = React.memo(
@@ -35,13 +37,14 @@ const RewardPhoto = React.memo(
     const [retryCount, setRetryCount] = useState(0);
     const [isRevealed, setIsRevealed] = useState(() => {
       // Initialize from localStorage on component mount
+      let storedValue = null;
       try {
         const localStorageKey = `revealed_photo_${habitId}_${new Date().toISOString().split("T")[0]}`;
-        const storedValue = localStorage.getItem(localStorageKey);
-        return storedValue === "true";
-      } catch (e) {
-        return false;
+        storedValue = localStorage.getItem(localStorageKey);
+      } catch {
+        // Silently handle any localStorage errors
       }
+      return storedValue === "true";
     });
     const [showConfetti, setShowConfetti] = useState(false);
     const maxRetries = 3;
@@ -126,83 +129,72 @@ const RewardPhoto = React.memo(
             borderRadius: "0 0 8px 8px",
           }}
           onClick={handleReveal}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              handleReveal();
+              e.preventDefault();
+            }
+          }}
+          aria-label={
+            isRevealed
+              ? `Photo reward for completing ${habitName}`
+              : `Tap to reveal reward for completing ${habitName}`
+          }
         >
           {showConfetti && <Confetti active={true} count={30} />}
-          <PhotoImage
-            src={photo.url}
-            alt={`Reward for ${habitName}`}
-            $width={photo.width || 300}
-            $height={photo.height || 200}
-            style={{
-              transition: "all 0.5s ease-in-out",
-              opacity: isLoaded ? 1 : 0.7,
-              filter: !isRevealed
-                ? "blur(40px)"
-                : loadError
-                  ? "grayscale(100%)"
-                  : "none",
-            }}
-            onError={(e) => {
-              // Enhanced error handling
-              const target = e.target as HTMLImageElement;
+          <PhotoImageContainer>
+            <PhotoImage
+              src={photo.url}
+              alt={`Reward for ${habitName}`}
+              $width={photo.width || 300}
+              $height={photo.height || 200}
+              style={{
+                transition: "all 0.5s ease-in-out",
+                opacity: isLoaded ? 1 : 0.7,
+                filter: !isRevealed
+                  ? "blur(40px)"
+                  : loadError
+                    ? "grayscale(100%)"
+                    : "none",
+              }}
+              onError={(e) => {
+                // Enhanced error handling
+                const target = e.target as HTMLImageElement;
 
-              // When using our proxy endpoint, try to refresh the image
-              if (!target.dataset.retried) {
-                target.dataset.retried = "1";
+                // When using our proxy endpoint, try to refresh the image
+                if (!target.dataset.retried) {
+                  target.dataset.retried = "1";
 
-                // Try the thumbnail as fallback if available
-                if (photo.thumbnailUrl) {
-                  target.src = photo.thumbnailUrl;
-                  return;
+                  // Try the thumbnail as fallback if available
+                  if (photo.thumbnailUrl) {
+                    target.src = photo.thumbnailUrl;
+                    return;
+                  }
+                } else if (
+                  target.dataset.retried === "1" &&
+                  photo.thumbnailUrl
+                ) {
+                  // If we already tried the thumbnail, add a cache buster
+                  target.dataset.retried = "2";
+                  const cacheBuster = `?cb=${Date.now()}`;
+                  target.src = `${photo.url}${cacheBuster}`;
                 }
-              } else if (target.dataset.retried === "1" && photo.thumbnailUrl) {
-                // If we already tried the thumbnail, add a cache buster
-                target.dataset.retried = "2";
-                const cacheBuster = `?cb=${Date.now()}`;
-                target.src = `${photo.url}${cacheBuster}`;
-              }
-              // Otherwise, we will let the image show in error state
-            }}
-            onLoad={() => {
-              setIsLoaded(true);
-              setLoadError(false);
-            }}
-          />
-          {!isRevealed && isLoaded && (
-            <div
-              style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                color: "#fff",
-                backgroundColor: "rgba(0, 0, 0, 0.6)",
-                padding: "10px 20px",
-                borderRadius: "30px",
-                pointerEvents: "none",
-                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-                fontSize: "16px",
-                fontWeight: "bold",
-                letterSpacing: "0.5px",
-                backdropFilter: "blur(4px)",
+                // Otherwise, we will let the image show in error state
               }}
-            >
-              Tap to reveal!
-            </div>
-          )}
-          {loadError && (
-            <div
-              style={{
-                color: "#999",
-                fontSize: "12px",
-                textAlign: "center",
-                marginTop: "5px",
-                padding: "10px",
+              onLoad={() => {
+                setIsLoaded(true);
+                setLoadError(false);
               }}
-            >
-              Image could not be loaded
-            </div>
-          )}
+            />
+            {!isRevealed && isLoaded && (
+              <RevealOverlay>Tap to reveal!</RevealOverlay>
+            )}
+            {loadError && (
+              <ErrorMessage>Image could not be loaded</ErrorMessage>
+            )}
+          </PhotoImageContainer>
         </div>
       </PhotoCard>
     );
@@ -331,15 +323,7 @@ export const RewardGallery = () => {
           <p>Rewards will reset at midnight each day.</p>
           <button
             onClick={handleRefresh}
-            style={{
-              marginTop: "20px",
-              padding: "8px 16px",
-              backgroundColor: "#4CAF50",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-            }}
+            aria-label="Refresh habits to check for rewards"
           >
             Refresh
           </button>
@@ -354,7 +338,7 @@ export const RewardGallery = () => {
       <Title>Today's Rewards</Title>
       <p>Great job completing your habits today! Here are your rewards:</p>
 
-      <GalleryGrid>
+      <GalleryGrid role="grid" aria-label="Photo rewards gallery">
         {completedHabitsWithRewards.map((habit) => {
           const photo = rewards[habit._id];
 

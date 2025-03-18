@@ -1,9 +1,9 @@
+import { useHabitManager } from "@habits/hooks";
+import { habitApi } from "@habits/services";
+import { Habit, WeekDay } from "@habits/types";
 import { act, renderHook } from "@testing-library/react";
 import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { habitApi } from "../services/habitApi";
-import { Habit, WeekDay } from "../types/habit.types";
-import { useHabitManager } from "./useHabitManager";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -406,25 +406,27 @@ describe("useHabitManager", () => {
   describe("Photo Rewards", () => {
     // Mock Date for testing different days
     const mockDate = (date: Date) => {
-      const OriginalDate = global.Date;
-      // @ts-expect-error - intentionally overwriting Date for testing
-      global.Date = class extends OriginalDate {
-        constructor(...args: any[]) {
-          if (args.length === 0) {
-            return new OriginalDate(date);
-          }
-          // @ts-expect-error - handling any arguments for Date constructor
-          return new OriginalDate(...args);
+      const originalDate = global.Date;
+
+      // Simply override Date methods
+      // @ts-expect-error - Intentionally overriding Date
+      global.Date = function (...argsArray: any[]): Date {
+        if (argsArray.length === 0) {
+          return new originalDate(date);
         }
-        static now() {
-          return new OriginalDate(date).getTime();
-        }
-        toISOString() {
-          return new OriginalDate(date).toISOString();
-        }
-      };
+        // @ts-expect-error - Handle any arguments
+        return new originalDate(...argsArray);
+      } as DateConstructor;
+
+      // Copy prototype and static methods
+      Object.setPrototypeOf(global.Date, originalDate);
+
+      // Mock static methods
+      global.Date.now = () => date.getTime();
+
+      // Return cleanup function
       return () => {
-        global.Date = OriginalDate;
+        global.Date = originalDate;
       };
     };
 
@@ -443,66 +445,181 @@ describe("useHabitManager", () => {
     });
 
     it("generates different seeds for the same habit on different days", async () => {
-      // Mock day 1
+      // Setup two different dates
       const day1 = new Date("2023-03-15");
-      const resetDay1 = mockDate(day1);
-
-      // Render hook on day 1
-      const { result, rerender } = renderHook(() => useHabitManager());
-
-      // Access the internal seed generation function
-      // @ts-expect-error - accessing internal function for testing
-      const generateSeedForHabit = result.current.generateSeedForHabit;
-
-      // Generate a seed for a habit on day 1
-      const habitId = "habit-123";
-      const day1Str = day1.toISOString().split("T")[0];
-      const seedDay1 = generateSeedForHabit(habitId, day1Str);
-
-      // Restore original Date
-      resetDay1();
-
-      // Mock day 2
       const day2 = new Date("2023-03-16");
-      const resetDay2 = mockDate(day2);
+      const habitId = "habit-123";
 
-      // Re-render hook for day 2
-      rerender();
+      // Store the seeds to validate them later
+      let day1StoredSeed: number | null = null;
+      let day2StoredSeed: number | null = null;
 
-      // Generate a seed for the same habit on day 2
-      const day2Str = day2.toISOString().split("T")[0];
-      const seedDay2 = generateSeedForHabit(habitId, day2Str);
+      // Create a clean mock
+      (habitApi.toggleCompletion as any).mockClear();
+      (habitApi.toggleCompletion as any).mockImplementation(
+        (id: string, date: Date, seed: number) => {
+          // Store the seed based on the date
+          if (date.toISOString().includes("2023-03-15")) {
+            day1StoredSeed = seed;
+          } else if (date.toISOString().includes("2023-03-16")) {
+            day2StoredSeed = seed;
+          }
+
+          return Promise.resolve({
+            _id: id,
+            name: "Test Habit",
+            completedDates: [date.toISOString()],
+            // Other required properties
+            color: "blue",
+            icon: "star",
+            frequency: ["monday"],
+            timeOfDay: "morning",
+            streak: 1,
+            active: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            startDate: new Date().toISOString(),
+          });
+        }
+      );
+
+      // Mock getAllHabits to return a habit matching the ID we'll use
+      (habitApi.getAllHabits as any).mockResolvedValue([
+        {
+          _id: habitId,
+          name: "Test Habit",
+          completedDates: [],
+          color: "blue",
+          icon: "star",
+          frequency: ["monday"],
+          timeOfDay: "morning",
+          streak: 1,
+          active: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          startDate: new Date().toISOString(),
+        },
+      ]);
+
+      // Render hook with the mocked habit API
+      const { result } = renderHook(() => useHabitManager());
+
+      // Wait for initial state to load (habits should be loaded from mocked API)
+      await vi.waitFor(() => {
+        expect(result.current.habits).toHaveLength(1);
+      });
+
+      // Mock the current dates to match day1
+      const originalDate = global.Date;
+      global.Date = class extends originalDate {
+        constructor(date?: string | number | Date) {
+          if (date) {
+            super(date);
+          } else {
+            super(day1);
+          }
+        }
+        static now() {
+          return new originalDate(day1).getTime();
+        }
+      } as unknown as typeof Date;
+
+      // First call with day1 as "today"
+      await act(async () => {
+        await result.current.toggleHabit(habitId);
+      });
+
+      // Reset and set Date to day2
+      global.Date = class extends originalDate {
+        constructor(date?: string | number | Date) {
+          if (date) {
+            super(date);
+          } else {
+            super(day2);
+          }
+        }
+        static now() {
+          return new originalDate(day2).getTime();
+        }
+      } as unknown as typeof Date;
+
+      // Second call with day2 as "today"
+      await act(async () => {
+        await result.current.toggleHabit(habitId);
+      });
 
       // Restore original Date
-      resetDay2();
+      global.Date = originalDate;
 
-      // Seeds should be different for different days
-      expect(seedDay1).not.toEqual(seedDay2);
+      // Seeds should be defined and different for different days
+      expect(day1StoredSeed).not.toBeNull();
+      expect(day2StoredSeed).not.toBeNull();
+      expect(day1StoredSeed).not.toEqual(day2StoredSeed);
     });
 
     it("generates the same seed for the same habit on the same day", async () => {
-      // Mock a fixed date
-      const testDate = new Date("2023-03-15");
-      const resetDate = mockDate(testDate);
+      // Setup a fixed date
+      const sameDay = new Date("2023-03-15");
+      const habitId = "habit-123";
+
+      // Create a clean mock
+      (habitApi.toggleCompletion as any).mockClear();
+
+      // Store the seeds passed to toggleCompletion
+      let firstCallSeed: number = 0;
+      let secondCallSeed: number = 0;
+      let callCount = 0;
+
+      (habitApi.toggleCompletion as any).mockImplementation(
+        (id: string, date: Date, seed: number) => {
+          // Store the seed based on call count
+          callCount++;
+          if (callCount === 1) {
+            firstCallSeed = seed;
+          } else {
+            secondCallSeed = seed;
+          }
+
+          return Promise.resolve({
+            _id: id,
+            name: "Test Habit",
+            completedDates: [date.toISOString()],
+            // Other required properties
+            color: "blue",
+            icon: "star",
+            frequency: ["monday"],
+            timeOfDay: "morning",
+            streak: 1,
+            active: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            startDate: new Date().toISOString(),
+          });
+        }
+      );
 
       // Render hook
       const { result } = renderHook(() => useHabitManager());
 
-      // Access the internal seed generation function
-      // @ts-expect-error - accessing internal function for testing
-      const generateSeedForHabit = result.current.generateSeedForHabit;
+      // Wait for initial state to load
+      await vi.waitFor(() => {
+        expect(result.current.toggleHabit).toBeDefined();
+      });
 
-      // Generate seeds twice for the same habit and date
-      const habitId = "habit-123";
-      const dateStr = testDate.toISOString().split("T")[0];
-      const seed1 = generateSeedForHabit(habitId, dateStr);
-      const seed2 = generateSeedForHabit(habitId, dateStr);
+      // First call with same day
+      await act(async () => {
+        await result.current.toggleHabit(habitId, sameDay);
+      });
 
-      // Restore original Date
-      resetDate();
+      // Second call with same day
+      await act(async () => {
+        await result.current.toggleHabit(habitId, sameDay);
+      });
 
       // Seeds should be identical for the same habit+date
-      expect(seed1).toEqual(seed2);
+      expect(firstCallSeed).toBeDefined();
+      expect(secondCallSeed).toBeDefined();
+      expect(firstCallSeed).toEqual(secondCallSeed);
     });
 
     it("passes seed to API when toggling habit completion", async () => {

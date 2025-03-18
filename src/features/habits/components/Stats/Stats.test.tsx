@@ -1,7 +1,7 @@
 import { screen, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "@tests/utils";
-import { describe, expect, test, vi } from "vitest";
 import axios from "axios";
+import { describe, expect, test, vi } from "vitest";
 import { Stats } from "./Stats";
 
 // Mock axios
@@ -19,6 +19,7 @@ describe("Stats Component", () => {
   test("renders loading state initially", () => {
     renderWithProviders(<Stats />);
     expect(screen.getByRole("status")).toBeInTheDocument();
+    expect(screen.getByLabelText("Loading statistics")).toBeInTheDocument();
   });
 
   test("renders error message when API call fails", async () => {
@@ -56,15 +57,49 @@ describe("Stats Component", () => {
     renderWithProviders(<Stats />);
 
     await waitFor(() => {
+      // Check for header
+      expect(screen.getByTestId("stats-header")).toBeInTheDocument();
+
+      // Check container
+      expect(screen.getByTestId("stats-container")).toBeInTheDocument();
+
+      // Check each stat card exists
+      expect(screen.getByTestId("stat-total-habits")).toBeInTheDocument();
+      expect(screen.getByTestId("stat-total-completions")).toBeInTheDocument();
+      expect(screen.getByTestId("stat-longest-streak")).toBeInTheDocument();
+      expect(screen.getByTestId("stat-most-consistent")).toBeInTheDocument();
+      expect(screen.getByTestId("stat-most-completed")).toBeInTheDocument();
+      expect(screen.getByTestId("stat-average-streak")).toBeInTheDocument();
+
+      // Check values using data-testid
+      expect(screen.getByTestId("total-habits-value")).toHaveTextContent("3");
+      expect(screen.getByTestId("total-completions-value")).toHaveTextContent(
+        "42"
+      );
+      expect(screen.getByTestId("longest-streak-value")).toHaveTextContent("5");
+      expect(screen.getByTestId("longest-streak-habit")).toHaveTextContent(
+        "Running"
+      );
+      expect(screen.getByTestId("most-consistent-value")).toHaveTextContent(
+        "90%"
+      );
+      expect(screen.getByTestId("most-consistent-habit")).toHaveTextContent(
+        "Meditation"
+      );
+      expect(screen.getByTestId("most-completed-value")).toHaveTextContent(
+        "25"
+      );
+      expect(screen.getByTestId("most-completed-habit")).toHaveTextContent(
+        "Reading"
+      );
+      expect(screen.getByTestId("average-streak-value")).toHaveTextContent("3");
+
+      // Also check the text content for some additional elements
       expect(screen.getByText("Total Habits")).toBeInTheDocument();
-      expect(screen.getByText("3")).toBeInTheDocument();
-      expect(screen.getByText("5 days (Running)")).toBeInTheDocument();
-      expect(screen.getByText("90% (Meditation)")).toBeInTheDocument();
-      expect(screen.getByText("25 times (Reading)")).toBeInTheDocument();
-      expect(screen.getByText("Total Completions")).toBeInTheDocument();
-      expect(screen.getByText("42")).toBeInTheDocument();
-      expect(screen.getByText("Average Streak")).toBeInTheDocument();
-      expect(screen.getByText("3 days")).toBeInTheDocument();
+      expect(screen.getByText("habits created")).toBeInTheDocument();
+      expect(screen.getByText("total check-ins")).toBeInTheDocument();
+      expect(screen.getByText("completion")).toBeInTheDocument();
+      expect(screen.getByText("times")).toBeInTheDocument();
     });
   });
 
