@@ -1,5 +1,5 @@
 import { HabitForm, HabitList, RewardGallery, Stats } from "@habits/components";
-import { useHabits } from "@habits/hooks";
+import { useHabits, useRewards } from "@habits/hooks";
 import { TimeOfDay, WeekDay } from "@habits/types";
 import { BottomNav, Header, Messages, Modal } from "@layout/components";
 import { useState } from "react";
@@ -45,6 +45,11 @@ export const App = () => {
 
   // Use the habit context
   const { habits, handleAddHabit, updateHabit } = useHabits();
+  // Use the rewards context to get available rewards
+  const { rewards } = useRewards();
+
+  // Calculate the number of available rewards
+  const rewardsCount = Object.keys(rewards).length;
 
   const onSubmitHabit = ({
     name,
@@ -175,6 +180,7 @@ export const App = () => {
       <BottomNav
         activeScreen={activeScreen}
         onScreenChange={handleScreenChange}
+        rewardsCount={rewardsCount}
       />
       {isModalOpen && renderHabitFormModal()}
       {isEditModalOpen && renderEditHabitFormModal()}

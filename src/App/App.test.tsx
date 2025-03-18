@@ -2,7 +2,7 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "@tests/utils";
 import React from "react";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, test, vi, beforeEach } from "vitest";
 import { App } from "./App";
 
 // Create a mock AuthProvider
@@ -14,6 +14,18 @@ const mockAuthContext = {
   register: vi.fn(),
   loading: false,
   error: null,
+};
+
+// Create a mock rewards object
+const mockRewards = {
+  rewards: {},
+  addReward: vi.fn(),
+  batchAddRewards: vi.fn(),
+  removeReward: vi.fn(),
+  getReward: vi.fn(),
+  hasRewardForToday: vi.fn(),
+  clearExpiredRewards: vi.fn(),
+  isRewardsLoaded: true,
 };
 
 // Mock the auth hook
@@ -68,6 +80,16 @@ vi.mock("../features/habits/hooks/useHabitManager", () => ({
   }),
 }));
 
+// Mock rewards hook with empty rewards by default
+const useRewardsMock = vi.fn().mockReturnValue(mockRewards);
+
+vi.mock("../features/habits/hooks/rewardContext", () => ({
+  useRewards: () => useRewardsMock(),
+  RewardProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
+}));
+
 // Mock scrollLock utilities to avoid jsdom not implemented error
 vi.mock("../common/utils/scrollLock", () => ({
   lockScroll: vi.fn(),
@@ -75,6 +97,11 @@ vi.mock("../common/utils/scrollLock", () => ({
 }));
 
 describe("App", () => {
+  beforeEach(() => {
+    // Reset mocks before each test
+    useRewardsMock.mockReturnValue(mockRewards);
+  });
+
   test("renders the App component", () => {
     renderWithProviders(<App />);
 
@@ -131,5 +158,21 @@ describe("App", () => {
 
     // More specific checks could be added as the app evolves
     // For instance, checking that key components are present in the DOM
+  });
+
+  test("displays rewards count when available", () => {
+    // Override the mock for this test only
+    useRewardsMock.mockReturnValue({
+      ...mockRewards,
+      rewards: {
+        "habit-1": { url: "test-url" },
+        "habit-2": { url: "test-url-2" },
+      },
+    });
+
+    renderWithProviders(<App />);
+
+    // Check that the rewards count is displayed
+    expect(screen.getByText("Rewards (2)")).toBeInTheDocument();
   });
 });
