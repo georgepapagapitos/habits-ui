@@ -116,6 +116,22 @@ export const GlobalStyle = createGlobalStyle`
       backface-visibility: hidden;
       -webkit-backface-visibility: hidden;
     }
+    
+    /* Prevent iOS grid and flexbox gaps */
+    div {
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+    }
+    
+    /* Fix for iOS Safari height calculation issues */
+    html {
+      height: -webkit-fill-available;
+    }
+    
+    body {
+      min-height: -webkit-fill-available;
+      height: -webkit-fill-available;
+    }
   }
 `;
 

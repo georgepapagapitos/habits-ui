@@ -20,6 +20,7 @@ import {
   FaTrash,
 } from "react-icons/fa";
 import { LuFlower2, LuSprout, LuStar } from "react-icons/lu";
+import { useTheme } from "styled-components";
 import {
   CardContent,
   CardFooter,
@@ -32,6 +33,7 @@ import {
   MenuButton,
   MenuItem,
   StyledHabitCard,
+  StreakIndicator,
 } from "./habitCard.styles";
 
 interface HabitCardProps {
@@ -62,6 +64,7 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [showConfirmReset, setShowConfirmReset] = useState(false);
+  const theme = useTheme();
 
   // Use the menu manager hook
   const {
@@ -231,14 +234,7 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
             {showCalendar ? "Hide History" : "Show History"}
           </ExpandButton>
 
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "4px",
-              color: habit.streak > 0 ? "#4ECB71" : "inherit",
-            }}
-          >
+          <StreakIndicator $hasStreak={habit.streak > 0}>
             {habit.streak > 0 && <FaFire color="#ff5722" />}
             <span data-testid="streak-text">
               {habit.streak > 0
@@ -249,7 +245,7 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
                     ? "Start a streak!"
                     : "No streak yet"}
             </span>
-          </div>
+          </StreakIndicator>
         </CardFooter>
 
         {showCalendar && (

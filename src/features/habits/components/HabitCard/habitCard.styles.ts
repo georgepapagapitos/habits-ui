@@ -247,10 +247,6 @@ export const CancelButton = styled.button`
   color: ${({ theme }) => theme.colors.text};
   cursor: pointer;
   font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.background};
-  }
 `;
 
 export const DeleteConfirmButton = styled.button`
@@ -265,4 +261,14 @@ export const DeleteConfirmButton = styled.button`
   &:hover {
     background: #c0392b; /* Darker red for hover state */
   }
+`;
+
+export const StreakIndicator = styled.div<{ $hasStreak: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: ${({ theme, $hasStreak }) =>
+    $hasStreak ? theme.colors.success : "inherit"};
+  font-weight: ${({ theme, $hasStreak }) =>
+    $hasStreak ? theme.typography.fontWeights.bold : "inherit"};
 `;

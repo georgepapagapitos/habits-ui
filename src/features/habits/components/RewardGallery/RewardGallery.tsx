@@ -49,6 +49,11 @@ const RewardPhoto = React.memo(
     const [showConfetti, setShowConfetti] = useState(false);
     const maxRetries = 3;
 
+    // Detect iOS - modern approach avoiding deprecated navigator.platform
+    const isIOS =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (/Mac/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+
     // Use an effect to preload the image with better error handling
     useEffect(() => {
       if (!photo.url) return;
@@ -127,6 +132,7 @@ const RewardPhoto = React.memo(
             cursor: isLoaded && !isRevealed ? "pointer" : "default",
             overflow: "hidden",
             borderRadius: "0 0 8px 8px",
+            height: isIOS ? "auto" : undefined,
           }}
           onClick={handleReveal}
           role="button"
