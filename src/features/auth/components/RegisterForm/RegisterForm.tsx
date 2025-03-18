@@ -72,7 +72,7 @@ export const RegisterForm = () => {
 
   return (
     <Form onSubmit={handleSubmit} data-testid="register-form">
-      <Title>Create Your Account</Title>
+      <Title>Create Account</Title>
 
       <FormGroup>
         <Label htmlFor="username" required>
@@ -173,7 +173,7 @@ export const RegisterForm = () => {
       <LinkText>
         Already have an account?{" "}
         <StyledLink onClick={handleLoginClick} tabIndex={0}>
-          Login here
+          Login
         </StyledLink>
       </LinkText>
     </Form>

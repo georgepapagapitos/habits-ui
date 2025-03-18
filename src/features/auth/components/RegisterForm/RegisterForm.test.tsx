@@ -46,7 +46,7 @@ describe("RegisterForm Component", () => {
 
     // Verify form elements exist
     expect(
-      screen.getByRole("heading", { name: /create your account/i })
+      screen.getByRole("heading", { name: /create account/i })
     ).toBeInTheDocument();
     expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
@@ -60,7 +60,7 @@ describe("RegisterForm Component", () => {
       screen.getByRole("button", { name: /create account/i })
     ).toBeInTheDocument();
     expect(screen.getByText(/already have an account\?/i)).toBeInTheDocument();
-    expect(screen.getByText(/login here/i)).toBeInTheDocument();
+    expect(screen.getByText(/login/i)).toBeInTheDocument();
 
     // Verify password toggle buttons exist
     expect(
@@ -218,7 +218,7 @@ describe("RegisterForm Component", () => {
     });
 
     // Click login link
-    await user.click(screen.getByText(/login here/i));
+    await user.click(screen.getByText(/login/i));
 
     // Verify navigation occurred
     expect(navigateMock).toHaveBeenCalledWith("/login");

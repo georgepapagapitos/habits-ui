@@ -6,29 +6,41 @@ export const Form = styled.form`
   width: 100%;
   max-width: 400px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: ${({ theme }) => theme.spacing.lg};
   background-color: ${({ theme }) => theme.colors.surface};
   border-radius: ${({ theme }) => theme.borderRadius.medium};
   box-shadow: ${({ theme }) => theme.shadows.medium};
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    padding: 1.5rem;
-    max-width: 100%;
-    box-shadow: none;
+    padding: ${({ theme }) => theme.spacing.md};
+    max-width: 90%;
+    width: 90%;
+    box-shadow: ${({ theme }) => theme.shadows.small};
+    border-radius: ${({ theme }) => theme.borderRadius.small};
+    margin-top: ${({ theme }) => theme.spacing.sm};
   }
 `;
 
 export const Title = styled.h2`
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: ${({ theme }) => theme.spacing.md};
   color: ${({ theme }) => theme.colors.primary};
-  font-size: 1.75rem;
-  font-weight: 600;
+  font-size: ${({ theme }) => theme.typography.fontSizes.xl};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    font-size: ${({ theme }) => theme.typography.fontSizes.lg};
+    margin-bottom: ${({ theme }) => theme.spacing.sm};
+  }
 `;
 
 export const FormGroup = styled.div`
-  margin-bottom: 1.25rem;
+  margin-bottom: ${({ theme }) => theme.spacing.md};
   width: 100%;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    margin-bottom: ${({ theme }) => theme.spacing.sm};
+  }
 `;
 
 interface LabelProps {
@@ -37,10 +49,10 @@ interface LabelProps {
 
 export const Label = styled.label<LabelProps>`
   display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
+  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
   color: ${({ theme }) => theme.colors.text};
-  font-size: 0.95rem;
+  font-size: ${({ theme }) => theme.typography.fontSizes.md};
 
   ${({ required, theme }) =>
     required &&
@@ -59,13 +71,13 @@ export const InputContainer = styled.div`
 
 export const PasswordToggle = styled.button`
   position: absolute;
-  right: 10px;
+  right: ${({ theme }) => theme.spacing.xs};
   top: 50%;
   transform: translateY(-50%);
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: ${({ theme }) => theme.typography.fontSizes.lg};
   padding: 4px;
   display: flex;
   align-items: center;
@@ -85,10 +97,10 @@ export const PasswordToggle = styled.button`
 
 export const Input = styled.input`
   width: 100%;
-  padding: 0.75rem;
+  padding: ${({ theme }) => theme.spacing.sm};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadius.small};
-  font-size: 1rem;
+  font-size: ${({ theme }) => theme.typography.fontSizes.md};
   transition: all 0.2s ease;
   background-color: ${({ theme }) => theme.colors.surface};
   color: ${({ theme }) => theme.colors.text};
@@ -115,11 +127,11 @@ export const Button = styled.button`
   color: white;
   border: none;
   border-radius: ${({ theme }) => theme.borderRadius.small};
-  padding: 0.875rem;
-  font-size: 1rem;
-  font-weight: 600;
+  padding: ${({ theme }) => theme.spacing.sm};
+  font-size: ${({ theme }) => theme.typography.fontSizes.md};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
   cursor: pointer;
-  margin-top: 0.5rem;
+  margin-top: ${({ theme }) => theme.spacing.xs};
   transition: background-color 0.2s ease;
   width: 100%;
   text-align: center;
@@ -143,31 +155,47 @@ export const Button = styled.button`
     cursor: not-allowed;
     transform: none;
   }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    padding: ${({ theme }) => theme.spacing.sm};
+    margin-top: ${({ theme }) => theme.spacing.xs};
+  }
 `;
 
 export const ErrorMessage = styled.div`
   color: ${({ theme }) => theme.colors.error};
-  margin: 0.75rem 0;
-  padding: 0.5rem;
+  margin: ${({ theme }) => theme.spacing.sm} 0;
+  padding: ${({ theme }) => theme.spacing.xs};
   text-align: center;
-  font-size: 0.9rem;
+  font-size: ${({ theme }) => theme.typography.fontSizes.sm};
   background-color: ${({ theme }) => theme.colors.errorLight};
   border-radius: ${({ theme }) => theme.borderRadius.small};
   border-left: 3px solid ${({ theme }) => theme.colors.error};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    margin: ${({ theme }) => theme.spacing.xs} 0;
+    padding: ${({ theme }) => theme.spacing.xs};
+    font-size: ${({ theme }) => theme.typography.fontSizes.xs};
+  }
 `;
 
 export const LinkText = styled.p`
   text-align: center;
-  margin-top: 1.5rem;
-  font-size: 0.95rem;
+  margin-top: ${({ theme }) => theme.spacing.md};
+  font-size: ${({ theme }) => theme.typography.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textLight};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    margin-top: ${({ theme }) => theme.spacing.sm};
+    font-size: ${({ theme }) => theme.typography.fontSizes.xs};
+  }
 `;
 
 export const StyledLink = styled.span`
   color: ${({ theme }) => theme.colors.primary};
   cursor: pointer;
   text-decoration: underline;
-  font-weight: 500;
+  font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
   transition: color 0.2s ease;
 
   &:hover {
@@ -178,7 +206,7 @@ export const StyledLink = styled.span`
     outline: none;
     text-decoration: none;
     background-color: ${({ theme }) => theme.colors.primaryFocus};
-    padding: 0 0.25rem;
+    padding: 0 ${({ theme }) => theme.spacing.xs};
     border-radius: 2px;
   }
 `;
@@ -186,12 +214,12 @@ export const StyledLink = styled.span`
 export const FormFooter = styled.div`
   display: flex;
   justify-content: center;
-  margin-top: 1rem;
+  margin-top: ${({ theme }) => theme.spacing.sm};
 `;
 
 export const FormDivider = styled.div`
   position: relative;
-  margin: 1.5rem 0;
+  margin: ${({ theme }) => theme.spacing.md} 0;
   text-align: center;
 
   &:before {
@@ -208,9 +236,9 @@ export const FormDivider = styled.div`
   span {
     position: relative;
     background-color: ${({ theme }) => theme.colors.surface};
-    padding: 0 0.75rem;
+    padding: 0 ${({ theme }) => theme.spacing.sm};
     color: ${({ theme }) => theme.colors.textMuted};
-    font-size: 0.9rem;
+    font-size: ${({ theme }) => theme.typography.fontSizes.sm};
     z-index: 2;
   }
 `;
