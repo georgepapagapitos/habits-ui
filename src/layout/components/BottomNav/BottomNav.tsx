@@ -5,11 +5,13 @@ type ScreenType = "habits" | "rewards" | "stats";
 interface BottomNavProps {
   activeScreen: ScreenType;
   onScreenChange: (screen: ScreenType) => void;
+  rewardsCount?: number;
 }
 
 export const BottomNav: React.FC<BottomNavProps> = ({
   activeScreen,
   onScreenChange,
+  rewardsCount = 0,
 }) => {
   return (
     <Nav>
@@ -23,7 +25,9 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         $active={activeScreen === "rewards"}
         onClick={() => onScreenChange("rewards")}
       >
-        <span>Rewards</span>
+        <span>
+          {rewardsCount > 0 ? `Rewards (${rewardsCount})` : "Rewards"}
+        </span>
       </NavItem>
       <NavItem
         $active={activeScreen === "stats"}

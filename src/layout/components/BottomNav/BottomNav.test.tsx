@@ -4,7 +4,7 @@ import { describe, expect, test, vi } from "vitest";
 import { BottomNav } from "./BottomNav";
 
 describe("BottomNav", () => {
-  test("renders navigation items", () => {
+  test("renders navigation items with no rewards", () => {
     const mockOnScreenChange = vi.fn();
     renderWithProviders(
       <BottomNav activeScreen="habits" onScreenChange={mockOnScreenChange} />
@@ -13,6 +13,22 @@ describe("BottomNav", () => {
     // Check that all navigation items are rendered
     expect(screen.getByText("Habits")).toBeInTheDocument();
     expect(screen.getByText("Rewards")).toBeInTheDocument();
+    expect(screen.getByText("Stats")).toBeInTheDocument();
+  });
+
+  test("renders navigation items with rewards count", () => {
+    const mockOnScreenChange = vi.fn();
+    renderWithProviders(
+      <BottomNav
+        activeScreen="habits"
+        onScreenChange={mockOnScreenChange}
+        rewardsCount={4}
+      />
+    );
+
+    // Check that all navigation items are rendered with correct text
+    expect(screen.getByText("Habits")).toBeInTheDocument();
+    expect(screen.getByText("Rewards (4)")).toBeInTheDocument();
     expect(screen.getByText("Stats")).toBeInTheDocument();
   });
 
@@ -60,6 +76,23 @@ describe("BottomNav", () => {
 
     // Click on the Rewards nav item
     fireEvent.click(screen.getByText("Rewards"));
+
+    // Check that onScreenChange was called with 'rewards'
+    expect(mockOnScreenChange).toHaveBeenCalledWith("rewards");
+  });
+
+  test("calls onScreenChange when Rewards with count is clicked", () => {
+    const mockOnScreenChange = vi.fn();
+    renderWithProviders(
+      <BottomNav
+        activeScreen="habits"
+        onScreenChange={mockOnScreenChange}
+        rewardsCount={3}
+      />
+    );
+
+    // Click on the Rewards nav item with count
+    fireEvent.click(screen.getByText("Rewards (3)"));
 
     // Check that onScreenChange was called with 'rewards'
     expect(mockOnScreenChange).toHaveBeenCalledWith("rewards");
