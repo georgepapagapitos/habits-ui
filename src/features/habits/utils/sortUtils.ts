@@ -20,85 +20,49 @@ export enum SortOption {
 
 // Default sort: Due today habits first (maintaining their relative order), then non-due habits sorted by next due date
 export const sortByDefault = (habits: Habit[]): Habit[] => {
-  if (process.env.NODE_ENV === "test") {
-    // Extremely deterministic and predictable sort for tests
-    return [...habits].sort((a, b) => {
-      // Extract values
-      const aIsDueToday = isHabitDueToday(a);
-      const bIsDueToday = isHabitDueToday(b);
-      const aIsCompletedToday = isCompletedToday(a);
-      const bIsCompletedToday = isCompletedToday(b);
-
-      // Create a priority score (lower is higher priority)
-      let aPriority = 100;
-      let bPriority = 100;
-
-      // First priority: Sort by due status + completion
-      if (aIsDueToday && !aIsCompletedToday)
-        aPriority = 1; // Due, not completed (highest)
-      else if (aIsDueToday && aIsCompletedToday)
-        aPriority = 2; // Due, completed
-      else if (!aIsDueToday && !aIsCompletedToday)
-        aPriority = 3; // Not due, not completed
-      else if (!aIsDueToday && aIsCompletedToday) aPriority = 4; // Not due, completed (lowest)
-
-      if (bIsDueToday && !bIsCompletedToday) bPriority = 1;
-      else if (bIsDueToday && bIsCompletedToday) bPriority = 2;
-      else if (!bIsDueToday && !bIsCompletedToday) bPriority = 3;
-      else if (!bIsDueToday && bIsCompletedToday) bPriority = 4;
-
-      // If different priorities, sort by priority
-      if (aPriority !== bPriority) {
-        return aPriority - bPriority;
-      }
-
-      // If same priority, sort by name for consistent order
-      // This is important for test stability
-      return a.name.localeCompare(b.name);
-    });
-  }
-
-  // Production sorting - regular implementation
+  // Use the same consistent sorting logic for all environments
   return [...habits].sort((a, b) => {
-    // Determine sort priority using a numeric score system
-    // Get statuses
+    // Extract values
     const aIsDueToday = isHabitDueToday(a);
     const bIsDueToday = isHabitDueToday(b);
     const aIsCompletedToday = isCompletedToday(a);
     const bIsCompletedToday = isCompletedToday(b);
 
-    // Assign priority scores (lower = higher priority)
-    // 1: Due today, not completed (highest priority)
-    // 2: Due today, completed
-    // 3: Not due today, not completed
-    // 4: Not due today, completed (lowest priority)
+    // Create a priority score (lower is higher priority)
+    let aPriority = 100;
+    let bPriority = 100;
 
-    let aScore = 4; // Default (not due, completed)
-    let bScore = 4; // Default (not due, completed)
+    // First priority: Sort by due status + completion
+    if (aIsDueToday && !aIsCompletedToday)
+      aPriority = 1; // Due, not completed (highest)
+    else if (aIsDueToday && aIsCompletedToday)
+      aPriority = 2; // Due, completed
+    else if (!aIsDueToday && !aIsCompletedToday)
+      aPriority = 3; // Not due, not completed
+    else if (!aIsDueToday && aIsCompletedToday) aPriority = 4; // Not due, completed (lowest)
 
-    if (aIsDueToday && !aIsCompletedToday) aScore = 1;
-    else if (aIsDueToday && aIsCompletedToday) aScore = 2;
-    else if (!aIsDueToday && !aIsCompletedToday) aScore = 3;
+    if (bIsDueToday && !bIsCompletedToday) bPriority = 1;
+    else if (bIsDueToday && bIsCompletedToday) bPriority = 2;
+    else if (!bIsDueToday && !bIsCompletedToday) bPriority = 3;
+    else if (!bIsDueToday && bIsCompletedToday) bPriority = 4;
 
-    if (bIsDueToday && !bIsCompletedToday) bScore = 1;
-    else if (bIsDueToday && bIsCompletedToday) bScore = 2;
-    else if (!bIsDueToday && !bIsCompletedToday) bScore = 3;
-
-    // First sort by priority score
-    if (aScore !== bScore) {
-      return aScore - bScore;
+    // If different priorities, sort by priority
+    if (aPriority !== bPriority) {
+      return aPriority - bPriority;
     }
 
-    // If same priority, sort by next due date
-    // (only applies to non-due habits with same completion status)
+    // For habits with the same priority, use next due date
     if (!aIsDueToday && !bIsDueToday) {
       const aNextDue = getNextDueDate(a);
       const bNextDue = getNextDueDate(b);
-      return aNextDue.getTime() - bNextDue.getTime();
+      const dateComparison = aNextDue.getTime() - bNextDue.getTime();
+      if (dateComparison !== 0) {
+        return dateComparison;
+      }
     }
 
-    // If due today with same completion status, preserve original order
-    return 0;
+    // If all else is equal, use ID for complete stability
+    return a._id.localeCompare(b._id);
   });
 };
 

@@ -263,28 +263,34 @@ describe("HabitList", () => {
 
     renderWithProviders(<HabitList />);
 
-    // Get all habit cards by test ID
+    // Verify that the expected habits are rendered
     const exerciseCard = screen.getByTestId("habit-card-2");
     const meditateCard = screen.getByTestId("habit-card-3");
     const readCard = screen.getByTestId("habit-card-1");
-
-    // Get the DOM order of the cards
-    const allCards = screen.getAllByTestId(/^habit-card/);
-
-    // Get the indices
-    const exerciseIndex = allCards.indexOf(exerciseCard);
-    const meditateIndex = allCards.indexOf(meditateCard);
-    const readIndex = allCards.indexOf(readCard);
-
-    // Make assertions about relative positions - using specific indices for clarity
-    expect(exerciseIndex).toBe(0); // Exercise should be first
-    expect(meditateIndex).toBe(1); // Meditate should be second
-    expect(readIndex).toBe(2); // Read should be last
 
     // Verify the content is correct
     expect(within(exerciseCard).getByText("Exercise")).toBeInTheDocument();
     expect(within(meditateCard).getByText("Meditate")).toBeInTheDocument();
     expect(within(readCard).getByText("Read")).toBeInTheDocument();
+
+    // Get the ordered list
+    const allCards = screen.getAllByTestId(/^habit-card/);
+
+    // Find positions in the list
+    const exerciseIndex = allCards.indexOf(exerciseCard);
+    const meditateIndex = allCards.indexOf(meditateCard);
+    const readIndex = allCards.indexOf(readCard);
+
+    // Check relative ordering - this should work regardless of exact indices
+    // 1. Exercise (due today, not completed) should come before Meditate (due today, completed)
+    expect(readCard).toBeInTheDocument(); // Just ensure it exists
+
+    // KEY TEST: Exercise (due today, not completed) should be before Meditate (due today, completed)
+    expect(exerciseIndex).toBeLessThan(meditateIndex);
+
+    // Read (not due today) should come last - after both due today habits
+    expect(readIndex).toBeGreaterThan(exerciseIndex);
+    expect(readIndex).toBeGreaterThan(meditateIndex);
   });
 
   test("places completed habits at the bottom", () => {
@@ -339,16 +345,16 @@ describe("HabitList", () => {
 
     // Get the indices
     const exerciseIndex = allCards.indexOf(exerciseCard);
-    const completedCards = [readCard, meditateCard];
+    const meditateIndex = allCards.indexOf(meditateCard);
+    const readIndex = allCards.indexOf(readCard);
 
-    // Exercise (not completed) should be first
-    expect(exerciseIndex).toBe(0);
+    // Exercise (not completed) should come before both completed habits
+    expect(exerciseIndex).toBeLessThan(meditateIndex);
+    expect(exerciseIndex).toBeLessThan(readIndex);
 
-    // Read and Meditate (both completed) should be at the bottom (indices 1 and 2)
-    completedCards.forEach((card) => {
-      const index = allCards.indexOf(card);
-      expect(index).toBeGreaterThan(0);
-    });
+    // Both Read and Meditate are completed, so they should both come after Exercise
+    expect(meditateIndex).toBeGreaterThan(exerciseIndex);
+    expect(readIndex).toBeGreaterThan(exerciseIndex);
   });
 
   test("sorts non-due habits by next due date", () => {
@@ -402,6 +408,11 @@ describe("HabitList", () => {
     const meditateCard = screen.getByTestId("habit-card-3");
     const readCard = screen.getByTestId("habit-card-1");
 
+    // Verify the content is correct
+    expect(within(exerciseCard).getByText("Exercise")).toBeInTheDocument();
+    expect(within(meditateCard).getByText("Meditate")).toBeInTheDocument();
+    expect(within(readCard).getByText("Read")).toBeInTheDocument();
+
     // Get the DOM order of the cards
     const allCards = screen.getAllByTestId(/^habit-card/);
 
@@ -410,9 +421,14 @@ describe("HabitList", () => {
     const meditateIndex = allCards.indexOf(meditateCard);
     const readIndex = allCards.indexOf(readCard);
 
-    // Make specific assertions about the order
-    expect(exerciseIndex).toBe(0); // Exercise should be first (due in 1 day)
-    expect(meditateIndex).toBe(1); // Meditate should be second (due in 2 days)
-    expect(readIndex).toBe(2); // Read should be last (due in 3 days)
+    // Assertions based on next due date
+    // Exercise (due in 1 day) should be before Meditate (due in 2 days)
+    expect(exerciseIndex).toBeLessThan(meditateIndex);
+
+    // Meditate (due in 2 days) should be before Read (due in 3 days)
+    expect(meditateIndex).toBeLessThan(readIndex);
+
+    // Transitive relation - Exercise should be before Read
+    expect(exerciseIndex).toBeLessThan(readIndex);
   });
 });
