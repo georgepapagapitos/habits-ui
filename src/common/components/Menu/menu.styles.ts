@@ -6,18 +6,31 @@ export const MenuContainer = styled.div`
 `;
 
 export const MenuList = styled.ul`
-  position: absolute;
-  top: 32px; /* Match the height of the button */
-  right: 0;
-  z-index: 100;
-  min-width: 180px;
-  margin: ${({ theme }) => theme.spacing.xs} 0 0;
-  padding: ${({ theme }) => theme.spacing.xs} 0;
   list-style: none;
+  margin: 0;
+  padding: ${({ theme }) => theme.spacing.xs} 0;
   background-color: ${({ theme }) => theme.colors.surface};
-  border-radius: ${({ theme }) => theme.borderRadius.small};
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
   box-shadow: ${({ theme }) => theme.shadows.medium};
-  overflow: hidden;
+  min-width: 160px;
+  z-index: 9999;
+  max-height: 80vh;
+  overflow-y: auto;
+
+  /* Animation for smoother appearance */
+  animation: fadeIn 0.1s ease-out forwards;
+  transform-origin: top right;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
 `;
 
 export const MenuItem = styled.li`

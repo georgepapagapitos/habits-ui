@@ -2,9 +2,9 @@ import { HabitForm, HabitList, RewardGallery, Stats } from "@habits/components";
 import { useHabits, useRewards } from "@habits/hooks";
 import { TimeOfDay, WeekDay } from "@habits/types";
 import { BottomNav, Header, Messages, Modal } from "@layout/components";
-import { useState } from "react";
-import { AddButton, Container, Content } from "./app.styles";
+import { useCallback, useEffect, useState } from "react";
 import { LuPlus } from "react-icons/lu";
+import { AddButton, Container, Content } from "./app.styles";
 
 type HabitFormData = {
   name: string;
@@ -89,20 +89,22 @@ export const App = () => {
   );
 
   // This function is used by HabitCard components via a context
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleEditHabit = (habitId: string) => {
-    const habit = habits.find((h) => h._id === habitId);
-    if (habit) {
-      setHabitToEdit({
-        _id: habit._id,
-        name: habit.name,
-        frequency: habit.frequency,
-        description: habit.description,
-        timeOfDay: habit.timeOfDay,
-      });
-      setIsEditModalOpen(true);
-    }
-  };
+  const handleEditHabit = useCallback(
+    (habitId: string) => {
+      const habit = habits.find((h) => h._id === habitId);
+      if (habit) {
+        setHabitToEdit({
+          _id: habit._id,
+          name: habit.name,
+          frequency: habit.frequency,
+          description: habit.description,
+          timeOfDay: habit.timeOfDay,
+        });
+        setIsEditModalOpen(true);
+      }
+    },
+    [habits, setHabitToEdit, setIsEditModalOpen]
+  );
 
   // Handle edit form submission
   const handleEditSubmit = async ({
@@ -164,6 +166,22 @@ export const App = () => {
         return "Habits";
     }
   };
+
+  // Add event listener for habit-edit custom event
+  useEffect(() => {
+    const handleHabitEdit = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      if (customEvent.detail && customEvent.detail.habitId) {
+        handleEditHabit(customEvent.detail.habitId);
+      }
+    };
+
+    document.addEventListener("habit-edit", handleHabitEdit);
+
+    return () => {
+      document.removeEventListener("habit-edit", handleHabitEdit);
+    };
+  }, [habits, handleEditHabit]);
 
   return (
     <>

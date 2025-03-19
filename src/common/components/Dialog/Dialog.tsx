@@ -1,4 +1,5 @@
 import { ReactNode, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   CloseButton,
   DialogBody,
@@ -57,12 +58,39 @@ export const Dialog = ({
     }
   };
 
+  // When dialog opens, block scrolling on body
+  useEffect(() => {
+    if (isOpen) {
+      // Only store the original if we're actually changing it
+      // This prevents conflicts when multiple components try to change overflow
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+
+      // Add a class instead of directly changing style to better control when overlapping components are present
+      document.body.classList.add("dialog-open");
+
+      // Only set overflow if it's not already set by another component
+      if (originalStyle !== "hidden") {
+        document.body.style.overflow = "hidden";
+      }
+
+      return () => {
+        // Clean up by removing class and restoring original style
+        document.body.classList.remove("dialog-open");
+
+        // Only reset if there are no other dialogs still open
+        if (!document.querySelector(".dialog-open")) {
+          document.body.style.overflow = originalStyle;
+        }
+      };
+    }
+  }, [isOpen]);
+
   if (!isOpen) {
     return null;
   }
 
-  return (
-    <DialogOverlay onClick={handleOverlayClick}>
+  const dialog = (
+    <DialogOverlay onClick={handleOverlayClick} style={{ zIndex: 20000 }}>
       <DialogContainer
         $size={size}
         ref={dialogRef}
@@ -84,6 +112,9 @@ export const Dialog = ({
       </DialogContainer>
     </DialogOverlay>
   );
+
+  // Use createPortal to render the dialog at the root level
+  return createPortal(dialog, document.body);
 };
 
 export const DialogActions = DialogFooter;

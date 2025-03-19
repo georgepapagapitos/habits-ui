@@ -1,5 +1,15 @@
-import { ReactNode, useRef, useEffect, useState, useCallback } from "react";
-import { useMenuManager } from "../../hooks/useMenuManager";
+import { useMenuContext } from "@common/hooks/menuContext";
+import {
+  autoPlacement,
+  autoUpdate,
+  flip,
+  FloatingPortal,
+  offset,
+  Placement,
+  shift,
+  useFloating,
+} from "@floating-ui/react";
+import React, { ReactNode, useEffect, useState, useCallback } from "react";
 import {
   MenuContainer,
   MenuDivider,
@@ -10,9 +20,18 @@ import {
   MenuList,
 } from "./menu.styles";
 
+// Define placement types that match Floating UI's Placement type
+export type MenuPlacement = Placement | "auto";
+
+// Helper to handle auto placement
+const getPlacement = (placement: MenuPlacement): Placement | undefined => {
+  return placement === "auto" ? undefined : placement;
+};
+
+// MenuItem Component
 export interface MenuItemProps {
-  icon?: ReactNode;
-  children: ReactNode;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
   onClick?: () => void;
   variant?: "default" | "danger";
   disabled?: boolean;
@@ -25,9 +44,28 @@ export const MenuItemComponent = ({
   variant = "default",
   disabled = false,
 }: MenuItemProps) => {
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    // Prevent default browser behavior
+    e.preventDefault();
+
+    // Stop propagation to prevent the menu from closing too early
+    e.stopPropagation();
+
+    if (onClick && !disabled) {
+      // Use requestAnimationFrame to ensure the click handler runs after React has processed state changes
+      window.requestAnimationFrame(() => {
+        if (onClick) onClick();
+      });
+    }
+  };
+
   return (
     <MenuItem>
-      <MenuItemButton onClick={onClick} $variant={variant} disabled={disabled}>
+      <MenuItemButton
+        onClick={handleClick}
+        $variant={variant}
+        disabled={disabled}
+      >
         {icon && <MenuItemIcon>{icon}</MenuItemIcon>}
         <MenuItemContent>{children}</MenuItemContent>
       </MenuItemButton>
@@ -35,73 +73,93 @@ export const MenuItemComponent = ({
   );
 };
 
+// Main Menu Component
 export interface MenuProps {
+  children: React.ReactNode;
   trigger: ReactNode;
-  children: ReactNode;
   isOpen?: boolean;
-  onClose?: () => void;
+  onOpenChange?: (isOpen: boolean) => void;
+  className?: string;
+  placement?: MenuPlacement;
 }
 
 export const Menu = ({
-  trigger,
   children,
+  trigger,
   isOpen: controlledIsOpen,
-  onClose,
+  onOpenChange,
+  className = "",
+  placement = "bottom-end",
 }: MenuProps) => {
-  // Use context-managed menu if no controlled state is provided
-  const { isOpen: contextIsOpen, toggleMenu, closeMenu } = useMenuManager();
-
-  // For backward compatibility, we still support controlled mode
-  const [localIsOpen, setLocalIsOpen] = useState(controlledIsOpen || false);
-  const menuRef = useRef<HTMLUListElement>(null);
-  const triggerRef = useRef<HTMLDivElement>(null);
-
-  // Determine if we're in controlled or uncontrolled mode
+  // Controlled mode handling
   const isControlled = controlledIsOpen !== undefined;
+
+  // Context menu management
+  const {
+    registerMenu,
+    isMenuOpen,
+    toggleMenu: contextToggleMenu,
+    closeMenu: contextCloseMenu,
+  } = useMenuContext();
+
+  // State management
+  const [menuId] = useState(() => registerMenu());
+  const [contextIsOpen, setContextIsOpen] = useState(() => isMenuOpen(menuId));
+  const [localIsOpen, setLocalIsOpen] = useState(controlledIsOpen || false);
+
+  // Determine actual open state
   const isOpen = isControlled ? localIsOpen : contextIsOpen;
 
-  const handleOpen = (e?: React.MouseEvent) => {
-    if (isControlled) {
-      setLocalIsOpen(!localIsOpen);
-    } else {
-      toggleMenu(e);
-    }
-  };
-
-  const handleClose = useCallback(() => {
-    if (isControlled) {
-      setLocalIsOpen(false);
-      if (onClose) {
-        onClose();
+  // Update open state based on source (context or controlled)
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      if (isControlled) {
+        setLocalIsOpen(open);
+        onOpenChange?.(open);
+      } else {
+        if (!open) {
+          contextCloseMenu(menuId);
+        } else {
+          contextToggleMenu(menuId);
+        }
       }
-    } else {
-      closeMenu();
-    }
-  }, [isControlled, onClose, closeMenu]);
+    },
+    [isControlled, onOpenChange, contextCloseMenu, contextToggleMenu, menuId]
+  );
 
-  // Handle outside clicks for controlled mode (context handles its own clicks)
+  // Floating UI setup
+  const { x, y, strategy, refs } = useFloating({
+    placement: getPlacement(placement),
+    open: isOpen,
+    onOpenChange: handleOpenChange,
+    middleware: [
+      offset(8),
+      placement === "auto"
+        ? autoPlacement({
+            allowedPlacements: [
+              "top",
+              "bottom",
+              "top-start",
+              "top-end",
+              "bottom-start",
+              "bottom-end",
+            ],
+            alignment: "end",
+            padding: 8,
+          })
+        : flip({
+            fallbackPlacements: ["top-end", "top", "bottom-end", "bottom"],
+            padding: 8,
+          }),
+      shift({ padding: 16 }),
+    ],
+    whileElementsMounted: autoUpdate,
+  });
+
+  // Keep local state in sync with context
   useEffect(() => {
-    if (!isControlled) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(event.target as Node) &&
-        triggerRef.current &&
-        !triggerRef.current.contains(event.target as Node)
-      ) {
-        handleClose();
-      }
-    };
-
-    if (localIsOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [localIsOpen, handleClose, isControlled]);
+    setContextIsOpen(isMenuOpen(menuId));
+  }, [isMenuOpen, menuId]);
 
   // Update local state when controlled state changes
   useEffect(() => {
@@ -110,17 +168,90 @@ export const Menu = ({
     }
   }, [controlledIsOpen]);
 
+  // Add click outside handler
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      // Don't close if clicking inside a dialog
+      if ((e.target as Element).closest('[role="dialog"]')) {
+        return;
+      }
+
+      // Don't close if clicking inside the menu itself
+      if ((e.target as Element).closest(".menu-list")) {
+        return;
+      }
+
+      // Don't close if clicking on the trigger
+      if ((e.target as Element).closest(".menu-trigger")) {
+        return;
+      }
+
+      // Otherwise close the menu
+      handleOpenChange(false);
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen, handleOpenChange]);
+
+  // Add escape key handler
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        handleOpenChange(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [isOpen, handleOpenChange]);
+
+  // Handle trigger click
+  const handleTriggerClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    handleOpenChange(!isOpen);
+  };
+
+  // Render the component
   return (
-    <MenuContainer className="context-menu">
+    <MenuContainer className={`menu-container ${className}`}>
       <div
-        ref={triggerRef}
-        onClick={handleOpen}
-        className="menu-button"
-        style={{ cursor: "pointer", position: "relative" }}
+        ref={refs.setReference}
+        onClick={handleTriggerClick}
+        className="menu-trigger"
+        style={{ cursor: "pointer" }}
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
       >
         {trigger}
       </div>
-      {isOpen && <MenuList ref={menuRef}>{children}</MenuList>}
+
+      {isOpen && (
+        <FloatingPortal>
+          <div
+            ref={refs.setFloating}
+            style={{
+              position: strategy,
+              top: y ?? 0,
+              left: x ?? 0,
+              zIndex: 20000,
+            }}
+            className="menu-floating"
+          >
+            <MenuList className="menu-list">{children}</MenuList>
+          </div>
+        </FloatingPortal>
+      )}
     </MenuContainer>
   );
 };

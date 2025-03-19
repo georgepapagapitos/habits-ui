@@ -117,3 +117,19 @@ Object.defineProperty(window, "localStorage", {
   },
   writable: true,
 });
+
+// Setup mock for portals
+// Mock createPortal to render children directly without actual portaling
+// This makes testing components that use portals much easier
+vi.mock("react-dom", async () => {
+  const originalModule = await vi.importActual("react-dom");
+  return {
+    ...originalModule,
+    createPortal: (node: React.ReactNode) => node,
+  };
+});
+
+// Cleanup after each test
+afterEach(() => {
+  cleanup();
+});
