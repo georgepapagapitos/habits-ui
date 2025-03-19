@@ -106,7 +106,6 @@ export const Menu = ({
     toggleMenu: contextToggleMenu,
     openMenu: contextOpenMenu,
     closeMenu: contextCloseMenu,
-    closeAllMenus,
   } = useMenuContext();
 
   // State management

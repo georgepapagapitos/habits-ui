@@ -80,6 +80,34 @@ export const RefreshButton = styled.button`
   }
 `;
 
+export const MenuButton = styled.button`
+  background: none;
+  border: none;
+  color: ${({ theme }) => theme.colors.primaryText};
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  padding: 0;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  &:active {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.primaryLight};
+  }
+`;
+
 export const LogoutButton = styled.button`
   background: none;
   border: none;
@@ -107,13 +135,4 @@ export const LogoutButton = styled.button`
     outline: none;
     box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.primaryLight};
   }
-`;
-
-export const UserInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xs};
-  font-size: ${({ theme }) => theme.typography.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.primaryText};
-  margin-right: ${({ theme }) => theme.spacing.xs};
 `;

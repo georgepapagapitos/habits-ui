@@ -1,5 +1,5 @@
 import { describe, test, expect, vi } from "vitest";
-import { screen } from "@testing-library/react";
+import { screen, fireEvent } from "@testing-library/react";
 import { Header } from "./Header";
 import { renderWithProviders } from "../../../tests/utils";
 
@@ -28,6 +28,10 @@ vi.mock("../../../features/auth", () => {
     useAuth: mockUseAuth,
   };
 });
+
+// Mock document.dispatchEvent for screen-change event
+const mockDispatchEvent = vi.fn();
+document.dispatchEvent = mockDispatchEvent;
 
 describe("Header", () => {
   test("renders the default title when no title is provided", () => {
@@ -74,7 +78,30 @@ describe("Header", () => {
     expect(screen.getByText("Custom Title")).toBeInTheDocument();
   });
 
-  test("refresh button is visible", async () => {
+  test("menu button is visible when authenticated", async () => {
+    renderWithProviders(<Header />, {
+      withHabitProvider: true,
+      withMessageProvider: true,
+      withMenuProvider: true,
+      withRewardProvider: true,
+      authContextValue: {
+        isAuthenticated: true,
+        user: { id: "123", username: "testuser", email: "test@example.com" },
+        token: "test-token",
+        isLoading: false,
+        error: null,
+        login: vi.fn(),
+        logout: vi.fn(),
+        register: vi.fn(),
+        clearError: vi.fn(),
+      },
+    });
+
+    const menuButton = screen.getByRole("button", { name: /menu/i });
+    expect(menuButton).toBeInTheDocument();
+  });
+
+  test("theme selector is always visible", () => {
     renderWithProviders(<Header />, {
       withHabitProvider: true,
       withMessageProvider: true,
@@ -93,26 +120,21 @@ describe("Header", () => {
       },
     });
 
-    const refreshButton = screen.getByRole("button", { name: /refresh app/i });
-    expect(refreshButton).toBeInTheDocument();
+    // Check if the menu-trigger that contains the theme selector is in the document
+    const themeSelector = screen.getAllByTestId("menu-trigger")[0];
+    expect(themeSelector).toBeInTheDocument();
   });
 
-  test("renders auth controls when authenticated", () => {
-    const mockUser = {
-      id: "123",
-      username: "testuser",
-      email: "test@example.com",
-    };
-
+  test("menu is not visible when not authenticated", () => {
     renderWithProviders(<Header />, {
       withHabitProvider: true,
       withMessageProvider: true,
       withMenuProvider: true,
       withRewardProvider: true,
       authContextValue: {
-        isAuthenticated: true,
-        user: mockUser,
-        token: "test-token",
+        isAuthenticated: false,
+        user: null,
+        token: null,
         isLoading: false,
         error: null,
         login: vi.fn(),
@@ -122,6 +144,7 @@ describe("Header", () => {
       },
     });
 
-    expect(screen.getByRole("banner")).toBeInTheDocument();
+    const menuButton = screen.queryByRole("button", { name: /menu/i });
+    expect(menuButton).not.toBeInTheDocument();
   });
 });
