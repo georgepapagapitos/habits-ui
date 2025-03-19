@@ -1,14 +1,20 @@
 import { useAuth } from "@auth/hooks";
-import { ThemeSelector } from "@common/components";
+import { Menu, ThemeSelector } from "@common/components";
 import { useLocation } from "react-router-dom";
-import { FaSync } from "react-icons/fa";
+import {
+  FaBars,
+  FaSync,
+  FaSignOutAlt,
+  FaHome,
+  FaChartBar,
+  FaUser,
+  FaGift,
+} from "react-icons/fa";
 import {
   HeaderActions,
   HeaderContainer,
-  LogoutButton,
-  RefreshButton,
+  MenuButton,
   Title,
-  UserInfo,
 } from "./header.styles";
 
 interface HeaderProps {
@@ -16,7 +22,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ title }: HeaderProps) => {
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const location = useLocation();
 
   const handleRefresh = () => {
@@ -27,23 +33,69 @@ export const Header: React.FC<HeaderProps> = ({ title }: HeaderProps) => {
     }
   };
 
-  // Only show user info and logout on main page, not on login/register
+  // Only show auth controls on main page, not on login/register
   const showAuthControls = isAuthenticated && location.pathname === "/";
+
+  // Function to handle screen changes - this uses direct DOM manipulation
+  // to maintain compatibility with the existing app structure
+  const handleScreenChange = (screen: "habits" | "rewards" | "stats") => {
+    // Set active screen in localStorage
+    localStorage.setItem("activeScreen", screen);
+
+    // Create a custom event that the App component would respond to
+    const event = new CustomEvent("screen-change", {
+      detail: { screen },
+    });
+
+    // Dispatch the event
+    document.dispatchEvent(event);
+  };
 
   return (
     <HeaderContainer>
       <Title>{title || "Habits"}</Title>
       <HeaderActions>
         <ThemeSelector />
-        {showAuthControls && user && (
-          <>
-            <UserInfo>{user.username}</UserInfo>
-            <LogoutButton onClick={logout}>Logout</LogoutButton>
-          </>
+        {showAuthControls && (
+          <Menu
+            placement="bottom-end"
+            trigger={
+              <MenuButton aria-label="Menu">
+                <FaBars size={20} />
+              </MenuButton>
+            }
+          >
+            <Menu.Item
+              icon={<FaHome />}
+              onClick={() => handleScreenChange("habits")}
+            >
+              Home
+            </Menu.Item>
+            <Menu.Item
+              icon={<FaGift />}
+              onClick={() => handleScreenChange("rewards")}
+            >
+              Rewards
+            </Menu.Item>
+            <Menu.Item
+              icon={<FaChartBar />}
+              onClick={() => handleScreenChange("stats")}
+            >
+              Statistics
+            </Menu.Item>
+            <Menu.Item icon={<FaSync />} onClick={handleRefresh}>
+              Refresh
+            </Menu.Item>
+            <Menu.Divider />
+            <Menu.Item
+              icon={<FaSignOutAlt />}
+              onClick={logout}
+              variant="danger"
+            >
+              Logout
+            </Menu.Item>
+          </Menu>
         )}
-        <RefreshButton onClick={handleRefresh} aria-label="Refresh app">
-          <FaSync size={20} />
-        </RefreshButton>
       </HeaderActions>
     </HeaderContainer>
   );

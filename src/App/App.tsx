@@ -183,6 +183,22 @@ export const App = () => {
     };
   }, [habits, handleEditHabit]);
 
+  // Add event listener for screen-change custom event from Header
+  useEffect(() => {
+    const handleScreenChangeEvent = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      if (customEvent.detail && customEvent.detail.screen) {
+        handleScreenChange(customEvent.detail.screen);
+      }
+    };
+
+    document.addEventListener("screen-change", handleScreenChangeEvent);
+
+    return () => {
+      document.removeEventListener("screen-change", handleScreenChangeEvent);
+    };
+  }, []);
+
   return (
     <>
       <Header title={getHeaderTitle()} />
