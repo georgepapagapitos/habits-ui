@@ -1,13 +1,12 @@
 import { AuthContext } from "@auth/hooks";
 import { AuthContextType } from "@auth/types";
 import { MenuProvider, MessageProvider } from "@common/hooks";
+import { ThemeProvider } from "@common/hooks/themeContext";
 import { HabitProvider } from "@habits/hooks";
 import { RewardProvider } from "@habits/hooks/rewardContext";
 import { render, RenderOptions } from "@testing-library/react";
-import theme from "@theme";
 import { ReactElement } from "react";
 import { BrowserRouter } from "react-router-dom";
-import { ThemeProvider } from "styled-components";
 import { vi } from "vitest";
 
 interface CustomRenderOptions extends Omit<RenderOptions, "wrapper"> {
@@ -75,7 +74,7 @@ export function renderWithProviders(
     return (
       <BrowserRouter>
         <AuthContext.Provider value={authContextValue as AuthContextType}>
-          <ThemeProvider theme={theme}>{wrappedChildren}</ThemeProvider>
+          <ThemeProvider>{wrappedChildren}</ThemeProvider>
         </AuthContext.Provider>
       </BrowserRouter>
     );

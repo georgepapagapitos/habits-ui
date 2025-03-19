@@ -71,9 +71,6 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
   const updatingRef = useRef(false);
   const timeoutRef = useRef<number | null>(null);
 
-  // Menu state
-  const [menuOpen, setMenuOpen] = useState(false);
-
   // Helper function to determine if we should show "No streak yet"
   // for habits with non-due day completions
   const shouldShowNoStreak = (habit: Habit): boolean => {
@@ -362,9 +359,6 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
 
   // Handle edit request
   const handleEdit = () => {
-    // Close the menu first
-    setMenuOpen(false);
-
     // Dispatch a custom event to notify the App component to handle the edit
     document.dispatchEvent(
       new CustomEvent("habit-edit", {
@@ -377,9 +371,6 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
 
   // Handle delete request
   const handleDelete = () => {
-    // Close the menu first
-    setMenuOpen(false);
-
     // Show the delete confirmation dialog
     setShowConfirmDelete(true);
   };
@@ -392,9 +383,6 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
 
   // Handle reset request
   const handleReset = () => {
-    // Close the menu first
-    setMenuOpen(false);
-
     // Show the reset confirmation dialog
     setShowConfirmReset(true);
   };
@@ -448,8 +436,6 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
           }}
         >
           <Menu
-            isOpen={menuOpen}
-            onOpenChange={setMenuOpen}
             placement="bottom-end"
             trigger={
               <MenuButton aria-label="Options">

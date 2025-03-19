@@ -1,16 +1,18 @@
 import { useTheme } from "@common/hooks";
 import { colorThemes, ColorTheme } from "@theme/colors";
-import { MouseEvent } from "react";
+import { Menu } from "@common/components/Menu";
 import styled from "styled-components";
+import { FaPalette } from "react-icons/fa";
 
-const ThemeSelectorContainer = styled.div`
+const ColorOptionsContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.sm};
 `;
 
 const Title = styled.h3`
-  margin: 0;
+  margin: 0 0 ${({ theme }) => theme.spacing.xs} 0;
   font-family: ${({ theme }) => theme.typography.fontFamily};
   font-size: ${({ theme }) => theme.typography.fontSizes.md};
   font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
@@ -18,18 +20,19 @@ const Title = styled.h3`
 
 const ColorOptions = styled.div`
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
+  justify-content: center;
 `;
 
-interface ColorOptionProps {
+interface ColorSwatchProps {
   color: string;
   isSelected: boolean;
 }
 
-const ColorOption = styled.button<ColorOptionProps>`
-  width: 32px;
-  height: 32px;
+const ColorSwatch = styled.button<ColorSwatchProps>`
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   border: 2px solid
     ${(props) => (props.isSelected ? props.theme.colors.text : "transparent")};
@@ -51,33 +54,56 @@ const ColorOption = styled.button<ColorOptionProps>`
   }
 `;
 
+const ThemeButtonWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 50%;
+  background-color: ${({ theme }) => `${theme.colors.primaryLight}33`};
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: ${({ theme }) => `${theme.colors.primaryLight}66`};
+  }
+`;
+
 export const ThemeSelector = () => {
   const { currentTheme, setTheme, availableThemes } = useTheme();
 
-  const handleThemeChange = (e: MouseEvent<HTMLButtonElement>) => {
-    const newTheme = e.currentTarget.getAttribute("data-theme") as ColorTheme;
-    if (newTheme) {
-      setTheme(newTheme);
-    }
+  const handleThemeChange = (newTheme: ColorTheme) => {
+    setTheme(newTheme);
   };
 
-  return (
-    <ThemeSelectorContainer>
+  const ThemeSelectorContent = () => (
+    <ColorOptionsContainer>
       <Title>Theme Color</Title>
       <ColorOptions>
         {availableThemes.map((themeName) => (
-          <ColorOption
+          <ColorSwatch
             key={themeName}
             color={colorThemes[themeName].primary}
             isSelected={currentTheme === themeName}
-            onClick={handleThemeChange}
+            onClick={() => handleThemeChange(themeName)}
             data-theme={themeName}
             aria-label={`${themeName} theme`}
             title={`${themeName.charAt(0).toUpperCase() + themeName.slice(1)} theme`}
           />
         ))}
       </ColorOptions>
-    </ThemeSelectorContainer>
+    </ColorOptionsContainer>
+  );
+
+  const trigger = (
+    <ThemeButtonWrapper>
+      <FaPalette size={18} />
+    </ThemeButtonWrapper>
+  );
+
+  return (
+    <Menu trigger={trigger} placement="bottom-end">
+      <ThemeSelectorContent />
+    </Menu>
   );
 };
 

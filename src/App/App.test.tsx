@@ -8,12 +8,14 @@ import { App } from "./App";
 // Create a mock AuthProvider
 const mockAuthContext = {
   isAuthenticated: true, // Set to true so we get to the main app view
-  user: { name: "Test User", email: "test@example.com" },
+  user: { id: "123", username: "Test User", email: "test@example.com" },
+  token: "test-token",
+  isLoading: false,
+  error: null,
   login: vi.fn(),
   logout: vi.fn(),
   register: vi.fn(),
-  loading: false,
-  error: null,
+  clearError: vi.fn(),
 };
 
 // Create a mock rewards object
@@ -103,65 +105,64 @@ describe("App", () => {
   });
 
   test("renders the App component", () => {
-    renderWithProviders(<App />);
+    renderWithProviders(<App />, {
+      withHabitProvider: true,
+      withMessageProvider: true,
+      withMenuProvider: true,
+      withRewardProvider: true,
+      authContextValue: mockAuthContext,
+    });
 
     // Check that main components or critical UI elements are present
-    // The title is now dynamic, so we should look for "Habits" which is the default
-    // Use a more specific selector for the title to avoid duplicate text issues
     expect(screen.getByRole("heading", { name: "Habits" })).toBeInTheDocument();
-
-    // Check for the add button (instead of looking for "+" text)
     expect(
       screen.getByRole("button", { name: /add habit/i })
     ).toBeInTheDocument();
-
-    // These are common navigation elements we can test for
-    // Use getAllByText and check length for elements that appear multiple times
     expect(screen.getAllByText("Habits")).toHaveLength(2); // header and nav
     expect(screen.getByText("Rewards")).toBeInTheDocument();
     expect(screen.getByText("Stats")).toBeInTheDocument();
   });
 
-  // Test modal opening
   test("opens modal when add button is clicked", async () => {
-    renderWithProviders(<App />);
+    renderWithProviders(<App />, {
+      withHabitProvider: true,
+      withMessageProvider: true,
+      withMenuProvider: true,
+      withRewardProvider: true,
+      authContextValue: mockAuthContext,
+    });
 
-    // Find the add button by its aria-label
     const addButton = screen.getByRole("button", { name: /add habit/i });
     expect(addButton).toBeInTheDocument();
 
-    // Click the add button using userEvent
     await userEvent.click(addButton);
 
-    // The form title should be "New Habit" when creating a new habit
     const formTitle = screen.getByText(/new habit/i);
     expect(formTitle).toBeInTheDocument();
 
-    // Verify form fields are present
     expect(screen.getByLabelText(/habit name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/description/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/frequency/i)).toBeInTheDocument();
 
-    // Verify buttons are present
     expect(
       screen.getByRole("button", { name: /create habit/i })
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /cancel/i })).toBeInTheDocument();
   });
 
-  // Custom test for checking routes
   test("renders with the main app structure", () => {
-    renderWithProviders(<App />);
+    renderWithProviders(<App />, {
+      withHabitProvider: true,
+      withMessageProvider: true,
+      withMenuProvider: true,
+      withRewardProvider: true,
+      authContextValue: mockAuthContext,
+    });
 
-    // Check the app has rendered the authenticated view structure
     expect(document.querySelector("div")).toBeInTheDocument();
-
-    // More specific checks could be added as the app evolves
-    // For instance, checking that key components are present in the DOM
   });
 
   test("displays rewards count when available", () => {
-    // Override the mock for this test only
     useRewardsMock.mockReturnValue({
       ...mockRewards,
       rewards: {
@@ -170,9 +171,14 @@ describe("App", () => {
       },
     });
 
-    renderWithProviders(<App />);
+    renderWithProviders(<App />, {
+      withHabitProvider: true,
+      withMessageProvider: true,
+      withMenuProvider: true,
+      withRewardProvider: true,
+      authContextValue: mockAuthContext,
+    });
 
-    // Check that the rewards count is displayed
     expect(screen.getByText("Rewards (2)")).toBeInTheDocument();
   });
 });
