@@ -5,3 +5,4 @@ export * from "./Dialog";
 export * from "./Menu";
 export * from "./Confetti";
 export * from "./Spinner";
+export * from "./ThemeSelector";
