@@ -2,7 +2,15 @@ import { Button, Form, Group, Input, Label, Title } from "@components";
 import { TimeOfDay, WeekDay } from "@habits/types";
 import { useState } from "react";
 import { logger } from "@utils/logger";
-import { DayButton, FormGroup, Select, StyledSelect } from "./habitForm.styles";
+import {
+  ButtonContainer,
+  DayButton,
+  DaysContainer,
+  FormGroup,
+  Select,
+  StyledSelect,
+  ValidationError,
+} from "./habitForm.styles";
 
 interface HabitFormProps {
   onSubmit: (habit: {
@@ -199,14 +207,7 @@ export const HabitForm = ({
       {frequencyType === "weekly" && (
         <Group>
           <Label htmlFor="days-selection">Select Days</Label>
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "8px",
-              marginTop: "8px",
-            }}
-          >
+          <DaysContainer>
             {(
               [
                 "sunday",
@@ -227,11 +228,9 @@ export const HabitForm = ({
                 {day.charAt(0).toUpperCase() + day.slice(1, 3)}
               </DayButton>
             ))}
-          </div>
+          </DaysContainer>
           {selectedDays.length === 0 && (
-            <div style={{ color: "red", fontSize: "0.8rem", marginTop: "4px" }}>
-              Please select at least one day
-            </div>
+            <ValidationError>Please select at least one day</ValidationError>
           )}
         </Group>
       )}
@@ -252,17 +251,17 @@ export const HabitForm = ({
 
       {/* Show reward checkbox removed - rewards are now automatic */}
 
-      <div style={{ display: "flex", gap: "16px", marginTop: "16px" }}>
+      <ButtonContainer>
+        <Button variant="secondary" type="button" onClick={onClose}>
+          Cancel
+        </Button>
         <Button
           type="submit"
           disabled={frequencyType === "weekly" && selectedDays.length === 0}
         >
           {isEditing ? "Update Habit" : "Create Habit"}
         </Button>
-        <Button variant="secondary" type="button" onClick={onClose}>
-          Cancel
-        </Button>
-      </div>
+      </ButtonContainer>
     </Form>
   );
 };

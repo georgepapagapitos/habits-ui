@@ -11,6 +11,9 @@ export const List = styled.div`
   gap: ${({ theme }) => theme.spacing.xs};
   position: relative;
   min-height: 200px; /* Minimum height to prevent layout shifts during transitions */
+  height: 100%; /* Fill available height */
+  flex: 1; /* Take remaining space */
+  margin-bottom: 0; /* Ensure no extra space at bottom */
   transition: height 0.5s ease;
 
   /* Force GPU acceleration and create stacking context */

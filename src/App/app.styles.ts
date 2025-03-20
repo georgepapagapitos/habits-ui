@@ -1,5 +1,6 @@
 import styled, { keyframes } from "styled-components";
 import { withSafeArea } from "../common/utils";
+import { createTransition } from "../common/theme/animations";
 
 // Animation keyframes
 export const fadeInUp = keyframes`
@@ -15,8 +16,8 @@ export const fadeInUp = keyframes`
 
 // App styled components
 export const Container = styled.div`
-  /* Use a fixed height that accounts for header and bottom nav */
-  min-height: calc(100dvh - 120px); /* 60px header + 60px bottom nav */
+  /* Use a fixed height that fills the entire viewport */
+  min-height: 100dvh;
   background-color: ${({ theme }) => theme.colors.background};
   padding-top: 60px; /* Match header height */
   padding-bottom: 60px; /* Match bottom nav height */
@@ -43,6 +44,8 @@ export const Content = styled.main`
 
   /* Make content take available space but not force scrolling */
   flex: 1;
+  display: flex;
+  flex-direction: column;
 
   /* Add overscroll behavior to prevent bouncing on iOS */
   overscroll-behavior: none;
@@ -51,10 +54,10 @@ export const Content = styled.main`
 export const AddButton = styled.button`
   position: fixed;
   bottom: ${withSafeArea("80px", "bottom")}; /* 60px for nav + 20px spacing */
-  right: 20px;
-  width: 56px;
-  height: 56px;
-  border-radius: 28px;
+  right: ${({ theme }) => theme.spacing.md};
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
   background: ${({ theme }) => theme.colors.primary};
   color: ${({ theme }) => theme.colors.surface};
   border: none;
@@ -62,16 +65,22 @@ export const AddButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
   cursor: pointer;
-  transition: background-color
-    ${({ theme }) => theme.animations.transitions.short};
+  transition: ${createTransition(
+    ["background-color", "transform", "box-shadow"],
+    "short"
+  )};
 
   /* Ensure button is clickable on mobile */
   z-index: 900; /* Updated z-index as recommended */
 
+  /* Fix for iOS devices */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+
   &:hover {
     background: ${({ theme }) => theme.colors.primaryDark};
+    box-shadow: ${({ theme }) => theme.shadows.large};
   }
 
   /* Add active state for better mobile feedback */
@@ -88,7 +97,7 @@ export const MessageContainer = styled.div`
   background: ${({ theme }) => theme.colors.primary};
   color: ${({ theme }) => theme.colors.surface};
   padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
-  border-radius: 20px;
+  border-radius: ${({ theme }) => theme.borderRadius.large};
   animation: ${fadeInUp} ${({ theme }) => theme.animations.transitions.short};
   z-index: 1500;
   max-width: 80%;

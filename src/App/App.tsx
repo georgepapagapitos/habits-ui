@@ -208,7 +208,7 @@ export const App = () => {
       {/* Only show the add button for Today screen */}
       {activeScreen === "habits" && (
         <AddButton onClick={openModal} aria-label="Add habit">
-          <LuPlus size={24} />
+          <LuPlus size={36} aria-hidden="true" />
         </AddButton>
       )}
       <BottomNav
