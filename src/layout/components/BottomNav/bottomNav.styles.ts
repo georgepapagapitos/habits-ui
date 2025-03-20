@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { createTransition } from "@common/theme/animations";
 
 export const Nav = styled.nav`
   position: fixed;
@@ -27,6 +28,7 @@ export const NavItem = styled.button<{ $active?: boolean }>`
   cursor: pointer;
   font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
   position: relative;
+  transition: ${createTransition(["color"], "short")};
 
   &::after {
     content: "";
@@ -37,6 +39,8 @@ export const NavItem = styled.button<{ $active?: boolean }>`
     height: 3px;
     background-color: ${({ $active, theme }) =>
       $active ? theme.colors.primary : "transparent"};
-    border-radius: 3px 3px 0 0;
+    border-radius: ${({ theme }) => theme.borderRadius.small}
+      ${({ theme }) => theme.borderRadius.small} 0 0;
+    transition: ${createTransition(["background-color"], "short")};
   }
 `;

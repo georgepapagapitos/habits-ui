@@ -255,6 +255,7 @@ export const HabitList = () => {
     setSortOption(e.target.value as SortOption);
   };
 
+  // Return loading state if habits are loading
   if (loading) {
     return (
       <LoadingContainer>
@@ -263,13 +264,9 @@ export const HabitList = () => {
     );
   }
 
+  // Return error state if there was an error loading habits
   if (error) {
-    return (
-      <div style={{ textAlign: "center", padding: "2rem", color: "#e74c3c" }}>
-        <p>Error: {error}</p>
-        <p>Please try again later.</p>
-      </div>
-    );
+    return <div>Error loading habits: {error}</div>;
   }
 
   if (habits.length === 0) {
@@ -282,7 +279,14 @@ export const HabitList = () => {
   }
 
   return (
-    <>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        flex: 1,
+        height: "100%",
+      }}
+    >
       <ListHeader>
         <div style={{ display: "flex", alignItems: "center" }}>
           <FaSort style={{ marginRight: "6px", opacity: 0.7 }} />
@@ -304,14 +308,14 @@ export const HabitList = () => {
         {sortedHabits.map((habit) => (
           <HabitCardContainer
             key={habit._id}
-            className="habit-card-container habit-enter-active"
+            className="habit-card-container"
             data-habit-id={habit._id}
-            data-completed={isCompletedToday(habit).toString()}
+            data-testid={`habit-card-container-${habit._id}`}
           >
             <HabitCard habit={habit} />
           </HabitCardContainer>
         ))}
       </List>
-    </>
+    </div>
   );
 };
