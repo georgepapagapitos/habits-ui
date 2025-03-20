@@ -141,10 +141,8 @@ describe("HabitList", () => {
 
     renderWithProviders(<HabitList />);
 
-    expect(
-      screen.getByText("Error: Failed to load habits")
-    ).toBeInTheDocument();
-    expect(screen.getByText("Please try again later.")).toBeInTheDocument();
+    expect(screen.getByText(/Error loading habits:/i)).toBeInTheDocument();
+    expect(screen.getByText(/Failed to load habits/i)).toBeInTheDocument();
   });
 
   test("renders empty state", () => {
