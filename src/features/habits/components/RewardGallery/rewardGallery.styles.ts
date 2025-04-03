@@ -1,65 +1,70 @@
 import styled from "styled-components";
 
 export const Container = styled.div`
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    padding: 1rem;
-    gap: 0.75rem;
-  }
 `;
 
 export const Title = styled.h2`
   color: ${({ theme }) => theme.colors.primaryDark};
-  margin: 0.5rem 0;
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    font-size: 1.5rem;
-  }
+  margin-bottom: 1rem;
 `;
 
 export const EmptyState = styled.div`
   text-align: center;
   padding: 2rem;
-  background-color: ${({ theme }) => theme.colors.backgroundAlt};
-  border-radius: ${({ theme }) => theme.borderRadius.medium};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  border-radius: 8px;
   box-shadow: ${({ theme }) => theme.shadows.small};
-  margin-top: 2rem;
+  margin: 1rem 0;
 
   h3 {
-    margin-bottom: 1rem;
-    font-size: 1.2rem;
     color: ${({ theme }) => theme.colors.primaryDark};
+    margin-bottom: 1rem;
   }
 
   p {
-    margin-bottom: 0.5rem;
     color: ${({ theme }) => theme.colors.textLight};
+    margin-bottom: 1.5rem;
   }
 
   button {
-    margin-top: 1.5rem;
-    padding: 0.75rem 1.5rem;
-    background-color: ${({ theme }) => theme.colors.primary};
+    background: ${({ theme }) => theme.colors.primary};
     color: white;
     border: none;
+    padding: 0.5rem 1rem;
     border-radius: 4px;
     cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s;
 
     &:hover {
-      background-color: ${({ theme }) => theme.colors.primaryHover};
+      background: ${({ theme }) => theme.colors.primaryDark};
     }
 
     &:focus {
-      outline: 2px solid ${({ theme }) => theme.colors.focus};
-      outline-offset: 2px;
+      outline: none;
+      box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.primaryLight};
+    }
+  }
+
+  a {
+    display: inline-block;
+    background: ${({ theme }) => theme.colors.primary};
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    text-decoration: none;
+    margin-top: 1rem;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background: ${({ theme }) => theme.colors.primaryDark};
+    }
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.primaryLight};
     }
   }
 `;

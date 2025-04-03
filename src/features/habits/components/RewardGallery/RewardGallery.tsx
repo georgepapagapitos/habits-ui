@@ -9,6 +9,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { Link } from "react-router-dom";
 import {
   Container,
   EmptyState,
@@ -324,15 +325,10 @@ export const RewardGallery = () => {
     return (
       <Container>
         <EmptyState>
-          <h3>No rewards yet</h3>
-          <p>Complete any habit to receive a photo reward!</p>
-          <p>Rewards will reset at midnight each day.</p>
-          <button
-            onClick={handleRefresh}
-            aria-label="Refresh habits to check for rewards"
-          >
-            Refresh
-          </button>
+          <h3>No Rewards Yet</h3>
+          <p>Complete some habits to unlock your rewards!</p>
+          <p>Need to authorize Google Photos?</p>
+          <Link to="/photos/auth">Authorize Google Photos</Link>
         </EmptyState>
       </Container>
     );

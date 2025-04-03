@@ -18,7 +18,7 @@ interface CachedPhotoData {
 }
 
 // Base URL for the API - using environment variables
-const API_URL = `${import.meta.env.VITE_API_URL || "/api"}/habits`;
+const API_URL = `${import.meta.env.VITE_API_URL || "/api"}`;
 
 // Helper function to get auth token
 const getAuthToken = (): string | null => {
@@ -360,7 +360,7 @@ export const habitApi = {
     try {
       // Use throttled request to prevent rate limiting
       const response = await habitApi._throttledGet<{ data: Habit[] }>(
-        API_URL,
+        `${API_URL}/habits`,
         {
           headers: getAuthHeaders(),
         }
@@ -378,13 +378,14 @@ export const habitApi = {
         logger.error(
           "Error fetching habits: Too many requests, please try again later."
         );
-        throw "Too many requests, please try again later.";
-      } else {
-        logger.error("Error fetching habits:", err.response?.data || err);
-        throw (
-          err.response?.data?.error || err.message || "Failed to fetch habits"
-        );
+        throw new Error("Too many requests, please try again later.");
       }
+
+      // Log the error for debugging
+      logger.error("Error fetching habits:", err.response?.data || err);
+      throw (
+        err.response?.data?.error || err.message || "Failed to fetch habits"
+      );
     }
   },
 
@@ -566,6 +567,52 @@ export const habitApi = {
         err.response?.data?.error ||
         err.message ||
         "Failed to toggle habit completion"
+      );
+    }
+  },
+
+  // Get Google Photos auth URL
+  getGooglePhotosAuthUrl: async (): Promise<string> => {
+    try {
+      const response = await axios.get(`${API_URL}/photos/auth`, {
+        headers: getAuthHeaders(),
+      });
+      return response.data.url;
+    } catch (error: unknown) {
+      const err = error as {
+        response?: { data?: { error?: string } };
+        message?: string;
+      };
+      logger.error(
+        "Error getting Google Photos auth URL:",
+        err.response?.data || err
+      );
+      throw (
+        err.response?.data?.error || err.message || "Failed to get auth URL"
+      );
+    }
+  },
+
+  // Handle Google Photos callback
+  handleGooglePhotosCallback: async (code: string): Promise<void> => {
+    try {
+      await axios.get(
+        `${API_URL}/photos/oauth2callback?code=${encodeURIComponent(code)}`,
+        {
+          headers: getAuthHeaders(),
+        }
+      );
+    } catch (error: unknown) {
+      const err = error as {
+        response?: { data?: { error?: string } };
+        message?: string;
+      };
+      logger.error(
+        "Error handling Google Photos callback:",
+        err.response?.data || err
+      );
+      throw (
+        err.response?.data?.error || err.message || "Failed to handle callback"
       );
     }
   },
