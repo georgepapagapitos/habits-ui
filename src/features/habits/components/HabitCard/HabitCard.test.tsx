@@ -1,11 +1,7 @@
 import { HabitCard } from "@habits/components";
 import * as HabitsContext from "@habits/hooks/habitContext";
 import { Habit, WeekDay } from "@habits/types";
-import {
-  getNextDueDate,
-  isCompletedToday,
-  isHabitDueToday,
-} from "@habits/utils";
+import { isCompletedToday, isHabitDueToday } from "@habits/utils";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "@tests/utils";

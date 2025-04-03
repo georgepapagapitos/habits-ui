@@ -7,7 +7,6 @@ import {
   FaSignOutAlt,
   FaHome,
   FaChartBar,
-  FaUser,
   FaGift,
 } from "react-icons/fa";
 import {
