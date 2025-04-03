@@ -1,7 +1,6 @@
 import { Spinner } from "@components/Spinner";
 import { HabitCard } from "@habits/components";
 import { useHabits } from "@habits/hooks";
-import { isCompletedToday } from "@habits/utils";
 import {
   SortOption,
   getSortOptionText,

@@ -1,7 +1,7 @@
 import { Button, Dialog, Menu } from "@components";
 import { HabitCalendar } from "@habits/components";
 import { useHabits } from "@habits/hooks";
-import { Habit, WeekDay } from "@habits/types";
+import { Habit } from "@habits/types";
 import {
   celebrationColors,
   getFrequencyDisplayText,
@@ -9,7 +9,7 @@ import {
   isCompletedToday,
   isHabitDueToday,
 } from "@habits/utils";
-import { format, isSameDay } from "date-fns";
+import { format } from "date-fns";
 import { useEffect, useRef, useState } from "react";
 import {
   FaEllipsisV,
