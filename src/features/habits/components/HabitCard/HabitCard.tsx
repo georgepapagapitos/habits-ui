@@ -9,7 +9,7 @@ import {
   isCompletedToday,
   isHabitDueToday,
 } from "@habits/utils";
-import { format } from "date-fns";
+import { format, isSameDay } from "date-fns";
 import { useEffect, useRef, useState } from "react";
 import {
   FaEllipsisV,
@@ -70,48 +70,6 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
   // Update local habit when the prop changes (and we're not in the middle of an update)
   const updatingRef = useRef(false);
   const timeoutRef = useRef<number | null>(null);
-
-  // Helper function to determine if we should show "No streak yet"
-  // for habits with non-due day completions
-  const shouldShowNoStreak = (habit: Habit): boolean => {
-    // If the habit has no streak, we definitely show "No streak yet"
-    if (habit.streak === 0) return true;
-
-    // Check if there's at least one completion on a due day
-    // If not, this habit shouldn't have a streak
-    const hasDueDayCompletion = habit.completedDates.some((dateStr) => {
-      // Get the completed date
-      const completedDate = new Date(dateStr);
-
-      // Get the day of the week (0-6, where 0 is Sunday)
-      const dayOfWeek = completedDate.getDay();
-
-      // Convert to day name for frequency comparison
-      const dayNames: WeekDay[] = [
-        "sunday",
-        "monday",
-        "tuesday",
-        "wednesday",
-        "thursday",
-        "friday",
-        "saturday",
-      ];
-      const dayName = dayNames[dayOfWeek];
-
-      // Check if this completion fell on a due day
-      return habit.frequency.includes(dayName);
-    });
-
-    // If there's no completion on a due day, this shouldn't have a streak,
-    // regardless of how many completions there are
-    if (!hasDueDayCompletion && habit.completedDates.length > 0) {
-      return true;
-    }
-
-    // The original single-completion edge case is now handled by the logic above
-
-    return false;
-  };
 
   // Sync localHabit with habit prop when it changes (unless we're updating)
   useEffect(() => {
@@ -199,7 +157,7 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
     today.setHours(0, 0, 0, 0);
 
     // Format for comparison with completedDates - using date string for consistent comparison
-    const todayDateString = today.toDateString(); // e.g., "Wed Mar 20 2024"
+    const todayDateString = today.toDateString();
 
     // Create an ISO string for adding to completedDates
     const todayISOString = today.toISOString();
@@ -207,7 +165,7 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
     // Create a copy of the habit for optimistic updates
     const updatedHabit = { ...localHabit };
 
-    // First update the completedDates array
+    // Update completedDates array
     if (willBeCompleted) {
       // Add today to completedDates if not already there
       if (
@@ -225,35 +183,6 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
       updatedHabit.completedDates = updatedHabit.completedDates.filter(
         (dateStr) => new Date(dateStr).toDateString() !== todayDateString
       );
-    }
-
-    // Now update the streak based on the new completedDates
-    if (isDue) {
-      if (willBeCompleted) {
-        // When completing a due habit today, increment streak
-        // If streak was 0, it becomes 1
-        // If streak was > 0, it increments by 1
-        updatedHabit.streak = localHabit.streak + 1;
-      } else {
-        // When uncompleting a due habit today, decrement streak
-        // If streak was 1, it becomes 0
-        // If streak was > 1, it decrements by 1
-        updatedHabit.streak = Math.max(0, localHabit.streak - 1);
-      }
-    } else {
-      // For non-scheduled days ("bonus" completions)
-      if (willBeCompleted) {
-        // For non-due days, completing only extends an existing streak
-        // It should not start a new streak if there's no streak
-        if (localHabit.streak > 0) {
-          // Only increment streak if there's already a streak going
-          updatedHabit.streak = localHabit.streak + 1;
-        }
-        // If streak is 0, it stays 0 - we don't start streaks on non-due days
-      } else {
-        // For non-due days, uncompleting reduces streak
-        updatedHabit.streak = Math.max(0, localHabit.streak - 1);
-      }
     }
 
     // Immediately update local state with optimistic changes
@@ -347,10 +276,7 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
       ];
     }
 
-    // Update streak - this is complex logic that should match backend
-    // For simplicity, we'll let the backend handle streak calculation for historical dates
-
-    // Immediately update local state with optimistic changes
+    // Immediately update local state with optimistic updates
     setLocalHabit(updatedHabit);
 
     // Call the API to update in the backend
@@ -494,24 +420,16 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
             {showCalendar ? "Hide History" : "Show History"}
           </ExpandButton>
 
-          <StreakIndicator
-            $hasStreak={
-              localHabit.streak > 0 && !shouldShowNoStreak(localHabit)
-            }
-          >
-            {localHabit.streak > 0 && !shouldShowNoStreak(localHabit) && (
-              <FaFire color="#ff5722" />
-            )}
+          <StreakIndicator $hasStreak={localHabit.streak > 0}>
+            {localHabit.streak > 0 && <FaFire color="#ff5722" />}
             <span data-testid="streak-text">
               {isDue && !isCompleted
                 ? localHabit.completedDates.length > 0
                   ? `Continue your ${localHabit.streak + 1} day streak today!`
                   : "Start a streak!"
-                : shouldShowNoStreak(localHabit)
-                  ? "No streak yet"
-                  : localHabit.streak > 0
-                    ? `Streak: ${localHabit.streak} ${localHabit.streak === 1 ? "day" : "days"}`
-                    : "No streak yet"}
+                : localHabit.streak > 0
+                  ? `Streak: ${localHabit.streak} ${localHabit.streak === 1 ? "day" : "days"}`
+                  : "No streak yet"}
             </span>
           </StreakIndicator>
         </CardFooter>
